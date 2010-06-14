@@ -17,7 +17,7 @@ def compile_el(el):
     a sensitivity set
     '''
     if el.tag.endswith('def'):
-        result = SimpleDirective(el, 'def', 'function')
+        result = DefDirective(el, 'def', 'function')
     elif el.tag.endswith('for'):
         result = SimpleDirective(el, 'for', 'each')
     elif el.tag.endswith('if'):
@@ -64,13 +64,13 @@ class TextNode(ResultNode):
         if '$' in text: import pdb; pdb.set_trace()
         self._text = text
     def py(self):
-        yield '__fpt__.push(%r)' % self._text
+        yield '__fpt__.append(%r)' % self._text
 
 class ExprNode(ResultNode):
     def __init__(self, text):
         self._text = text
     def py(self):
-        yield '__fpt__.push(__fpt__.escape(%s))' % self._text
+        yield '__fpt__.append(__fpt__.escape(%s))' % self._text
     
 class Suite(ResultNode):
 
@@ -105,6 +105,20 @@ class SimpleDirective(ResultNode):
         for part in self.parts:
             for pp in part.py():
                 yield '    ' + pp
+
+
+class DefDirective(SimpleDirective):
+    
+    def __init__(self, el, keyword, attrib):
+        super(DefDirective, self).__init__(el, keyword, attrib)
+
+    def py(self):
+        yield '%s %s:' % (self._keyword, self._el.attrib[self._attrib])
+        yield '    __fpt__.push()'
+        for part in self.parts:
+            for pp in part.py():
+                yield '    ' + pp
+        yield '    __fpt__.pop()'
 
 
 def expand(tree, parent=None):

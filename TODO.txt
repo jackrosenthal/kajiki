@@ -1,5 +1,8 @@
 * Evaluate expressions in attributes
 * Implement when, otherwise, choose, with, replace
-* Implement slots and inherits
+* Implement strip, content
+* Implement <?python?> blocks
+* Implement slots, extends, and include
 * Evaluate performance
 * Implement memoization
+* Lie about line numbers using co_lnotab so we match up with the source

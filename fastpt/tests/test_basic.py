@@ -61,3 +61,18 @@ class TestCompile(unittest.TestCase):
         t0.compile()
         print t0._text
         print t0.render(name='Rick')
+
+    def test_compile_def(self):
+        t0 = Template(text='''<div %s>
+    <py:def function="greet(name)">
+        Hi, <h1>$name</h1>
+    </py:def>
+    <py:for each="i in range(10)">
+        $i: ${greet(name)}
+    </py:for>
+</div>
+''' % NS_DECL)
+        t0.compile()
+        print t0._text
+        print t0.render(name='Rick')
+        
