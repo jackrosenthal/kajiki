@@ -126,3 +126,11 @@ class TestCompile(unittest.TestCase):
         print etree.tostring(t1._tree_expanded)
         print t1.render()
         
+    def test_include(self):
+        t0 = Template('fastpt/tests/data/test_include.html')
+        t0.compile()
+        print t0._text
+        print etree.tostring(t0._tree_expanded)
+        print t0.render(name='Rick')
+
+        

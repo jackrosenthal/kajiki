@@ -26,6 +26,7 @@ def on_import():
         '{%s}with' % NS: (WithDirective,),
         '{%s}slot' % NS: (SlotDirective,),
         '{%s}extends' % NS: (ExtendsDirective,),
+        '{%s}include' % NS: (IncludeDirective,),
         etree.ProcessingInstruction: (PythonDirective,),
         }
     
@@ -53,7 +54,7 @@ def compile_text(tpl, text):
             if b != last_match:
                 yield TextNode(tpl, text[last_match:b])
             last_match = e
-            yield ExprNode(mo.group('p0') or mo.group('p1'))
+            yield ExprNode(tpl, mo.group('p0') or mo.group('p1'))
         if last_match < len(text):
             yield TextNode(tpl, text[last_match:])
 
@@ -299,6 +300,20 @@ class ExtendsDirective(ResultNode):
             for pp in part.py():
                 yield pp
         yield '__fpt__.pop(False)'
+        for line in compile_el(self.parent, self.parent.expand()).py():
+            yield line
+        
+class IncludeDirective(ResultNode):
+
+    def __init__(self, tpl, el):
+        self._tpl = tpl
+        self._el = el
+        self.parent = self._tpl.load(self._el.attrib['href'])
+
+    def append(self, result):
+        pass
+
+    def py(self):
         for line in compile_el(self.parent, self.parent.expand()).py():
             yield line
         
