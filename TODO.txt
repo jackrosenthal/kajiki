@@ -1,0 +1,5 @@
+* Evaluate expressions in attributes
+* Implement when, otherwise, choose, with, replace
+* Implement slots and inherits
+* Evaluate performance
+* Implement memoization
