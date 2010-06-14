@@ -1,6 +1,3 @@
-* Evaluate expressions in attributes
-* Implement when, otherwise, choose, with, replace
-* Implement strip, content
 * Implement <?python?> blocks
 * Implement slots, extends, and include
 * Evaluate performance

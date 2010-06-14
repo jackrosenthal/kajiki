@@ -1,4 +1,5 @@
 import os
+import types
 
 from lxml import etree
 
@@ -18,7 +19,7 @@ class Template(object):
         self.text = text
         self.directory = directory
         self._tree = self._tree_expanded = self._result = None
-        self._code = None
+        self._func_code = None
 
     def parse(self):
         if self._tree is None:
@@ -32,15 +33,18 @@ class Template(object):
 
     def compile(self):
         if self._result is None:
-            self._result = compiler.compile_el(self.expand())
+            self._result = compiler.TemplateNode(compiler.compile_el(self.expand()))
             self._text = '\n'.join(self._result.py())
-            self._code = compile(self._text, self.filename, 'exec')
+            ns = {}
+            exec self._text in ns
+            self._func_code = ns['template'].func_code
         return self._result
 
-    def render(self, **local_ns):
+    def render(self, **ns):
         self.compile()
         rt = runtime.Runtime()
-        global_ns = dict(__fpt__=rt)
-        exec self._code in global_ns, local_ns
+        global_ns = dict(ns, __builtins__=__builtins__)
+        func = types.FunctionType(self._func_code, global_ns)
+        func(rt)
         return rt.render()
 

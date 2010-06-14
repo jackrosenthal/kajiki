@@ -2,7 +2,7 @@ import re
 
 from lxml import etree
 
-from core import QDIRECTIVES
+from core import QDIRECTIVES, NS
 
 re_sub = re.compile(r'''\$(?:
     (?P<p0>[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)
@@ -10,20 +10,30 @@ re_sub = re.compile(r'''\$(?:
     \{(?P<p1>[^}]*)})
 ''', re.VERBOSE)
 
+ELEMENT_DISPATCH=None
+
+def on_import():
+    global ELEMENT_DISPATCH
+
+    ELEMENT_DISPATCH = {
+        '{%s}def' % NS: (DefDirective, 'def', 'function'),
+        '{%s}for' % NS: (SimpleDirective, 'for', 'each'),
+        '{%s}if' % NS: (SimpleDirective, 'if', 'test'),
+        '{%s}replace' % NS: (ReplaceDirective,),
+        '{%s}choose' % NS: (ChooseDirective,),
+        '{%s}when' % NS: (WhenDirective,),
+        '{%s}otherwise' % NS: (OtherwiseDirective,),
+        '{%s}with' % NS: (WithDirective,),
+        }
+    
 def compile_el(el):
     '''CompiledNode = compile(etree.element)
 
     Compiles some fastpt etree into a block of Python code and
     a sensitivity set
     '''
-    if el.tag.endswith('def'):
-        result = DefDirective(el, 'def', 'function')
-    elif el.tag.endswith('for'):
-        result = SimpleDirective(el, 'for', 'each')
-    elif el.tag.endswith('if'):
-        result = SimpleDirective(el, 'if', 'test')
-    else:
-        result = Suite(el)
+    r = ELEMENT_DISPATCH.get(el.tag, (Suite,))
+    result = r[0](el, *r[1:])
     for part in compile_text(el.text):
         result.append(part)
     for child in el:
@@ -61,7 +71,6 @@ class TemplateNode(ResultNode):
 
 class TextNode(ResultNode):
     def __init__(self, text):
-        if '$' in text: import pdb; pdb.set_trace()
         self._text = text
     def py(self):
         yield '__fpt__.append(%r)' % self._text
@@ -76,18 +85,46 @@ class Suite(ResultNode):
 
     def __init__(self, el):
         self._el = el
-        attrs = ' '.join('%s="%s"' % (k,v) for k,v in self._el.attrib.iteritems())
-        self.parts = [
-            TextNode('<%s %s>' % (self._el.tag, attrs)) ]
-        self.last = TextNode('</%s>' % self._el.tag) 
+        self.content = []
+        self.disable_append = False
+        self.strip_if = None
+        # Build prefix
+        self.prefix = [TextNode('<%s' % self._el.tag)]
+        for k,v in self._el.attrib.iteritems():
+            if k == '{%s}content' % NS:
+                self.content.append(ExprNode(v))
+                self.disable_append = True
+                continue
+            elif k == '{%s}strip' % NS:
+                self.strip_if = v
+                continue
+            self.prefix.append(TextNode(' %s="' % k))
+            self.prefix += list(compile_text(v))
+            self.prefix.append(TextNode('"'))
+        self.prefix.append(TextNode('>'))
+        self.suffix = [ TextNode('</%s>' % self._el.tag)  ]
 
     def append(self, result):
-        self.parts.append(result)
+        if not self.disable_append:
+            self.content.append(result)
 
     def py(self):
-        for part in self.parts + [self.last]:
+        indent = ''
+        if self.strip_if:
+            yield 'if not (%s):' % self.strip_if
+            indent = '    '
+        for part in self.prefix:
+            for pp in part.py():
+                yield indent + pp
+        for part in self.content:
             for pp in part.py():
                 yield pp
+        if self.strip_if:
+            yield 'if not (%s):' % self.strip_if
+        for part in self.suffix:
+            for pp in part.py():
+                yield indent + pp
+            
 
 class SimpleDirective(ResultNode):
     
@@ -107,6 +144,19 @@ class SimpleDirective(ResultNode):
                 yield '    ' + pp
 
 
+class ReplaceDirective(ResultNode):
+    
+    def __init__(self, el):
+        self._el = el
+        self._replacement = ExprNode(el.attrib['value'])
+
+    def append(self, result):
+        pass
+
+    def py(self):
+        for part in self._replacement.py():
+            yield part
+
 class DefDirective(SimpleDirective):
     
     def __init__(self, el, keyword, attrib):
@@ -120,19 +170,93 @@ class DefDirective(SimpleDirective):
                 yield '    ' + pp
         yield '    __fpt__.pop()'
 
+class ChooseDirective(ResultNode):
+    _stack = []
+
+    def __init__(self, el):
+        self._el = el
+        self._test = el.attrib['test'] or 'True'
+        self.parts = []
+        self.choices = []
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def py(self):
+        ChooseDirective._stack.append(self)
+        for part in self.parts:
+            for pp in part.py():
+                yield pp
+        ChooseDirective._stack.pop()
+
+class WhenDirective(ResultNode):
+    
+    def __init__(self, el):
+        self._el = el
+        self._test = el.attrib['test']
+        self.parts = []
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def py(self):
+        choose = ChooseDirective._stack[-1]
+        test = '(%s) == (%s)' % (choose._test, self._test)
+        if choose.choices:
+            yield 'elif %s:' % test
+        else:
+            yield 'if %s:' % test
+        for part in self.parts:
+            for pp in part.py():
+                yield '    ' + pp
+
+class OtherwiseDirective(ResultNode):
+    
+    def __init__(self, el):
+        self._el = el
+        self.parts = []
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def py(self):
+        yield 'else:'
+        for part in self.parts:
+            for pp in part.py():
+                yield '    ' + pp
+
+class WithDirective(ResultNode):
+    _ctr = 0
+
+    def __init__(self, el):
+        self._el = el
+        self._stmt = el.attrib['vars']
+        self.parts = []
+        self._name = '_with_%s' % WithDirective._ctr
+        WithDirective._ctr += 1
+        
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def py(self):
+        yield 'def %s(%s):' % (self._name, self._stmt.replace(';', ','))
+        for part in self.parts:
+            for pp in part.py():
+                yield '    ' + pp
+        yield '%s()' % self._name
 
 def expand(tree, parent=None):
     for directive, attr in QDIRECTIVES:
         value = tree.attrib.pop(directive, None)
         if value is None: continue
-        node = etree.Element(directive, nsmap=tree.nsmap)
+        print '***Expand***', directive, etree.tostring(tree)
+        nsmap = parent and parent.nsmap or tree.nsmap
+        node = etree.Element(directive)
         node.attrib[attr] = value
         if parent is not None:
-            parent.append(node)
-            try:
-                parent.remove(tree)
-            except ValueError:
-                pass
+            parent.replace(tree, node)
+        node.append(tree)
         node.append(expand(tree, node))
         return node
     new_children = []
@@ -140,3 +264,6 @@ def expand(tree, parent=None):
         new_children.append(expand(child, tree))
     tree[:] = new_children
     return tree
+
+
+on_import()

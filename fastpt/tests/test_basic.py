@@ -75,4 +75,27 @@ class TestCompile(unittest.TestCase):
         t0.compile()
         print t0._text
         print t0.render(name='Rick')
+
+    def test_large(self):
+        t0 = Template(text='''<div %s py:strip="name != 'Rick'">
+    <py:def function="greet(name)">
+        Hi, <h1>$name</h1>
+    </py:def>
+    <ul>
+        <li py:for="i in range(5)"
+            class="${'odd' if i%%2 else 'even'}"
+            py:content="greet(name)"/>
+    </ul>
+    <span py:replace="name">Name Placeholder</span>
+    <div py:choose="name" py:with="l = len(name)">
+      <span py:when="'Rick'">Rick Copeland $l</span>
+      <span py:when="'Mark'">Mark Ramm $l</span>
+    </div>
+</div>
+''' % NS_DECL)
+        t0.compile()
+        print etree.tostring(t0._tree_expanded)
+        print t0._text
+        print t0.render(name='Rick')
+        print t0.render(name='Mark')
         
