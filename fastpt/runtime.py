@@ -8,6 +8,8 @@ class Runtime(object):
         self.stream = stream
         self.encoding = encoding
         self.stack = []
+        self.slots = {}
+        self.defining_slot_stack = []
 
     def append(self, value):
         if value is None: return
@@ -23,9 +25,20 @@ class Runtime(object):
     def push(self):
         self.stack.append([])
 
-    def pop(self):
-        for part in self.stack.pop():
+    def pop(self, emit=True):
+        top = self.stack.pop()
+        if not emit: return
+        for part in top:
             self.append(part)
+
+    def push_slot(self, name):
+        if name in self.slots:
+            self.stack.append(self.slots[name])
+            return False # Do not modify slot
+        else:
+            s = self.slots[name] = []
+            self.stack.append(s)
+            return True # ok to modify slot
 
     def escape(self, s):
         if s is None: return s

@@ -1,4 +1,4 @@
-NS='http://g.4dz8.com/'
+NS="http://genshi.edgewall.org/"
 NS_DECL='xmlns:py="%s"' % NS
 DIRECTIVES=[
     ('def','function'),
@@ -8,7 +8,9 @@ DIRECTIVES=[
     ('if','test'),
     ('choose', 'test'),
     ('with', 'vars'),
-    ('replace', 'value') ]
+    ('replace', 'value'),
+    ('slot', 'name'),
+    ('extends', 'parent'),]
 QDIRECTIVES = [
     ('{%s}%s' % (NS, k), v)
     for k,v in DIRECTIVES ]

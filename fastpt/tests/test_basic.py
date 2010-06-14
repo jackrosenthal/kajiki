@@ -113,4 +113,16 @@ class TestCompile(unittest.TestCase):
         print 'TEXT'
         print t0._text
         t0.render(name='Rick')
+
+    def test_inheritance(self):
+        t0 = Template('fastpt/tests/data/parent.html')
+        t0.compile()
+        print t0._text
+        print etree.tostring(t0._tree_expanded)
+        print t0.render()
+        t1 = Template('fastpt/tests/data/child.html')
+        t1.compile()
+        print t1._text
+        print etree.tostring(t1._tree_expanded)
+        print t1.render()
         

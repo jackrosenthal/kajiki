@@ -36,7 +36,7 @@ class Template(object):
 
     def compile(self):
         if self._result is None:
-            self._result = compiler.TemplateNode(compiler.compile_el(self.expand()))
+            self._result = compiler.TemplateNode(self, compiler.compile_el(self, self.expand()))
             self._text = '\n'.join(self._result.py())
             ns = {}
             exec self._text in ns
@@ -51,3 +51,8 @@ class Template(object):
         func(rt)
         return rt.render()
 
+    def load(self, spec):
+        fn = os.path.join(
+            self.directory,
+            spec)
+        return Template(fn)
