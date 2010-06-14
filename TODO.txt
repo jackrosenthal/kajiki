@@ -1,3 +1,2 @@
-* Evaluate performance
 * Implement memoization
 * Lie about line numbers using co_lnotab so we match up with the source
