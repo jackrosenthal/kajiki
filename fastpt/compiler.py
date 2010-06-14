@@ -24,6 +24,7 @@ def on_import():
         '{%s}when' % NS: (WhenDirective,),
         '{%s}otherwise' % NS: (OtherwiseDirective,),
         '{%s}with' % NS: (WithDirective,),
+        etree.ProcessingInstruction: (PythonDirective,),
         }
     
 def compile_el(el):
@@ -246,7 +247,30 @@ class WithDirective(ResultNode):
                 yield '    ' + pp
         yield '%s()' % self._name
 
+class PythonDirective(ResultNode):
+
+    def __init__(self, el):
+        self._el = el
+        assert el.target == 'python'
+
+    def append(self, v):
+        pass
+
+    def py(self):
+        lines = self._el.text.split('\n')
+        if len(lines) == 1:
+            yield lines[0]
+        else:
+            import pdb; pdb.set_trace()
+            prefix = lines[1][:-len(lines[1].strip())]
+            for line in lines[1:]:
+                if line.startswith(prefix):
+                    yield line[len(prefix):]
+                else:
+                    yield line
+
 def expand(tree, parent=None):
+    if not isinstance(tree.tag, basestring): return tree
     for directive, attr in QDIRECTIVES:
         value = tree.attrib.pop(directive, None)
         if value is None: continue

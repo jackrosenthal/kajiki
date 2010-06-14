@@ -98,4 +98,19 @@ class TestCompile(unittest.TestCase):
         print t0._text
         print t0.render(name='Rick')
         print t0.render(name='Mark')
+
+    def test_python(self):
+        t0 = Template(text='''<div %s>
+    <?python import sys ?>
+    <?python #
+        for x in range(10):
+            print x
+        print 'Done!' ?>
+</div>''' % NS_DECL)
+        t0.compile()
+        print 'EXPANDED'
+        print etree.tostring(t0._tree_expanded)
+        print 'TEXT'
+        print t0._text
+        t0.render(name='Rick')
         

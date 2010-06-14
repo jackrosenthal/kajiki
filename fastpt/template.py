@@ -1,5 +1,6 @@
 import os
 import types
+from cStringIO import StringIO
 
 from lxml import etree
 
@@ -23,7 +24,9 @@ class Template(object):
 
     def parse(self):
         if self._tree is None:
-            self._tree = etree.fromstring(self.text)
+            parser = etree.XMLParser(strip_cdata=False)
+            self._tree = etree.parse(StringIO(self.text), parser).getroot()
+            # self._tree = etree.fromstring(self.text)
         return self._tree
 
     def expand(self):

@@ -1,4 +1,3 @@
-* Implement <?python?> blocks
 * Implement slots, extends, and include
 * Evaluate performance
 * Implement memoization
