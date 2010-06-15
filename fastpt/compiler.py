@@ -97,6 +97,16 @@ class TextNode(ResultNode):
     def _py(self):
         yield '__fpt__.append(%r)' % self._text
 
+class AttrsNode(ResultNode):
+
+    def __init__(self, tpl, el, attrs):
+        self._tpl = tpl
+        self._el = el
+        self._text = attrs
+
+    def _py(self):
+        yield '__fpt__.attrs(%s)' % self._text
+
 class ExprNode(ResultNode):
 
     def __init__(self, tpl, el, text):
@@ -115,6 +125,7 @@ class Suite(ResultNode):
         self.content = []
         self.disable_append = False
         self.strip_if = None
+        self.attrs = None
         # Build prefix
         self.prefix = [TextNode(self._tpl, el, '<%s' % self._el.tag)]
         for k,v in self._el.attrib.iteritems():
@@ -124,6 +135,9 @@ class Suite(ResultNode):
                 continue
             elif k == '{%s}strip' % NS:
                 self.strip_if = v
+                continue
+            elif k == '{%s}attrs' % NS:
+                self.prefix.append(AttrsNode(self._tpl, el, v))
                 continue
             self.prefix.append(TextNode(self._tpl, el, ' %s="' % k))
             self.prefix += list(compile_text(tpl, el, v))

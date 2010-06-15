@@ -47,6 +47,14 @@ class Runtime(object):
         if s is None: return s
         return unicode(s).replace('<', '&lt;')
 
+    def attrs(self, d):
+        if d is None: return
+        if isinstance(d, dict):
+            d = d.iteritems()
+        for k,v in d:
+            if v is None: continue
+            self.append(' %s="%s"' % (k, unicode(v)))
+
     def render(self):
         return self.stream.getvalue()
 

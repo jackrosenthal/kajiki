@@ -142,4 +142,9 @@ class TestCompile(unittest.TestCase):
         print etree.tostring(t0._tree_expanded)
         print t0.render(name='Rick')
 
+    def test_attrs(self):
+        ldr = Loader()
+        t0 = ldr.load('fastpt/tests/data/list.html')
+        print t0.render()
+
         
