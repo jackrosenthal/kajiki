@@ -1,1 +1,4 @@
+* Implement slot-chaining
+* Write XML language doc
+* Write FastPt usage doc
 * Implement memoization (?)
