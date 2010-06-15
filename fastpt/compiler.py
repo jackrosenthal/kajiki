@@ -126,7 +126,7 @@ class Suite(ResultNode):
                 self.strip_if = v
                 continue
             self.prefix.append(TextNode(self._tpl, el, ' %s="' % k))
-            self.prefix += list(compile_text(el, v))
+            self.prefix += list(compile_text(tpl, el, v))
             self.prefix.append(TextNode(self._tpl, el, '"'))
         self.prefix.append(TextNode(self._tpl, el, '>'))
         self.suffix = [ TextNode(self._tpl, el, '</%s>' % self._el.tag)  ]
@@ -184,7 +184,7 @@ class ReplaceDirective(ResultNode):
 
     def _py(self):
         for part in self._replacement.py():
-            yield part.indent()
+            yield part
 
 class DefDirective(SimpleDirective):
     
@@ -192,6 +192,8 @@ class DefDirective(SimpleDirective):
         super(DefDirective, self).__init__(tpl, el, keyword, attrib)
 
     def _py(self):
+        fname = self._el.attrib[self._attrib].split('(')[0]
+        yield 'global ' + fname
         yield '%s %s:' % (self._keyword, self._el.attrib[self._attrib])
         yield '    __fpt__.push()'
         for part in self.parts:
@@ -303,7 +305,7 @@ class ExtendsDirective(ResultNode):
         self._tpl = tpl
         self._el = el
         self.parts = []
-        self.parent = self._tpl.load(self._el.attrib['parent'])
+        # self.parent = self._tpl.load(self._el.attrib['parent'])
 
     def append(self, result):
         self.parts.append(result)
@@ -314,22 +316,21 @@ class ExtendsDirective(ResultNode):
             for pp in part.py():
                 yield pp
         yield '__fpt__.pop(False)'
-        for line in compile_el(self.parent, self.parent.expand()).py():
-            yield line
+        yield '__fpt__.include(%r)' % self._el.attrib['href']
+        # for line in compile_el(self.parent, self.parent.expand()).py():
+        #     yield line
         
 class IncludeDirective(ResultNode):
 
     def __init__(self, tpl, el):
         self._tpl = tpl
         self._el = el
-        self.parent = self._tpl.load(self._el.attrib['href'])
 
     def append(self, result):
         pass
 
     def _py(self):
-        for line in compile_el(self.parent, self.parent.expand()).py():
-            yield line
+        yield '__fpt__.include(%r)' % self._el.attrib['href']
         
 class PythonDirective(ResultNode):
 
@@ -371,7 +372,7 @@ def expand(tree, parent=None):
     for directive, attr in QDIRECTIVES:
         value = tree.attrib.pop(directive, None)
         if value is None: continue
-        nsmap = parent and parent.nsmap or tree.nsmap
+        nsmap = (parent is not None) and parent.nsmap or tree.nsmap
         node = etree.Element(directive)
         node.sourceline = tree.sourceline
         node.attrib[attr] = value

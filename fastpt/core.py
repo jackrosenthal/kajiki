@@ -10,7 +10,7 @@ DIRECTIVES=[
     ('with', 'vars'),
     ('replace', 'value'),
     ('slot', 'name'),
-    ('extends', 'parent'),]
+    ('extends', 'href'),]
 QDIRECTIVES = [
     ('{%s}%s' % (NS, k), v)
     for k,v in DIRECTIVES ]

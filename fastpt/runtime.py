@@ -1,8 +1,11 @@
+import types
 from cStringIO import StringIO
 
 class Runtime(object):
 
-    def __init__(self, stream=None, encoding='utf-8'):
+    def __init__(self, template, namespace, stream=None, encoding='utf-8'):
+        self.template = template
+        self.namespace = namespace
         if stream is None:
             stream = StringIO()
         self.stream = stream
@@ -47,4 +50,10 @@ class Runtime(object):
     def render(self):
         return self.stream.getvalue()
 
-                        
+    def include(self, href):
+        pt = self.template.load(href)
+        pt.compile()
+        func = types.FunctionType(pt._func_code, self.namespace)
+        func(self)
+        
+        

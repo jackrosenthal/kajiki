@@ -2,7 +2,7 @@ import unittest
 
 from lxml import etree 
 
-from fastpt import Template, NS_DECL
+from fastpt import Template, NS_DECL, Loader, PackageLoader
 
 def nospace(s):
     if isinstance(s, basestring):
@@ -13,8 +13,10 @@ def nospace(s):
 class TestErrors(unittest.TestCase):
 
     def test_assert(self):
-        t0 = Template('fastpt/tests/data/assert.html')
-        print t0.render()
+        ldr = PackageLoader()
+        t0 = ldr.load('fastpt.tests.data.assert')
+        # t0 = Template('fastpt/tests/data/assert.html')
+        self.assertRaises(AssertionError, t0.render)
 
 class TestExpand(unittest.TestCase):
 
@@ -121,12 +123,13 @@ class TestCompile(unittest.TestCase):
         t0.render(name='Rick')
 
     def test_inheritance(self):
-        t0 = Template('fastpt/tests/data/parent.html')
+        ldr = Loader()
+        t0 = ldr.load('fastpt/tests/data/parent.html')
         t0.compile()
         print t0._text
         print etree.tostring(t0._tree_expanded)
         print t0.render()
-        t1 = Template('fastpt/tests/data/child.html')
+        t1 = ldr.load('fastpt/tests/data/child.html')
         t1.compile()
         print t1._text
         print etree.tostring(t1._tree_expanded)

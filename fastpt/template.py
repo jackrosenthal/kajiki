@@ -1,5 +1,6 @@
 import os
 import types
+import time
 from cStringIO import StringIO
 
 from lxml import etree
@@ -9,7 +10,9 @@ from . import runtime
 
 class Template(object):
 
-    def __init__(self, filename=None, text=None, directory=None):
+    def __init__(self, filename=None, text=None, directory=None,
+                 loader=None):
+        from .loader import Loader
         if filename:
             if directory is None:
                 directory = os.path.dirname(filename)
@@ -17,9 +20,12 @@ class Template(object):
             filename='<string>'
         if text is None:
             text = open(filename).read()
+            self.timestamp = time.time()
+        if loader is None: loader = Loader(directory=directory)
         self.filename = filename
         self.text = text
         self.directory = directory
+        self.loader = loader
         self._tree = self._tree_expanded = self._result = None
         self._func_code = None
         self.lnotab = {} # lnotab[python_lineno] = xml_lineno
@@ -48,8 +54,8 @@ class Template(object):
 
     def render(self, **ns):
         self.compile()
-        rt = runtime.Runtime()
         global_ns = dict(ns, __builtins__=__builtins__)
+        rt = runtime.Runtime(self, global_ns)
         func = types.FunctionType(self._func_code, global_ns)
         func(rt)
         return rt.render()
@@ -65,10 +71,6 @@ class Template(object):
         lnotab = zip(lnotab[::2], lnotab[1::2])
         new_tab = []
         cur_line = code.co_firstlineno
-        print code.co_firstlineno
-        for i, line in enumerate(self._text.split('\n')):
-            print '%s: %s' % (i+1, line)
-        print self.lnotab
         for b_off, l_off in lnotab:
             new_loff = self.lnotab[cur_line+l_off]-self.lnotab[cur_line]
             cur_line += l_off
