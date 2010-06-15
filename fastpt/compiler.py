@@ -65,9 +65,11 @@ class TemplateNode(object):
         self.child = child
 
     def py(self):
-        yield PyLine(self._tpl, 0, 'def template(__fpt__):')
-        for line in self.child.py():
-            yield line.indent()
+        yield 'def template(__fpt__):'
+        self._tpl.lnotab[1] = 0
+        for i, line in enumerate(self.child.py()):
+            self._tpl.lnotab[i+2] = line._line
+            yield str(line.indent())
 
 class ResultNode(object):
 

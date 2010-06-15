@@ -1,2 +1,2 @@
-* Lie about line numbers using co_lnotab so we match up with the source
+* make sure that extends/include works with lnotab
 * Implement memoization

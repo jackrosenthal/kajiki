@@ -13,11 +13,7 @@ def nospace(s):
 class TestErrors(unittest.TestCase):
 
     def test_assert(self):
-        t0 = Template(text='''<div %s>
-   <?python assert False ?>
-</div>''' % NS_DECL, directory='/dev', filename='null')
-        t0.compile()
-        import pdb; pdb.set_trace()
+        t0 = Template('fastpt/tests/data/assert.html')
         print t0.render()
 
 class TestExpand(unittest.TestCase):

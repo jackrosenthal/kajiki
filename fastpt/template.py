@@ -22,7 +22,7 @@ class Template(object):
         self.directory = directory
         self._tree = self._tree_expanded = self._result = None
         self._func_code = None
-        self._lnotab = LineNumberTable(self)
+        self.lnotab = {} # lnotab[python_lineno] = xml_lineno
 
     def parse(self):
         if self._tree is None:
@@ -39,10 +39,11 @@ class Template(object):
     def compile(self):
         if self._result is None:
             self._result = compiler.TemplateNode(self, compiler.compile_el(self, self.expand()))
-            self._text = '\n'.join(map(str, self._result.py()))
+            self._text = '\n'.join(self._result.py())
             ns = {}
             exec self._text in ns
-            self._func_code = ns['template'].func_code
+            self._func_code_orig = ns['template'].func_code
+            self._func_code = self._translate_code(self._func_code_orig)
         return self._result
 
     def render(self, **ns):
@@ -59,17 +60,37 @@ class Template(object):
             spec)
         return Template(fn)
 
-class LineNumberTable(object):
-
-    def __init__(self, tpl):
-        self._xml_from_py = {}
-        self._cur_xml_line = None
-        self._cur_py_line = 0
-
-    def enter_xml(self, line):
-        self._cur_xml_line = line
-
-    def pyline(self, line):
-        self._cur_py_line += 1
-        self._xml_from_py[self._cur_py_line] = self._cur_xml_line
-        return line
+    def _translate_code(self, code):
+        lnotab = map(ord, code.co_lnotab)
+        lnotab = zip(lnotab[::2], lnotab[1::2])
+        new_tab = []
+        cur_line = code.co_firstlineno
+        print code.co_firstlineno
+        for i, line in enumerate(self._text.split('\n')):
+            print '%s: %s' % (i+1, line)
+        print self.lnotab
+        for b_off, l_off in lnotab:
+            new_loff = self.lnotab[cur_line+l_off]-self.lnotab[cur_line]
+            cur_line += l_off
+            if new_loff < 0:
+                continue
+            new_tab.append(b_off)
+            new_tab.append(new_loff)
+        lnotab = ''.join(map(chr, new_tab))
+        return types.CodeType(
+            code.co_argcount,
+            code.co_nlocals,
+            code.co_stacksize,
+            code.co_flags,
+            code.co_code,
+            code.co_consts,
+            code.co_names,
+            code.co_varnames,
+            self.filename,
+            code.co_name,
+            self.lnotab[code.co_firstlineno],
+            lnotab,
+            code.co_freevars,
+            code.co_cellvars)
+            
+            
