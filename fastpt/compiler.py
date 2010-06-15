@@ -38,59 +38,71 @@ def compile_el(tpl, el):
     '''
     r = ELEMENT_DISPATCH.get(el.tag, (Suite,))
     result = r[0](tpl, el, *r[1:])
-    for part in compile_text(tpl, el.text):
+    for part in compile_text(tpl, el, el.text):
         result.append(part)
     for child in el:
         result.append(compile_el(tpl, child))
-        for part in compile_text(tpl, child.tail):
+        for part in compile_text(tpl, child, child.tail):
             result.append(part)
     return result
 
-def compile_text(tpl, text):
+def compile_text(tpl, el, text):
     if text:
         last_match = 0
         for mo in re_sub.finditer(text):
             b,e = mo.span()
             if b != last_match:
-                yield TextNode(tpl, text[last_match:b])
+                yield TextNode(tpl, el, text[last_match:b])
             last_match = e
-            yield ExprNode(tpl, mo.group('p0') or mo.group('p1'))
+            yield ExprNode(tpl, el, mo.group('p0') or mo.group('p1'))
         if last_match < len(text):
-            yield TextNode(tpl, text[last_match:])
+            yield TextNode(tpl, el, text[last_match:])
 
-class ResultNode(object):
-
-    def __init__(self, tpl):
-        self._tpl = tpl
-
-    def py(self):
-        pass
-
-class TemplateNode(ResultNode):
+class TemplateNode(object):
 
     def __init__(self, tpl, child):
         self._tpl = tpl
         self.child = child
 
     def py(self):
-        yield 'def template(__fpt__):'
+        yield PyLine(self._tpl, 0, 'def template(__fpt__):')
         for line in self.child.py():
-            yield '    ' + line
+            yield line.indent()
+
+class ResultNode(object):
+
+    def __init__(self, tpl, el):
+        self._tpl = tpl
+        self._el = el
+
+    def _py(self):
+        raise NotImplementedError, '_py'
+
+    def py(self):
+        for x in self._py():
+            if isinstance(x, basestring):
+                yield PyLine(self._tpl, self._el, x)
+            else:
+                yield x
 
 class TextNode(ResultNode):
-    def __init__(self, tpl, text):
+
+    def __init__(self, tpl, el, text):
         self._tpl = tpl
+        self._el = el
         self._text = text
-    def py(self):
+
+    def _py(self):
         yield '__fpt__.append(%r)' % self._text
 
 class ExprNode(ResultNode):
 
-    def __init__(self, tpl, text):
+    def __init__(self, tpl, el, text):
         self._tpl = tpl
+        self._el = el
         self._text = text
 
-    def py(self):
+    def _py(self):
         yield '__fpt__.append(__fpt__.escape(%s))' % self._text
     
 class Suite(ResultNode):
@@ -102,33 +114,33 @@ class Suite(ResultNode):
         self.disable_append = False
         self.strip_if = None
         # Build prefix
-        self.prefix = [TextNode(self._tpl, '<%s' % self._el.tag)]
+        self.prefix = [TextNode(self._tpl, el, '<%s' % self._el.tag)]
         for k,v in self._el.attrib.iteritems():
             if k == '{%s}content' % NS:
-                self.content.append(ExprNode(v))
+                self.content.append(ExprNode(tpl, el, v))
                 self.disable_append = True
                 continue
             elif k == '{%s}strip' % NS:
                 self.strip_if = v
                 continue
-            self.prefix.append(TextNode(self._tpl, ' %s="' % k))
-            self.prefix += list(compile_text(v))
-            self.prefix.append(TextNode(self._tpl, '"'))
-        self.prefix.append(TextNode(self._tpl, '>'))
-        self.suffix = [ TextNode(self._tpl, '</%s>' % self._el.tag)  ]
+            self.prefix.append(TextNode(self._tpl, el, ' %s="' % k))
+            self.prefix += list(compile_text(el, v))
+            self.prefix.append(TextNode(self._tpl, el, '"'))
+        self.prefix.append(TextNode(self._tpl, el, '>'))
+        self.suffix = [ TextNode(self._tpl, el, '</%s>' % self._el.tag)  ]
 
     def append(self, result):
         if not self.disable_append:
             self.content.append(result)
 
-    def py(self):
-        indent = ''
+    def _py(self):
+        indent = 0
         if self.strip_if:
             yield 'if not (%s):' % self.strip_if
-            indent = '    '
+            indent = 4
         for part in self.prefix:
             for pp in part.py():
-                yield indent + pp
+                yield pp.indent(indent)
         for part in self.content:
             for pp in part.py():
                 yield pp
@@ -136,7 +148,7 @@ class Suite(ResultNode):
             yield 'if not (%s):' % self.strip_if
         for part in self.suffix:
             for pp in part.py():
-                yield indent + pp
+                yield pp.indent(indent)
             
 
 class SimpleDirective(ResultNode):
@@ -151,11 +163,11 @@ class SimpleDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         yield '%s %s:' % (self._keyword, self._el.attrib[self._attrib])
         for part in self.parts:
             for pp in part.py():
-                yield '    ' + pp
+                yield pp.indent()
 
 
 class ReplaceDirective(ResultNode):
@@ -163,26 +175,26 @@ class ReplaceDirective(ResultNode):
     def __init__(self, tpl, el):
         self._tpl = tpl
         self._el = el
-        self._replacement = ExprNode(el.attrib['value'])
+        self._replacement = ExprNode(tpl, el, el.attrib['value'])
 
     def append(self, result):
         pass
 
-    def py(self):
+    def _py(self):
         for part in self._replacement.py():
-            yield part
+            yield part.indent()
 
 class DefDirective(SimpleDirective):
     
     def __init__(self, tpl, el, keyword, attrib):
         super(DefDirective, self).__init__(tpl, el, keyword, attrib)
 
-    def py(self):
+    def _py(self):
         yield '%s %s:' % (self._keyword, self._el.attrib[self._attrib])
         yield '    __fpt__.push()'
         for part in self.parts:
             for pp in part.py():
-                yield '    ' + pp
+                yield pp.indent()
         yield '    __fpt__.pop()'
 
 class ChooseDirective(ResultNode):
@@ -198,7 +210,7 @@ class ChooseDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         ChooseDirective._stack.append(self)
         for part in self.parts:
             for pp in part.py():
@@ -216,7 +228,7 @@ class WhenDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         choose = ChooseDirective._stack[-1]
         test = '(%s) == (%s)' % (choose._test, self._test)
         if choose.choices:
@@ -225,7 +237,7 @@ class WhenDirective(ResultNode):
             yield 'if %s:' % test
         for part in self.parts:
             for pp in part.py():
-                yield '    ' + pp
+                yield pp.indent()
 
 class OtherwiseDirective(ResultNode):
     
@@ -237,11 +249,11 @@ class OtherwiseDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         yield 'else:'
         for part in self.parts:
             for pp in part.py():
-                yield '    ' + pp
+                yield pp.indent()
 
 class WithDirective(ResultNode):
     _ctr = 0
@@ -258,11 +270,11 @@ class WithDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         yield 'def %s(%s):' % (self._name, self._stmt.replace(';', ','))
         for part in self.parts:
             for pp in part.py():
-                yield '    ' + pp
+                yield pp.indent()
         yield '%s()' % self._name
 
 class SlotDirective(ResultNode):
@@ -276,11 +288,11 @@ class SlotDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         yield 'if __fpt__.push_slot(%r):' % self._name
         for part in self.parts:
             for pp in part.py():
-                yield '    ' + pp
+                yield pp.indent()
         yield '__fpt__.pop()'
 
 class ExtendsDirective(ResultNode):
@@ -294,7 +306,7 @@ class ExtendsDirective(ResultNode):
     def append(self, result):
         self.parts.append(result)
 
-    def py(self):
+    def _py(self):
         yield '__fpt__.push()'
         for part in self.parts:
             for pp in part.py():
@@ -313,7 +325,7 @@ class IncludeDirective(ResultNode):
     def append(self, result):
         pass
 
-    def py(self):
+    def _py(self):
         for line in compile_el(self.parent, self.parent.expand()).py():
             yield line
         
@@ -327,18 +339,30 @@ class PythonDirective(ResultNode):
     def append(self, v):
         pass
 
-    def py(self):
+    def _py(self):
         lines = self._el.text.split('\n')
         if len(lines) == 1:
             yield lines[0]
         else:
-            import pdb; pdb.set_trace()
             prefix = lines[1][:-len(lines[1].strip())]
             for line in lines[1:]:
                 if line.startswith(prefix):
                     yield line[len(prefix):]
                 else:
                     yield line
+
+class PyLine(object):
+
+    def __init__(self, tpl, el_or_lineno, text):
+        self._tpl = tpl
+        self._line = getattr(el_or_lineno, 'sourceline', el_or_lineno)
+        self._text = text
+
+    def indent(self, sz=4):
+        return PyLine(self._tpl, self._line, (' '*sz)+self._text)
+
+    def __str__(self):
+        return self._text#  + '\t# %s:%d' % (self._tpl.filename, self._line)
 
 def expand(tree, parent=None):
     if not isinstance(tree.tag, basestring): return tree
@@ -347,6 +371,7 @@ def expand(tree, parent=None):
         if value is None: continue
         nsmap = parent and parent.nsmap or tree.nsmap
         node = etree.Element(directive)
+        node.sourceline = tree.sourceline
         node.attrib[attr] = value
         if parent is not None:
             parent.replace(tree, node)

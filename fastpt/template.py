@@ -13,14 +13,16 @@ class Template(object):
         if filename:
             if directory is None:
                 directory = os.path.dirname(filename)
-            text = open(filename).read()
         else:
             filename='<string>'
+        if text is None:
+            text = open(filename).read()
         self.filename = filename
         self.text = text
         self.directory = directory
         self._tree = self._tree_expanded = self._result = None
         self._func_code = None
+        self._lnotab = LineNumberTable(self)
 
     def parse(self):
         if self._tree is None:
@@ -37,7 +39,7 @@ class Template(object):
     def compile(self):
         if self._result is None:
             self._result = compiler.TemplateNode(self, compiler.compile_el(self, self.expand()))
-            self._text = '\n'.join(self._result.py())
+            self._text = '\n'.join(map(str, self._result.py()))
             ns = {}
             exec self._text in ns
             self._func_code = ns['template'].func_code
@@ -56,3 +58,18 @@ class Template(object):
             self.directory,
             spec)
         return Template(fn)
+
+class LineNumberTable(object):
+
+    def __init__(self, tpl):
+        self._xml_from_py = {}
+        self._cur_xml_line = None
+        self._cur_py_line = 0
+
+    def enter_xml(self, line):
+        self._cur_xml_line = line
+
+    def pyline(self, line):
+        self._cur_py_line += 1
+        self._xml_from_py[self._cur_py_line] = self._cur_xml_line
+        return line

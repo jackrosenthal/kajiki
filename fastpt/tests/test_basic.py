@@ -10,6 +10,16 @@ def nospace(s):
     else:
         return nospace(etree.tostring(s))
 
+class TestErrors(unittest.TestCase):
+
+    def test_assert(self):
+        t0 = Template(text='''<div %s>
+   <?python assert False ?>
+</div>''' % NS_DECL, directory='/dev', filename='null')
+        t0.compile()
+        import pdb; pdb.set_trace()
+        print t0.render()
+
 class TestExpand(unittest.TestCase):
 
     def test_def(self):
