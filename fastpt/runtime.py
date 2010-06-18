@@ -1,29 +1,34 @@
 import types
-from cStringIO import StringIO
+from . import core
 
 class Runtime(object):
 
-    def __init__(self, template, namespace, stream=None, encoding='utf-8'):
+    def __init__(self, template, namespace, encoding='utf-8'):
         self.template = template
         self.namespace = namespace
-        if stream is None:
-            stream = StringIO()
-        self.stream = stream
         self.encoding = encoding
         self.stack = []
         self.slots = {}
         self.defining_slot_stack = []
+        self.stack.append([])
 
     def append(self, value):
         if value is None: return
-        if not isinstance(value, basestring):
-            value = unicode(value)
-        if not isinstance(value, str):
+        vtype = type(value)
+        if vtype == core.Markup:
+            self.stack[-1].append(value.encode(self.encoding))
+            return
+        if vtype == unicode:
             value = value.encode(self.encoding)
-        if self.stack:
-            self.stack[-1].append(value)
-        else:
-            self.stream.write(value)
+        elif vtype != str:
+            try:
+                value = str(value)
+            except:
+                value = unicode(value).encode(self.encoding)
+        value = value.replace('&', '&amp;')
+        value = value.replace('<', '&lt;')
+        value = value.replace('>', '&gt;')
+        self.stack[-1].append(value)
 
     def push(self):
         self.stack.append([])
@@ -32,7 +37,7 @@ class Runtime(object):
         top = self.stack.pop()
         if not emit: return
         for part in top:
-            self.append(part)
+            self.stack[-1].append(part)
 
     def push_slot(self, name):
         if name in self.slots:
@@ -42,6 +47,14 @@ class Runtime(object):
             s = self.slots[name] = []
             self.stack.append(s)
             return True # ok to modify slot
+
+    def pop_attr(self, name):
+        top = [ s for s in self.stack.pop() if s is not None ]
+        if not top: return
+        self.stack[-1].append(' ' + name + '="')
+        for part in top:
+            self.append(part)
+        self.stack[-1].append('"')
 
     def escape(self, s):
         if s is None: return s
@@ -56,11 +69,10 @@ class Runtime(object):
             self.append(' %s="%s"' % (k, unicode(v)))
 
     def render(self):
-        return self.stream.getvalue()
+        return ''.join(self.stack[0])
 
     def include(self, href):
         pt = self.template.load(href)
-        pt.compile()
         func = types.FunctionType(pt._func_code, self.namespace)
         func(self)
         

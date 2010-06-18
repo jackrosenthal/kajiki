@@ -5,6 +5,7 @@ from cStringIO import StringIO
 
 from lxml import etree
 
+from . import core
 from . import compiler
 from . import runtime
 
@@ -47,24 +48,28 @@ class Template(object):
             self._result = compiler.TemplateNode(self, compiler.compile_el(self, self.expand()))
             self._text = '\n'.join(self._result.py())
             ns = {}
-            exec self._text in ns
+            try:
+                exec self._text in ns
+            except:
+                for i, line in enumerate(self._text.split('\n')):
+                    print '%.3d: %s' % (i+1, line)
+                raise
             self._func_code_orig = ns['template'].func_code
             self._func_code = self._translate_code(self._func_code_orig)
         return self._result
 
     def render(self, **ns):
-        self.compile()
-        global_ns = dict(ns, __builtins__=__builtins__)
+        global_ns = dict(
+            ns,
+            __builtins__=__builtins__,
+            Markup=core.Markup)
         rt = runtime.Runtime(self, global_ns)
         func = types.FunctionType(self._func_code, global_ns)
         func(rt)
         return rt.render()
 
     def load(self, spec):
-        fn = os.path.join(
-            self.directory,
-            spec)
-        return Template(fn)
+        return self.loader.load(spec)
 
     def _translate_code(self, code):
         lnotab = map(ord, code.co_lnotab)

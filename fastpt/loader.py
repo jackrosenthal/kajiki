@@ -15,7 +15,7 @@ class Loader(object):
             os.path.join(
                 self._directory,
                 href))
-        pt = self._cache.get(href)
+        pt = self._cache.get(path)
         if pt is not None and self._reload:
             if os.stat(pt.filename) > pt.timestamp:
                 pt = None

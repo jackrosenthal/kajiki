@@ -95,7 +95,7 @@ class TextNode(ResultNode):
         self._text = text
 
     def _py(self):
-        yield '__fpt__.append(%r)' % self._text
+        yield '__fpt__.stack[-1].append(%r)' % self._text
 
 class AttrsNode(ResultNode):
 
@@ -115,7 +115,22 @@ class ExprNode(ResultNode):
         self._text = text
 
     def _py(self):
-        yield '__fpt__.append(__fpt__.escape(%s))' % self._text
+        yield '__fpt__.append(%s)' % self._text
+
+class AttrNode(ResultNode):
+
+    def __init__(self, tpl, el, k, v):
+        self._tpl = tpl
+        self._el = el
+        self._k = k
+        self._v = compile_text(tpl, el, v)
+
+    def _py(self):
+        yield '__fpt__.push()'
+        for vv in self._v:
+            for pp in vv.py():
+                yield pp
+        yield '__fpt__.pop_attr(%r)' % self._k
     
 class Suite(ResultNode):
 
@@ -139,9 +154,7 @@ class Suite(ResultNode):
             elif k == '{%s}attrs' % NS:
                 self.prefix.append(AttrsNode(self._tpl, el, v))
                 continue
-            self.prefix.append(TextNode(self._tpl, el, ' %s="' % k))
-            self.prefix += list(compile_text(tpl, el, v))
-            self.prefix.append(TextNode(self._tpl, el, '"'))
+            self.prefix.append(AttrNode(tpl, el, k, v))
         self.prefix.append(TextNode(self._tpl, el, '>'))
         self.suffix = [ TextNode(self._tpl, el, '</%s>' % self._el.tag)  ]
 
@@ -311,6 +324,8 @@ class SlotDirective(ResultNode):
         for part in self.parts:
             for pp in part.py():
                 yield pp.indent()
+        if not self.parts:
+            yield '    pass'
         yield '__fpt__.pop()'
 
 class ExtendsDirective(ResultNode):
@@ -386,7 +401,7 @@ def expand(tree, parent=None):
     for directive, attr in QDIRECTIVES:
         value = tree.attrib.pop(directive, None)
         if value is None: continue
-        nsmap = (parent is not None) and parent.nsmap or tree.nsmap
+        # nsmap = (parent is not None) and parent.nsmap or tree.nsmap
         node = etree.Element(directive)
         node.sourceline = tree.sourceline
         node.attrib[attr] = value

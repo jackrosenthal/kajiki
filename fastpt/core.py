@@ -14,3 +14,6 @@ DIRECTIVES=[
 QDIRECTIVES = [
     ('{%s}%s' % (NS, k), v)
     for k,v in DIRECTIVES ]
+
+
+class Markup(unicode): pass

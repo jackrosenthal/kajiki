@@ -1,4 +1,3 @@
-* Fix so that <a foo="${None}"> yields <a>
 * Implement py:method
 * Implement slot-chaining
 * Write XML language doc
