@@ -27,13 +27,14 @@ class Template(object):
         self.text = text
         self.directory = directory
         self.loader = loader
+        self.package = None
         self._tree = self._tree_expanded = self._result = None
         self._func_code = None
         self.lnotab = {} # lnotab[python_lineno] = xml_lineno
 
     def parse(self):
         if self._tree is None:
-            parser = etree.XMLParser(strip_cdata=False)
+            parser = etree.XMLParser(strip_cdata=False, resolve_entities=False)
             self._tree = etree.parse(StringIO(self.text), parser).getroot()
             # self._tree = etree.fromstring(self.text)
         return self._tree
@@ -69,7 +70,7 @@ class Template(object):
         return rt.render()
 
     def load(self, spec):
-        return self.loader.load(spec)
+        return self.loader.load(spec, self.package)
 
     def _translate_code(self, code):
         lnotab = map(ord, code.co_lnotab)

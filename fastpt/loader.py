@@ -17,10 +17,11 @@ class Loader(object):
                 href))
         pt = self._cache.get(path)
         if pt is not None and self._reload:
-            if os.stat(pt.filename) > pt.timestamp:
+            if os.stat(pt.filename).st_mtime > pt.timestamp:
                 pt = None
         if pt is None:
             pt = self._load(path)
+            self._cache[path] = pt
         return pt
 
     def _load(self, path):
@@ -31,7 +32,6 @@ class Loader(object):
             filename=path,
             loader=self)
         pt.compile()
-        self._cache[path] = pt
         return pt
 
 class PackageLoader(Loader):
@@ -39,16 +39,30 @@ class PackageLoader(Loader):
     def __init__(self, reload=True, extensions=('html', 'xml')):
         super(PackageLoader, self).__init__(reload)
         self._extensions = extensions
+        self._fn_cache = {}
 
-    def load(self, href):
+    def load(self, href, package=None):
+        try:
+            fn, pkg = self._fn_cache[href, package]
+        except KeyError:
+            fn, pkg = self._find_filename(href, package)
+            self._fn_cache[href, package] = fn, pkg
+        pt = super(PackageLoader, self).load(fn)
+        pt.package = pkg
+        return pt
+
+    def _find_filename(self, href, package):
         if '.' not in href:
             raise exceptions.IllegalTemplateName(
                 '%r must contain at least one dot' % href)
         pkg_name, pt_name = href.rsplit('.', 1)
-        base_pkg = __import__(pkg_name)
-        pkg = base_pkg
-        for pkg_part in pkg_name.split('.')[1:]:
-            pkg = getattr(pkg, pkg_part)
+        if pkg_name == '':
+            pkg = package
+        else:
+            base_pkg = __import__(pkg_name)
+            pkg = base_pkg
+            for pkg_part in pkg_name.split('.')[1:]:
+                pkg = getattr(pkg, pkg_part)
         dirname = os.path.dirname(pkg.__file__)
         attempts = []
         for ext in self._extensions:
@@ -57,7 +71,7 @@ class PackageLoader(Loader):
                     pt_name + '.' + ext))
             attempts.append(filename)
             if os.path.exists(filename):
-                return super(PackageLoader, self).load(filename)
+                return filename, pkg
         raise exceptions.TemplateNotFound(
             '%r not found, tried %r' % (href, attempts))
         

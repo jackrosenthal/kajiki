@@ -18,6 +18,9 @@ class Runtime(object):
         if vtype == core.Markup:
             self.stack[-1].append(value.encode(self.encoding))
             return
+        elif hasattr(value, '__html__'):
+            self.stack[-1].append(value.__html__().encode(self.encoding))
+            return
         if vtype == unicode:
             value = value.encode(self.encoding)
         elif vtype != str:

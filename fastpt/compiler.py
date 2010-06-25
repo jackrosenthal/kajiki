@@ -28,6 +28,8 @@ def on_import():
         '{%s}extends' % NS: (ExtendsDirective,),
         '{%s}include' % NS: (IncludeDirective,),
         etree.ProcessingInstruction: (PythonDirective,),
+        etree.Entity: (PassThru,),
+        etree.Comment: (PassThru,),
         }
     
 def compile_el(tpl, el):
@@ -97,6 +99,16 @@ class TextNode(ResultNode):
     def _py(self):
         yield '__fpt__.stack[-1].append(%r)' % self._text
 
+class PassThru(TextNode):
+
+    def __init__(self, tpl, el):
+        self._tpl = tpl
+        self._el = el
+        self._text = unicode(el)
+
+    def append(self, v):
+        pass
+
 class AttrsNode(ResultNode):
 
     def __init__(self, tpl, el, attrs):
@@ -142,7 +154,7 @@ class Suite(ResultNode):
         self.strip_if = None
         self.attrs = None
         # Build prefix
-        self.prefix = [TextNode(self._tpl, el, '<%s' % self._el.tag)]
+        self.prefix = [TextNode(self._tpl, el, '<%s' % strip_ns(self._el.tag))]
         for k,v in self._el.attrib.iteritems():
             if k == '{%s}content' % NS:
                 self.content.append(ExprNode(tpl, el, v))
@@ -156,7 +168,7 @@ class Suite(ResultNode):
                 continue
             self.prefix.append(AttrNode(tpl, el, k, v))
         self.prefix.append(TextNode(self._tpl, el, '>'))
-        self.suffix = [ TextNode(self._tpl, el, '</%s>' % self._el.tag)  ]
+        self.suffix = [ TextNode(self._tpl, el, '</%s>' % strip_ns(self._el.tag))  ]
 
     def append(self, result):
         if not self.disable_append:
@@ -221,7 +233,10 @@ class DefDirective(SimpleDirective):
     def _py(self):
         fname = self._el.attrib[self._attrib].split('(')[0]
         yield 'global ' + fname
-        yield '%s %s:' % (self._keyword, self._el.attrib[self._attrib])
+        if '(' in self._el.attrib[self._attrib]:
+            yield '%s %s:' % (self._keyword, self._el.attrib[self._attrib])
+        else:
+            yield '%s %s():' % (self._keyword, self._el.attrib[self._attrib])
         yield '    __fpt__.push()'
         for part in self.parts:
             for pp in part.py():
@@ -417,6 +432,9 @@ def expand(tree, parent=None):
         new_children.append(expand(child, tree))
     tree[:] = new_children
     return tree
+
+def strip_ns(s):
+    return s.rsplit('}', 1)[-1]
 
 
 on_import()
