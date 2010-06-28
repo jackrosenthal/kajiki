@@ -1,4 +1,5 @@
 import os
+import sys
 import types
 import time
 from cStringIO import StringIO
@@ -63,7 +64,10 @@ class Template(object):
         global_ns = dict(
             ns,
             __builtins__=__builtins__,
-            Markup=core.Markup)
+            Markup=core.Markup,
+            defined=core.defined,
+            value_of=core.value_of,
+            )
         rt = runtime.Runtime(self, global_ns)
         func = types.FunctionType(self._func_code, global_ns)
         func(rt)

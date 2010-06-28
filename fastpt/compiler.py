@@ -97,7 +97,7 @@ class TextNode(ResultNode):
         self._text = text
 
     def _py(self):
-        yield '__fpt__.stack[-1].append(%r)' % self._text
+        yield '__fpt__.stack[-1].append(%r)' % self._text.encode('utf-8')
 
 class PassThru(TextNode):
 
@@ -360,7 +360,7 @@ class ExtendsDirective(ResultNode):
             for pp in part.py():
                 yield pp
         yield '__fpt__.pop(False)'
-        yield '__fpt__.include(%r)' % self._el.attrib['href']
+        yield '__fpt__.include(%r, True)' % self._el.attrib['href']
         # for line in compile_el(self.parent, self.parent.expand()).py():
         #     yield line
         

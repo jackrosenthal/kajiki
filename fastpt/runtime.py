@@ -74,9 +74,13 @@ class Runtime(object):
     def render(self):
         return ''.join(self.stack[0])
 
-    def include(self, href):
+    def include(self, href, emit_included=False):
         pt = self.template.load(href)
         func = types.FunctionType(pt._func_code, self.namespace)
+        self.push()
+        saved, self.template = self.template, pt
         func(self)
+        self.pop(emit_included)
+        self.template = saved
         
         

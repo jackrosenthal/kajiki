@@ -1,3 +1,5 @@
+import sys
+
 NS="http://genshi.edgewall.org/"
 NS_DECL='xmlns:py="%s"' % NS
 DIRECTIVES=[
@@ -17,3 +19,14 @@ QDIRECTIVES = [
 
 
 class Markup(unicode): pass
+
+def value_of(name, default=None):
+    f = sys._getframe(1)
+    try:
+        return f.f_locals[name]
+    except KeyError:
+        return f.f_globals.get(name, default)
+
+def defined(name):
+    f = sys._getframe(1)
+    return name in f.f_locals or name in f.f_globals
