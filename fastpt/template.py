@@ -33,6 +33,12 @@ class Template(object):
         self._func_code = None
         self.lnotab = {} # lnotab[python_lineno] = xml_lineno
 
+    def __repr__(self):
+        if self.filename:
+            return '<Template %s>' % self.filename
+        else:
+            return '<Template <str> at %x>' % id(self)
+
     def parse(self):
         if self._tree is None:
             parser = etree.XMLParser(strip_cdata=False, resolve_entities=False)

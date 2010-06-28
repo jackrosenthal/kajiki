@@ -335,13 +335,13 @@ class SlotDirective(ResultNode):
         self.parts.append(result)
 
     def _py(self):
-        yield 'if __fpt__.push_slot(%r):' % self._name
+        yield 'def __slot__():'
+        yield '    __fpt__.push()'
         for part in self.parts:
             for pp in part.py():
                 yield pp.indent()
-        if not self.parts:
-            yield '    pass'
-        yield '__fpt__.pop()'
+        yield '    return __fpt__.generate()'
+        yield '__fpt__.def_slot(%r, __slot__)' % self._name
 
 class ExtendsDirective(ResultNode):
 
@@ -355,14 +355,12 @@ class ExtendsDirective(ResultNode):
         self.parts.append(result)
 
     def _py(self):
+        yield '__fpt__.include(%r, True)' % self._el.attrib['href']
         yield '__fpt__.push()'
         for part in self.parts:
             for pp in part.py():
                 yield pp
         yield '__fpt__.pop(False)'
-        yield '__fpt__.include(%r, True)' % self._el.attrib['href']
-        # for line in compile_el(self.parent, self.parent.expand()).py():
-        #     yield line
         
 class IncludeDirective(ResultNode):
 

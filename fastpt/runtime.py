@@ -1,4 +1,5 @@
 import types
+from collections import defaultdict
 from . import core
 
 class Runtime(object):
@@ -8,7 +9,7 @@ class Runtime(object):
         self.namespace = namespace
         self.encoding = encoding
         self.stack = []
-        self.slots = {}
+        self.slots = defaultdict(list)
         self.defining_slot_stack = []
         self.stack.append([])
 
@@ -42,14 +43,11 @@ class Runtime(object):
         for part in top:
             self.stack[-1].append(part)
 
-    def push_slot(self, name):
-        if name in self.slots:
-            self.stack.append(self.slots[name])
-            return False # Do not modify slot
-        else:
-            s = self.slots[name] = []
-            self.stack.append(s)
-            return True # ok to modify slot
+    def def_slot(self, name, func):
+        print '%s: Define slot %s (%s)' % (self.template, name, len(self.slots[name]))
+        tos = self.stack[-1]
+        self.slots[name].append(func)
+        tos.append(lambda: self.slots[name][-1]())
 
     def pop_attr(self, name):
         top = [ s for s in self.stack.pop() if s is not None ]
@@ -71,10 +69,22 @@ class Runtime(object):
             if v is None: continue
             self.append(' %s="%s"' % (k, unicode(v)))
 
+    def generate(self):
+        def gen(it):
+            for x in it:
+                if callable(x):
+                    for xx in gen(x()):
+                        yield xx
+                else:
+                    yield x
+        return gen(self.stack.pop())
+
     def render(self):
-        return ''.join(self.stack[0])
+        return ''.join(self.generate())
 
     def include(self, href, emit_included=False):
+        if emit_included:
+            print '>> Include %s' % href
         pt = self.template.load(href)
         func = types.FunctionType(pt._func_code, self.namespace)
         self.push()
