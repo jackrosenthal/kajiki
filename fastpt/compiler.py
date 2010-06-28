@@ -25,6 +25,7 @@ def on_import():
         '{%s}otherwise' % NS: (OtherwiseDirective,),
         '{%s}with' % NS: (WithDirective,),
         '{%s}slot' % NS: (SlotDirective,),
+        '{%s}super' % NS: (SuperDirective,),
         '{%s}extends' % NS: (ExtendsDirective,),
         '{%s}include' % NS: (IncludeDirective,),
         etree.ProcessingInstruction: (PythonDirective,),
@@ -335,13 +336,27 @@ class SlotDirective(ResultNode):
         self.parts.append(result)
 
     def _py(self):
-        yield 'def __slot__():'
+        yield 'def __slot__(__slot_depth__=-1):'
+        yield '    __slot_name__ = %r' % self._name
         yield '    __fpt__.push()'
         for part in self.parts:
             for pp in part.py():
                 yield pp.indent()
         yield '    return __fpt__.generate()'
         yield '__fpt__.def_slot(%r, __slot__)' % self._name
+
+class SuperDirective(ResultNode):
+
+    def __init__(self, tpl, el):
+        self._tpl = tpl
+        self._el = el
+        self.parts = []
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def _py(self):
+        yield '__fpt__.super_slot(__slot_name__, __slot_depth__-1)'
 
 class ExtendsDirective(ResultNode):
 

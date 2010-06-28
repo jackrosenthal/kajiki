@@ -44,10 +44,11 @@ class Runtime(object):
             self.stack[-1].append(part)
 
     def def_slot(self, name, func):
-        print '%s: Define slot %s (%s)' % (self.template, name, len(self.slots[name]))
-        tos = self.stack[-1]
         self.slots[name].append(func)
-        tos.append(lambda: self.slots[name][-1]())
+        self.stack[-1].append(lambda: self.slots[name][-1]())
+
+    def super_slot(self, name, depth):
+        self.stack[-1].append(lambda: self.slots[name][depth](depth))
 
     def pop_attr(self, name):
         top = [ s for s in self.stack.pop() if s is not None ]
@@ -83,8 +84,6 @@ class Runtime(object):
         return ''.join(self.generate())
 
     def include(self, href, emit_included=False):
-        if emit_included:
-            print '>> Include %s' % href
         pt = self.template.load(href)
         func = types.FunctionType(pt._func_code, self.namespace)
         self.push()
