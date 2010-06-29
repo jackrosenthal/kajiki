@@ -49,6 +49,7 @@ class Template(object):
     def expand(self):
         if self._tree_expanded is None:
             self._tree_expanded = compiler.expand(self.parse())
+            compiler.expand_entities(self._tree_expanded)
         return self._tree_expanded
 
     def compile(self):
@@ -58,12 +59,21 @@ class Template(object):
             ns = {}
             try:
                 exec self._text in ns
+            except SyntaxError, se:
+                row,col = se.args[1][1:3]
+                print 'Syntax error at %d:%d:' % (row, col)
+                for i, line in enumerate(self._text.split('\n')):
+                    if row-10 < i < row+10:
+                        print '%.3d: %s' % (i+1, line)
+                import pdb; pdb.set_trace()
+                raise
+            self._func_code_orig = ns['template'].func_code
+            try:
+                self._func_code = self._translate_code(self._func_code_orig)
             except:
                 for i, line in enumerate(self._text.split('\n')):
                     print '%.3d: %s' % (i+1, line)
                 raise
-            self._func_code_orig = ns['template'].func_code
-            self._func_code = self._translate_code(self._func_code_orig)
         return self._result
 
     def render(self, **ns):
@@ -88,12 +98,15 @@ class Template(object):
         new_tab = []
         cur_line = code.co_firstlineno
         for b_off, l_off in lnotab:
-            new_loff = self.lnotab[cur_line+l_off]-self.lnotab[cur_line]
-            cur_line += l_off
-            if new_loff < 0:
-                continue
-            new_tab.append(b_off)
-            new_tab.append(new_loff)
+            try:
+                new_loff = self.lnotab[cur_line+l_off]-self.lnotab[cur_line]
+                cur_line += l_off
+                if new_loff < 0:
+                    continue
+                new_tab.append(b_off)
+                new_tab.append(new_loff)
+            except KeyError:
+                break
         lnotab = ''.join(map(chr, new_tab))
         return types.CodeType(
             code.co_argcount,

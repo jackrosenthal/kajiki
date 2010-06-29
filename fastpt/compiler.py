@@ -1,4 +1,5 @@
 import re
+import string
 
 from lxml import etree
 
@@ -29,7 +30,6 @@ def on_import():
         '{%s}extends' % NS: (ExtendsDirective,),
         '{%s}include' % NS: (IncludeDirective,),
         etree.ProcessingInstruction: (PythonDirective,),
-        etree.Entity: (PassThru,),
         etree.Comment: (PassThru,),
         }
     
@@ -50,16 +50,57 @@ def compile_el(tpl, el):
     return result
 
 def compile_text(tpl, el, text):
-    if text:
-        last_match = 0
-        for mo in re_sub.finditer(text):
-            b,e = mo.span()
-            if b != last_match:
-                yield TextNode(tpl, el, text[last_match:b])
-            last_match = e
-            yield ExprNode(tpl, el, mo.group('p0') or mo.group('p1'))
-        if last_match < len(text):
-            yield TextNode(tpl, el, text[last_match:])
+    ESCAPE_STARTERS=string.letters+'_'+'{'
+    if text is None: text = ''
+    def get_errpos(s):
+        try:
+            compile(s, '<str>', 'eval')
+        except SyntaxError, se:
+            return se.args[1][2]
+    def get_end_shorthand(s):
+        for i, ch in enumerate(s):
+            if ch not in string.letters + string.digits + '_' + '.':
+                return i
+        return i+1
+    tok = []
+    p = 0
+    while p < len(text):
+        ch = text[p]
+        p += 1
+        # Non-escaped
+        if ch != '$':
+            tok.append(ch)
+            continue
+        # Escape as last char -- must be literal
+        if p == len(text):
+            tok.append(ch)
+            continue
+        # Doubled escape char
+        if text[p] == '$':
+            tok.append(ch)
+            p += 1
+            continue
+        # Check for non-expression 'escapes'
+        if text[p] not in ESCAPE_STARTERS:
+            tok.append(text[p])
+            continue
+        # Real escape -- emit a token            
+        if tok:
+            yield TextNode(tpl, el, ''.join(tok))
+            tok = []
+        if text[p] == '{':
+            p += 1
+            end_expr = get_errpos(text[p:])
+            yield ExprNode(tpl, el, text[p:p+end_expr-1])
+            p += end_expr
+        else:
+            end_expr = get_end_shorthand(text[p:])
+            yield ExprNode(tpl, el, text[p:p+end_expr])
+            p += end_expr
+    if tok:
+        yield TextNode(tpl, el, ''.join(tok))
+            
+
 
 class TemplateNode(object):
 
@@ -100,6 +141,9 @@ class TextNode(ResultNode):
     def _py(self):
         yield '__fpt__.stack[-1].append(%r)' % self._text.encode('utf-8')
 
+    def __repr__(self):
+        return '<TextNode %r>' % self._text
+
 class PassThru(TextNode):
 
     def __init__(self, tpl, el):
@@ -129,6 +173,9 @@ class ExprNode(ResultNode):
 
     def _py(self):
         yield '__fpt__.append(%s)' % self._text
+
+    def __repr__(self):
+        return '<ExprNode %s>' % self._text
 
 class AttrNode(ResultNode):
 
@@ -445,6 +492,22 @@ def expand(tree, parent=None):
         new_children.append(expand(child, tree))
     tree[:] = new_children
     return tree
+
+def expand_entities(tree):
+    if not isinstance(tree.tag, basestring): return 
+    new_children = []
+    for child in tree:
+        if child.tag == etree.Entity:
+            if new_children:
+                c = new_children[-1]
+                c.tail = (c.tail or '') + etree.tounicode(child)
+            else:
+                tree.text = (tree.text or '') + etree.tounicode(child)
+        else:
+            new_children.append(child)
+    tree[:] = new_children
+    for child in tree:
+        expand_entities(child)
 
 def strip_ns(s):
     return s.rsplit('}', 1)[-1]
