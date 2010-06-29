@@ -55,16 +55,14 @@ def compile_text(tpl, el, text):
     ESCAPE_STARTERS=string.letters+'_'+'{'
     if text is None: text = ''
     def get_errpos(s):
-        try:
-            compile(s, '<str>', 'eval')
-        except SyntaxError, se:
-            row,col = se.args[1][1:3]
-            cur = 0
-            while row > 1:
-                cur = s.find('\n', cur) + 1
-                row -= 1
-            col += cur
-            return col
+        # SyntaxError sometimes returns the wrong offset, so we can't use it
+        # http://bugs.python.org/issue1778
+        for pos in xrange(len(s), 0, -1):
+            try:
+                compile(s[:pos], '', 'eval')
+                return pos + 1
+            except SyntaxError:
+                pass
     def get_end_shorthand(s):
         for i, ch in enumerate(s):
             if ch not in string.letters + string.digits + '_' + '.':
@@ -99,6 +97,7 @@ def compile_text(tpl, el, text):
         if text[p] == '{':
             p += 1
             end_expr = get_errpos(text[p:])
+            compile(text[p:p+end_expr-1], '', 'eval')
             yield ExprNode(tpl, el, text[p:p+end_expr-1])
             p += end_expr
         else:
