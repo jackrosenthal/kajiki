@@ -1,5 +1,6 @@
 import sys
 
+XI_NS="http://www.w3.org/2001/XInclude"
 NS="http://genshi.edgewall.org/"
 NS_DECL='xmlns:py="%s"' % NS
 DIRECTIVES=[
@@ -16,7 +17,7 @@ DIRECTIVES=[
 QDIRECTIVES = [
     ('{%s}%s' % (NS, k), v)
     for k,v in DIRECTIVES ]
-
+QDIRECTIVES_DICT = dict(QDIRECTIVES)
 
 class Markup(unicode): pass
 

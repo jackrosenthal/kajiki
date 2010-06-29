@@ -45,7 +45,10 @@ class PackageLoader(Loader):
         try:
             fn, pkg = self._fn_cache[href, package]
         except KeyError:
-            fn, pkg = self._find_filename(href, package)
+            try:
+                fn, pkg = self._find_filename(href, package)
+            except ImportError:
+                fn, pkg = self._find_filename(href.rsplit('.', 1)[0], package)
             self._fn_cache[href, package] = fn, pkg
         pt = super(PackageLoader, self).load(fn)
         pt.package = pkg
@@ -53,8 +56,9 @@ class PackageLoader(Loader):
 
     def _find_filename(self, href, package):
         if '.' not in href:
-            raise exceptions.IllegalTemplateName(
-                '%r must contain at least one dot' % href)
+            href = '.' + href
+            # raise exceptions.IllegalTemplateName(
+            #     '%r must contain at least one dot' % href)
         pkg_name, pt_name = href.rsplit('.', 1)
         if pkg_name == '':
             pkg = package

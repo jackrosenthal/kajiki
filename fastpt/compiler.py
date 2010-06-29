@@ -3,7 +3,7 @@ import string
 
 from lxml import etree
 
-from core import QDIRECTIVES, NS
+from core import QDIRECTIVES, QDIRECTIVES_DICT, NS, XI_NS
 
 re_sub = re.compile(r'''\$(?:
     (?P<p0>[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)
@@ -29,6 +29,8 @@ def on_import():
         '{%s}super' % NS: (SuperDirective,),
         '{%s}extends' % NS: (ExtendsDirective,),
         '{%s}include' % NS: (IncludeDirective,),
+        '{%s}include' % XI_NS: (IncludeDirective,),
+        '{%s}nop' % NS: (NopDirective,),
         etree.ProcessingInstruction: (PythonDirective,),
         etree.Comment: (PassThru,),
         }
@@ -56,7 +58,13 @@ def compile_text(tpl, el, text):
         try:
             compile(s, '<str>', 'eval')
         except SyntaxError, se:
-            return se.args[1][2]
+            row,col = se.args[1][1:3]
+            cur = 0
+            while row > 1:
+                cur = s.find('\n', cur) + 1
+                row -= 1
+            col += cur
+            return col
     def get_end_shorthand(s):
         for i, ch in enumerate(s):
             if ch not in string.letters + string.digits + '_' + '.':
@@ -99,8 +107,6 @@ def compile_text(tpl, el, text):
             p += end_expr
     if tok:
         yield TextNode(tpl, el, ''.join(tok))
-            
-
 
 class TemplateNode(object):
 
@@ -110,7 +116,9 @@ class TemplateNode(object):
 
     def py(self):
         yield 'def template(__fpt__):'
+        yield '    __fpt__.doctype()'
         self._tpl.lnotab[1] = 0
+        self._tpl.lnotab[2] = 0
         for i, line in enumerate(self.child.py()):
             self._tpl.lnotab[i+2] = line._line
             yield str(line.indent())
@@ -458,6 +466,22 @@ class PythonDirective(ResultNode):
                 else:
                     yield line
 
+class NopDirective(ResultNode):
+    
+    def __init__(self, tpl, el):
+        self._tpl = tpl
+        self._el = el
+        self.parts = []
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def _py(self):
+        for part in self.parts:
+            for pp in part.py():
+                yield pp
+
+
 class PyLine(object):
 
     def __init__(self, tpl, el_or_lineno, text):
@@ -473,6 +497,9 @@ class PyLine(object):
 
 def expand(tree, parent=None):
     if not isinstance(tree.tag, basestring): return tree
+    if tree.tag in QDIRECTIVES_DICT:
+        tree.attrib[tree.tag] = tree.attrib.pop(QDIRECTIVES_DICT[tree.tag])
+        tree.tag = '{%s}nop' % NS
     for directive, attr in QDIRECTIVES:
         value = tree.attrib.pop(directive, None)
         if value is None: continue

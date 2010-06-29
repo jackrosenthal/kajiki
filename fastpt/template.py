@@ -1,4 +1,5 @@
 import os
+import logging
 import sys
 import types
 import time
@@ -9,6 +10,8 @@ from lxml import etree
 from . import core
 from . import compiler
 from . import runtime
+
+log = logging.getLogger(__name__)
 
 class Template(object):
 
@@ -42,9 +45,10 @@ class Template(object):
     def parse(self):
         if self._tree is None:
             parser = etree.XMLParser(strip_cdata=False, resolve_entities=False)
-            self._tree = etree.parse(StringIO(self.text), parser).getroot()
+            self._tree = etree.parse(StringIO(self.text), parser)
+            self._root = self._tree.getroot()
             # self._tree = etree.fromstring(self.text)
-        return self._tree
+        return self._root
 
     def expand(self):
         if self._tree_expanded is None:
@@ -65,7 +69,6 @@ class Template(object):
                 for i, line in enumerate(self._text.split('\n')):
                     if row-10 < i < row+10:
                         print '%.3d: %s' % (i+1, line)
-                import pdb; pdb.set_trace()
                 raise
             self._func_code_orig = ns['template'].func_code
             try:
@@ -106,6 +109,7 @@ class Template(object):
                 new_tab.append(b_off)
                 new_tab.append(new_loff)
             except KeyError:
+                log.warning('Cannot convert line %d in text to template', cur_line+l_off)
                 break
         lnotab = ''.join(map(chr, new_tab))
         return types.CodeType(

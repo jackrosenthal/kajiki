@@ -13,6 +13,12 @@ class Runtime(object):
         self.defining_slot_stack = []
         self.stack.append([])
 
+    def doctype(self):
+        docinfo = self.template._tree.docinfo
+        if docinfo.public_id:
+            self.stack[-1].append('<!DOCTYPE %s PUBLIC "%s" "%s">' % (
+                    docinfo.root_name, docinfo.public_id, docinfo.system_url))
+
     def append(self, value):
         if value is None: return
         vtype = type(value)
@@ -44,8 +50,11 @@ class Runtime(object):
             self.stack[-1].append(part)
 
     def def_slot(self, name, func):
-        self.slots[name].append(func)
-        self.stack[-1].append(lambda: self.slots[name][-1]())
+        def call_slot():
+            tpl, func = self.slots[name][-1]
+            return func()
+        self.slots[name].append((self.template, func))
+        self.stack[-1].append(call_slot)
 
     def super_slot(self, name, depth):
         self.stack[-1].append(lambda: self.slots[name][depth](depth))
@@ -53,6 +62,7 @@ class Runtime(object):
     def pop_attr(self, name):
         top = [ s for s in self.stack.pop() if s is not None ]
         if not top: return
+        if name == 'xmlns': return
         self.stack[-1].append(' ' + name + '="')
         for part in top:
             self.append(part)
