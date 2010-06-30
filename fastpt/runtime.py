@@ -1,4 +1,5 @@
 import types
+from contextlib import contextmanager
 from collections import defaultdict
 from . import core
 
@@ -12,6 +13,14 @@ class Runtime(object):
         self.slots = defaultdict(list)
         self.defining_slot_stack = []
         self.stack.append([])
+        self._slot_definition_enabled = True
+
+    @contextmanager
+    def slot_definition_disabled(self):
+        self._slot_definition_enabled = False
+        yield
+        self._slot_definition_enabled = True
+        
 
     def doctype(self):
         docinfo = self.template._tree.docinfo
@@ -50,14 +59,16 @@ class Runtime(object):
             self.stack[-1].append(part)
 
     def def_slot(self, name, func):
-        def call_slot():
+        def _call_slot():
             tpl, func = self.slots[name][-1]
-            return func()
-        self.slots[name].append((self.template, func))
-        self.stack[-1].append(call_slot)
+            with self.slot_definition_disabled():
+                return func(self)
+        if self._slot_definition_enabled or not self.slots[name]:
+            self.slots[name].append((self.template, func))
+        self.stack[-1].append(_call_slot)
 
     def super_slot(self, name, depth):
-        self.stack[-1].append(lambda: self.slots[name][depth](depth))
+        self.stack[-1].append(lambda: self.slots[name][depth](self, depth))
 
     def pop_attr(self, name):
         top = [ s for s in self.stack.pop() if s is not None ]
@@ -101,5 +112,17 @@ class Runtime(object):
         func(self)
         self.pop(emit_included)
         self.template = saved
+        
+    def call_slot(self, href, name):
+        pt = self.template.load(href)
+        func = types.FunctionType(pt._func_code, self.namespace)
+        runtime = Runtime(pt, dict(self.namespace))
+        runtime.push()
+        func(runtime)
+        def _call_slot():
+            tpl, func = runtime.slots[name][-1]
+            with self.slot_definition_disabled():
+                return func(self)
+        self.stack[-1].append(_call_slot)
         
         

@@ -27,6 +27,7 @@ def on_import():
         '{%s}with' % NS: (WithDirective,),
         '{%s}slot' % NS: (SlotDirective,),
         '{%s}super' % NS: (SuperDirective,),
+        '{%s}call-slot' % NS: (CallSlotDirective,),
         '{%s}extends' % NS: (ExtendsDirective,),
         '{%s}include' % NS: (IncludeDirective,),
         '{%s}include' % XI_NS: (IncludeDirective,),
@@ -390,14 +391,14 @@ class SlotDirective(ResultNode):
         self.parts.append(result)
 
     def _py(self):
-        yield 'def __slot__(__slot_depth__=-1):'
+        yield 'def __slot_%s__(__fpt__, __slot_depth__=-1):' % self._name
         yield '    __slot_name__ = %r' % self._name
         yield '    __fpt__.push()'
         for part in self.parts:
             for pp in part.py():
                 yield pp.indent()
         yield '    return __fpt__.generate()'
-        yield '__fpt__.def_slot(%r, __slot__)' % self._name
+        yield '__fpt__.def_slot(%r, __slot_%s__)' % (self._name, self._name)
 
 class SuperDirective(ResultNode):
 
@@ -411,6 +412,21 @@ class SuperDirective(ResultNode):
 
     def _py(self):
         yield '__fpt__.super_slot(__slot_name__, __slot_depth__-1)'
+
+class CallSlotDirective(ResultNode):
+
+    def __init__(self, tpl, el):
+        self._tpl = tpl
+        self._el = el
+        self.parts = []
+
+    def append(self, result):
+        self.parts.append(result)
+
+    def _py(self):
+        yield '__fpt__.call_slot(%r, %r)' % (
+            self._el.attrib['href'],
+            self._el.attrib['name'])
 
 class ExtendsDirective(ResultNode):
 
@@ -458,12 +474,15 @@ class PythonDirective(ResultNode):
         if len(lines) == 1:
             yield lines[0]
         else:
-            prefix = lines[1][:-len(lines[1].strip())]
-            for line in lines[1:]:
-                if line.startswith(prefix):
-                    yield line[len(prefix):]
-                else:
-                    yield line
+            if lines[0] != '#':
+                for line in lines: yield line
+            else:
+                prefix = lines[1][:-len(lines[1].strip())]
+                for line in lines[1:]:
+                    if line.startswith(prefix):
+                        yield line[len(prefix):]
+                    else:
+                        yield line
 
 class NopDirective(ResultNode):
     
