@@ -10,7 +10,7 @@ class Loader(object):
         self._directory = directory
         self._cache = {}
 
-    def load(self, href):
+    def load(self, href, package=None):
         path = os.path.abspath(
             os.path.join(
                 self._directory,
