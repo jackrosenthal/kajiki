@@ -6,6 +6,8 @@
 Welcome to FastPt's documentation!
 ==================================
 
+Code Development / Issue Tracker on BitBucket_ (currently)
+
 Contents:
 
 .. toctree::
@@ -20,3 +22,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+.. _BitBucket: http://bitbucket.org/rick446/fastpt

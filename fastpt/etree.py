@@ -7,52 +7,177 @@ def log(func):
         return func(self, *args, **kwargs)
     return inner
 
+def parse(fp, parser):
+    parser.reset()
+    while True:
+        block = fp.read(4096)
+        if block: parser.feed(block)
+        else: break
+    parser.close()
+    return parser.tree
+
+class Tree(object):
+    __slots__ = ('children','declarations', 'text', 'nsmap')
+
+    def __init__(self):
+        self.children = []
+        self.declarations = []
+        self.text = ''
+        self.nsmap = {}
+
+    def getroot(self):
+        for ch in self.children:
+            if isinstance(ch, Element): return ch
+        return None
+
+class Node(object):
+    __slots__ = ('tag', 'sourceline','parent', 'tail', 'children')
+
+    def __init__(self):
+        self.sourceline = None
+        self.parent = None
+        self.tail = ''
+        self.children = []
+
+    def __iter__(self):
+        return iter(self.children)
+
+class Element(Node):
+    __slots__ = ('tag', 'attrib', 'text', 'children', 'nsmap')
+
+    def __init__(self, tag, attrib=None):
+        super(Element, self).__init__()
+        if isinstance(attrib, list):
+            attrib = dict(attrib)
+        self.tag = tag
+        self.attrib = attrib or {}
+        self.text = ''
+        self.nsmap = {}
+
+    def replace(self, old, new):
+        self.children = [
+            new if ch == old else ch
+            for ch in self.children ]
+
+    def append(self, node):
+        self.children.append(node)
+
+    def __iter__(self):
+        return iter(self.children)
+
+    def __setitem__(self, k, v):
+        self.children[k] = v
+
+    def __getitem__(self, k):
+        return self.children[k]
+
+    def __unicode__(self):
+        attrib = [''] + [ '%s="%s"' % (k,v) for k,v in self.attrib.iteritems() ]
+        l = [ u'<%s%s>' % (self.tag, ' '.join(attrib)) ]
+        for ch in self.children:
+            l.append(unicode(ch))
+        l.append(u'</%s>' % self.tag)
+        return u''.join(l)
+
+    def fixup_nsmap(self):
+        old_nsmap = self.nsmap
+        self.nsmap = dict(self.parent.nsmap)
+        self.nsmap.update(old_nsmap)
+        nsmap = self.nsmap
+        new_attrib = []
+        # Look for new declarations
+        for k,v in self.attrib.iteritems():
+            if k.startswith('xmlns:'):
+                nsmap[k.split(':', 1)[-1]] = v
+            elif k == 'xmlns':
+                nsmap[None] = v
+            else:
+                new_attrib.append((k,v))
+        # Perform mapping
+        self.tag = self._map_ns(self.tag)
+        self.attrib = dict(
+            (self._map_ns(k), v) for k,v in new_attrib)
+
+    def _map_ns(self, old):
+        if ':' not in old: return old
+        prefix, suffix = old.split(':', 1)
+        return '{%s}%s' % (self.nsmap.get(prefix), suffix)
+
+class ProcessingInstruction(Node):
+    __slots__ = ('target','text')
+
+    def __init__(self, data):
+        super(ProcessingInstruction, self).__init__()
+        self.tag = ProcessingInstruction
+        self.target, self.text = data.split(' ', 1)
+        if self.text.endswith('?'):
+            self.text = self.text[:-1]
+
+    def __unicode__(self):
+        return '<?%s %s?>' % (self.target, self.text)
+
+class Comment(Node):
+    __slots__ = ('data','tail')
+
+    def __init__(self, data):
+        super(Comment, self).__init__()
+        self.tag = Comment
+        self.data = data
+
+    def __unicode__(self):
+        return '<!--%s -->' % (self.data,)
+
 class HtmlParser(HTMLParser):
 
     def reset(self):
-        self.cur_tag = None
-        self.cur_data = []
+        self.tree = Tree()
+        self.tag_stack = [self.tree]
         HTMLParser.reset(self)
+
+    @property
+    def cur(self):
+        return self.tag_stack[-1]
     
-    @log
     def handle_starttag(self, tag, attrs):
-        pass
+        el = Element(tag, attrs)
+        el.sourceline = self.getpos()[0]
+        self.cur.children.append(el)
+        el.parent = self.cur
+        el.fixup_nsmap()
+        self.tag_stack.append(el)
 
-    # Overridable -- handle end tag
-    @log
     def handle_endtag(self, tag):
-        pass
+        self.tag_stack.pop()
 
-    # Overridable -- handle character reference
-    @log
     def handle_charref(self, name):
-        pass
+        self._handle_text(name)
 
-    # Overridable -- handle entity reference
-    @log
     def handle_entityref(self, name):
-        pass
+        self._handle_text(name)
 
-    # Overridable -- handle data
-    @log
     def handle_data(self, data):
-        pass
+        self._handle_text(data)
 
-    # Overridable -- handle comment
-    @log
+    def _handle_text(self, text):
+        if self.cur.children:
+            self.cur.children[-1].tail += text
+        else:
+            self.cur.text += text
+
     def handle_comment(self, data):
-        pass
+        c = Comment(data)
+        c.sourceline = self.getpos()[0]
+        c.parent = self.cur
+        self.cur.children.append(c)
 
-    # Overridable -- handle declaration
-    @log
     def handle_decl(self, decl):
-        pass
+        self.tree.declarations.append(decl)
 
-    # Overridable -- handle processing instruction
-    @log
     def handle_pi(self, data):
-        pass
+        pi = ProcessingInstruction(data)
+        pi.sourceline = self.getpos()[0]
+        pi.parent = self.cur
+        self.cur.children.append(pi)
 
-    @log
     def unknown_decl(self, data):
         self.error("unknown declaration: %r" % (data,))

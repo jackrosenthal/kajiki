@@ -1,7 +1,8 @@
 import re
 import string
 
-from lxml import etree
+# from lxml import etree
+from . import etree
 
 from core import QDIRECTIVES, QDIRECTIVES_DICT, NS, XI_NS
 

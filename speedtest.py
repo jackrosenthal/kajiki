@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 import time
 
@@ -44,3 +45,5 @@ print 'Render 100 fastpt speedup: %s' % (
     timings['render.100.genshi'] / timings['render.100.fastpt'])
 print 'Render 500 fastpt speedup: %s' % (
     timings['render.500.genshi'] / timings['render.500.fastpt'])
+
+
