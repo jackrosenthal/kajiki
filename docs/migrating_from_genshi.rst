@@ -57,8 +57,69 @@ steps should suffice:
 Example Migration
 ==========================
 
-TODO: starting from a TG quickstart, show how to migrate to FastPt
+Suppose you have a couple of Genshi templates, one of which called `master.html`
+and one of which is `index.html`.  (TurboGears developers may recognize these
+files as slightly modified versions of the default templates deposited in a TG
+quickstarted project.)  The contents of `master.html` are:
 
+.. literalinclude:: include/master.html
+   :linenos:
+   :language: html
+
+Likewise, the contents of `index.html` are as follows:
+
+.. literalinclude:: include/index.html
+   :linenos:
+   :language: html
+
+In order to perform our fastpt migration, we begin by creating two empty
+templates.  The first one will replace our `master.html`, and we will call it
+`layout.html`:
+
+.. literalinclude:: include/layout.html
+   :linenos:
+   :language: html
+
+Note the introduction of the `py:slot` directive, and the disappearance of the
+`py:match` directives from `master.html`.  `py:slot` mimics the behavior of
+Jinja2 "blocks", providing a name to a construct in a parent template which can be
+replaced by the contents of `py:slot` -named constructs in child templates.  For
+instance, the "title" slot in `layout.html`:
+
+.. literalinclude:: include/layout.html
+   :linenos:
+   :language: html
+   :lines: 10
+
+can be replaced by a similarly-named slot in the child document `index_fastpt.html`:
+
+.. literalinclude:: include/index_fastpt.html
+   :linenos:
+   :language: html
+   :lines: 1-6, 9-10
+
+We also provide a way of including the contents of the parent template's slot in
+a child template's slot using `<py:super/>`.  The following slot in `layout.html`:
+
+.. literalinclude:: include/layout.html
+   :linenos:
+   :language: html
+   :lines:  18
+
+can be replaced in `include/index_fastpt.html` with:
+  
+.. literalinclude:: include/index_fastpt.html
+   :linenos:
+   :language: html
+   :lines: 12-15
+
+Yielding the following html once rendered:
+
+.. code-block:: html
+   :linenos:
+
+    <h1>My Header</h1>
+    <h1>Some extra header data</h1>
 
 .. _Genshi: http://genshi.edgewall.org/
 .. _Jinja2: http://jinja.pocoo.org/2/documentation/
