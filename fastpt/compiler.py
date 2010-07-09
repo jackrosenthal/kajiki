@@ -528,7 +528,7 @@ def expand(tree, parent=None):
         node.attrib[attr] = value
         if parent is not None:
             parent.replace(tree, node)
-        node.append(tree)
+        # node.append(tree)
         node.tail = tree.tail
         tree.tail = ''
         node.append(expand(tree, node))

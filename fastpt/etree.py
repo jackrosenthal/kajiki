@@ -25,6 +25,11 @@ class Tree(object):
         self.text = ''
         self.nsmap = {}
 
+    def append(self, node):
+        node.parent = self
+        self.children.append(node)
+        node.fixup_nsmap()
+
     def getroot(self):
         for ch in self.children:
             if isinstance(ch, Element): return ch
@@ -55,12 +60,17 @@ class Element(Node):
         self.nsmap = {}
 
     def replace(self, old, new):
+        new.parent = self
+        old_children = self.children
         self.children = [
             new if ch == old else ch
             for ch in self.children ]
+        assert len(old_children) == len(self.children)
 
     def append(self, node):
+        node.parent = self
         self.children.append(node)
+        node.fixup_nsmap()
 
     def __iter__(self):
         return iter(self.children)
@@ -73,11 +83,11 @@ class Element(Node):
 
     def __unicode__(self):
         attrib = [''] + [ '%s="%s"' % (k,v) for k,v in self.attrib.iteritems() ]
-        l = [ u'<%s%s>' % (self.tag, ' '.join(attrib)) ]
+        l = [ u'<%s%s>\n  %s' % (self.tag, ' '.join(attrib), self.text.strip()) ]
         for ch in self.children:
-            l.append(unicode(ch))
-        l.append(u'</%s>' % self.tag)
-        return u''.join(l)
+            l.append('  ' + unicode(ch).replace('\n', '\n  '))
+        l.append(u'</%s>%s' % (self.tag, self.tail.strip()))
+        return u'\n'.join(l)
 
     def fixup_nsmap(self):
         old_nsmap = self.nsmap
@@ -141,9 +151,7 @@ class HtmlParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         el = Element(tag, attrs)
         el.sourceline = self.getpos()[0]
-        self.cur.children.append(el)
-        el.parent = self.cur
-        el.fixup_nsmap()
+        self.cur.append(el)
         self.tag_stack.append(el)
 
     def handle_endtag(self, tag):
@@ -167,8 +175,7 @@ class HtmlParser(HTMLParser):
     def handle_comment(self, data):
         c = Comment(data)
         c.sourceline = self.getpos()[0]
-        c.parent = self.cur
-        self.cur.children.append(c)
+        self.cur.append(c)
 
     def handle_decl(self, decl):
         self.tree.declarations.append(decl)
@@ -177,7 +184,7 @@ class HtmlParser(HTMLParser):
         pi = ProcessingInstruction(data)
         pi.sourceline = self.getpos()[0]
         pi.parent = self.cur
-        self.cur.children.append(pi)
+        self.cur.append(pi)
 
     def unknown_decl(self, data):
         self.error("unknown declaration: %r" % (data,))
