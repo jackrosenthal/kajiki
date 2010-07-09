@@ -109,9 +109,10 @@ class Element(Node):
             (self._map_ns(k), v) for k,v in new_attrib)
 
     def _map_ns(self, old):
+        if '{' in old: return old
         if ':' not in old: return old
         prefix, suffix = old.split(':', 1)
-        return '{%s}%s' % (self.nsmap.get(prefix), suffix)
+        return '{%s}%s' % (self.nsmap[prefix], suffix)
 
 class ProcessingInstruction(Node):
     __slots__ = ('target','text')
