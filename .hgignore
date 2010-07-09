@@ -7,3 +7,4 @@ syntax: glob
 *.pyo
 *.swp
 .coverage
+docs/_build/*

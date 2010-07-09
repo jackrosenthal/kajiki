@@ -6,7 +6,9 @@
 Welcome to FastPt's documentation!
 ==================================
 
-Code Development / Issue Tracker on BitBucket_ (currently)
+* Code Development / Issue Tracker on BitBucket_ (currently)
+* Developer list is at fastpt-dev_ 
+* Commits list is at fastpt-commits_
 
 Contents:
 
@@ -23,3 +25,5 @@ Indices and tables
 * :ref:`search`
 
 .. _BitBucket: http://bitbucket.org/rick446/fastpt
+.. _fastpt-dev: http://groups.google.com/group/fastpt-dev
+.. _fastpt-commits: http://groups.google.com/group/fastpt-commits
