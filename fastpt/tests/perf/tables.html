@@ -1,8 +1,11 @@
 <table xmlns:py="http://genshi.edgewall.org/">
+  <?python 
+     import foo
+     ?>
   <tbody>
     <tr py:for="i in xrange(size)">
       <td py:for="j in xrange(size)">
-        $i, $j
+        $i, $j, &nbsp; &#50;
       </td>
     </tr>
   </tbody>
