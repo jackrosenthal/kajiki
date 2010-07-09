@@ -1,8 +1,6 @@
 import unittest
 
-from lxml import etree 
-
-from fastpt import Template, NS_DECL, Loader, PackageLoader
+from fastpt import Template, NS_DECL, Loader, PackageLoader, etree
 
 def nospace(s):
     if isinstance(s, basestring):

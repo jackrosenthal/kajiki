@@ -5,8 +5,6 @@ import types
 import time
 from cStringIO import StringIO
 
-# from lxml import etree
-
 from . import core
 from . import compiler
 from . import runtime
@@ -46,10 +44,8 @@ class Template(object):
     def parse(self):
         if self._tree is None:
             parser = etree.HtmlParser()
-            # parser = etree.XMLParser(strip_cdata=False, resolve_entities=False)
             self._tree = etree.parse(StringIO(self.text), parser)
             self._root = self._tree.getroot()
-            # self._tree = etree.fromstring(self.text)
         return self._root
 
     def expand(self):

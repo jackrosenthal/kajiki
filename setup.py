@@ -10,7 +10,7 @@ setup(name='FastPt',
       you still long for the assurance that your output is well-formed that you
       miss from all those other templating engines? Do you wish you had Jinja's
       blocks with Genshi's syntax? Then look  no further, FastPt is for you!
-      FastPt uses lxml to *quickly* compile Genshi-like syntax to *real python
+      FastPt uses the stdlib's HTMLParser to *quickly* compile Genshi-like syntax to *real python
       bytecode* that renders with blazing-fast speed! Don't delay! Pick up your
       copy of FastPt today!""",  
       classifiers=[
@@ -31,7 +31,6 @@ setup(name='FastPt',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        # 'lxml',
       ],
       entry_points="""
       # -*- Entry points: -*-

@@ -25,11 +25,6 @@ class Runtime(object):
     def doctype(self):
         for decl in self.template._tree.declarations:
             self.stack[-1].append('<!%s>' % decl)
-        return
-        docinfo = self.template._tree.docinfo
-        if docinfo.public_id:
-            self.stack[-1].append('<!DOCTYPE %s PUBLIC "%s" "%s">' % (
-                    docinfo.root_name, docinfo.public_id, docinfo.system_url))
 
     def append(self, value):
         if value is None: return

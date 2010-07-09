@@ -38,10 +38,6 @@ simple cases where you have one `master.html` template with a few `py:match`
 directives that is `xi:included` into all your page templates, the following
 steps should suffice:
 
- * Make sure all your templates have `<!DOCTYPE>` declarations -- this is
-   required because FastPt uses lxml_ to parse the templates, and lxml_ requires
-   a doctype declaration (of some type) in order to allow certain entites to
-   parse (such as &nbsp;).
  * You may need to rewrite some of our `xi:include` directives to use FastPt's
    module naming system and relative imports.
  * In a simple case where you have only a few `py:match` directives, all of which
@@ -123,4 +119,3 @@ Yielding the following html once rendered:
 
 .. _Genshi: http://genshi.edgewall.org/
 .. _Jinja2: http://jinja.pocoo.org/2/documentation/
-.. _lxml: http://codespeak.net/lxml/

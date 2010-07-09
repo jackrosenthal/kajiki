@@ -1,12 +1,5 @@
 from HTMLParser import HTMLParser
 
-def log(func):
-    def inner(self, *args, **kwargs):
-        print 'Calling %s(*(%r), **(%r))' % (
-            func.__name__, args, kwargs)
-        return func(self, *args, **kwargs)
-    return inner
-
 def parse(fp, parser):
     parser.reset()
     while True:
@@ -15,6 +8,9 @@ def parse(fp, parser):
         else: break
     parser.close()
     return parser.tree
+
+def tostring(tree):
+    return unicode(tree)
 
 class Tree(object):
     __slots__ = ('children','declarations', 'text', 'nsmap')
