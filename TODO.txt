@@ -1,3 +1,30 @@
+FastPt Tags
+=======
+
+for(each), if(test), while(test)
+--------------------------------------
+Just like Python
+
+switch(test), case(value), default/else
+----------------------------------
+
+<py:switch test="my_test">
+           <py:case value="True">Some stuff if true</py:case>
+           <div py:else>Stuff if false</div>          
+</py:switch>
+
+def(function)
+-----
+def is just like python, defining a function/method for the template.  
+
+call(
+------
+Allows a lambda block to be passed along to a function call as its first
+argument.  
+- def, call
+- import, include
+- extends, block
+
 * Implement py:method
 * Implement slot-chaining
 * Write XML language doc

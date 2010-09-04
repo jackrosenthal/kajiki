@@ -15,6 +15,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   text-templates.rst
    migrating_from_genshi.rst
 
 Indices and tables

@@ -43,6 +43,9 @@ class Node(object):
     def __iter__(self):
         return iter(self.children)
 
+    def fixup_nsmap(self):
+        pass
+
 class Element(Node):
     __slots__ = ('tag', 'attrib', 'text', 'children', 'nsmap')
 
@@ -124,15 +127,15 @@ class ProcessingInstruction(Node):
         return '<?%s %s?>' % (self.target, self.text)
 
 class Comment(Node):
-    __slots__ = ('data','tail')
+    __slots__ = ('text','tail')
 
     def __init__(self, data):
         super(Comment, self).__init__()
         self.tag = Comment
-        self.data = data
+        self.text = data
 
     def __unicode__(self):
-        return '<!--%s -->' % (self.data,)
+        return '<!--%s -->' % (self.text,)
 
 class HtmlParser(HTMLParser):
 
