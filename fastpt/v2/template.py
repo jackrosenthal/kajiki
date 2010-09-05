@@ -45,7 +45,12 @@ class TplFunc(object):
 
     def bind_context(self, context):
         func = types.FunctionType(
-            self._func.func_code, context)
+            self._func.func_code,
+            context,
+            self._func.func_name,
+            self._func.func_defaults,
+            self._func.func_closure
+            )
         return update_wrapper(
             lambda *a,**kw:flattener(func(*a,**kw)),
             func)
