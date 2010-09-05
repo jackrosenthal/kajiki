@@ -27,7 +27,6 @@ class FunctionTest(TestCase):
             def evenness(n):
                 if n % 2 == 0: yield 'even'
                 else: yield 'odd'
-
             @fpt.expose
             def __call__():
                 for i in range(2):
@@ -58,6 +57,7 @@ class ImportTest(TestCase):
                     yield i
                     yield ' is '
                     yield simple_function.evenness(i)
+                    yield evenness(i)
                     yield '\n'
         self.tpl = tpl
 
