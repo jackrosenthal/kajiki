@@ -15,7 +15,8 @@ class BasicTest(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        print self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        assert rsp == 'Hello,Rick\n', rsp
 
 class FunctionTest(TestCase):
     
@@ -29,7 +30,7 @@ class FunctionTest(TestCase):
 
             @fpt.expose
             def __call__():
-                for i in range(5):
+                for i in range(2):
                     yield i
                     yield ' is '
                     yield evenness(i)
@@ -37,7 +38,8 @@ class FunctionTest(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        print self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        assert rsp == '0 is even\n1 is odd\n', rsp
 
 if __name__ == '__main__':
     main()
