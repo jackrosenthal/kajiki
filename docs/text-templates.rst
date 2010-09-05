@@ -5,7 +5,7 @@ FastPt Text Templates
 Basic Expressions
 =========================
 
-Let's start with a hello world template "hello.txt":
+Let's start with a hello world template:
 
 .. code-block:: none      
 
@@ -13,11 +13,9 @@ Let's start with a hello world template "hello.txt":
 
 This converts to the equivalent Python::
 
-     class hello(Template):
-
-         def __call__(self, context):
-             setup_locals(context)
-             yield 'Hello, World!'
+    @__fpt__.expose
+    def __call__():
+        yield 'Hello, World!\n'
 
 Slightly more verbose "hello_name.txt":
 
@@ -27,13 +25,11 @@ Slightly more verbose "hello_name.txt":
 
 This converts to the equivalent Python::
 
-     class hello_name(Template):
-
-         def __call__(self, context):
-             setup_locals(context)
-             yield 'Hello, '
-             yield name
-             yield '!'
+    @__fpt__.expose
+    def __call__():
+         yield 'Hello, '
+         yield name
+         yield '!\n'
 
 By default, the $-syntax picks up any identifiers following it, as well as any
 periods.  If you want something more explicit, use the extended expression form
@@ -45,13 +41,11 @@ as in "hello_arithmetic.txt":
 
 This converts to::
 
-    class hello_arithmetic(Template):
-
-        def __call__(self, context):
-            setup_locals(context)
-            yield 'Hello, 2 + 2 is '
-            yield 2+2
-            yield '!'
+    @__fpt__.expose
+    def __call__():
+        yield 'Hello, 2 + 2 is '
+        yield 2+2
+        yield '!'
 
 If you wish to include a literal $, simply prefix it with a backslash.
 
@@ -74,27 +68,25 @@ following template "control_flow.txt" illustrates:
 
 This yields the following Python::
 
-    class control_flow(Template):
-
-        def __call__(self, context):
-            setup_locals(context)
-            yield 'A\n' # from the {%for... line
-            for i in range(10):
-                yield '\n        ' # from the newline and initial indent of next line
-                if i < 2:
-                    yield 'Low'
-                elif i < 4:
-                    yield 'Mid'
-                else:
-                    yield 'High'
-                yield i
-                yield '\n        ' # from the {%if... newline and next indent
-                context.push_switch(i%2)
-                # whitespace after {%switch is always stripped
-                if context.case(0):
-                    yield '\n            even\n        '
-                else:    
-                    yield '\n            odd\n        '
+    @__fpt__.expose
+    def __call__():
+        yield 'A\n' # from the {%for... line
+        for i in range(10):
+            yield '\n        ' # from the newline and initial indent of next line
+            if i < 2:
+                yield 'Low'
+            elif i < 4:
+                yield 'Mid'
+            else:
+                yield 'High'
+            yield i
+            yield '\n        ' # from the {%if... newline and next indent
+            _fpt.push_switch(i%2)
+            # whitespace after {%switch is always stripped
+            if _fpt.case(0):
+                yield '\n            even\n        '
+            else:    
+                yield '\n            odd\n        '
 
 Which would in turn generate the following text:
 
@@ -142,25 +134,23 @@ whitespace removed "control_flow_ws.txt":
 
 This would generate the following Python::
 
-    class control_flow(Template):
-
-        def __call__(self, context):
-            setup_locals(context)
-            yield 'A' 
-            for i in range(10):
-                if i < 2:
-                    yield 'Low'
-                elif i < 4:
-                    yield 'Mid'
-                else:
-                    yield 'High'
-                yield i
-                yield '\n'
-                context.push_switch(i%2)
-                if context.case(0):
-                    yield 'even\n'
-                else:    
-                    yield 'odd\n'
+    @__fpt__.expose
+    def __call__():
+        yield 'A' 
+        for i in range(10):
+            if i < 2:
+                yield 'Low'
+            elif i < 4:
+                yield 'Mid'
+            else:
+                yield 'High'
+            yield i
+            yield '\n'
+            _fpt.push_switch(i%2)
+            if _fpt.case(0):
+                yield 'even\n'
+            else:    
+                yield 'odd\n'
 
 Which would generate the following text:
 
@@ -235,12 +225,9 @@ or even more succinctly:
 
 all of which will generate the following Python::
 
-    class simple_py_block(Template):
-
-        def __call__(self, context):
-            setup_locals(context)
-            yield 'Prefix'
-            yield 'Body'
+    def __call__():
+        yield 'Prefix'
+        yield 'Body'
 
 Note in particular that the Python block can have any indentation, as long as it
  is consistent (the amount of leading whitespace in the first non-empty line of
@@ -265,11 +252,9 @@ This yields the following Python::
 
     import os
 
-    class simple_py_block(Template):
-
-        def __call__(self, context):
-            setup_locals(context)
-            yield 'Hello'
+    @__fpt__.expose
+    def __call__():
+        yield 'Hello'
 
 Functions and Imports
 ====================================
@@ -292,21 +277,19 @@ see %def in action in "simple_function.txt":
 
 This compiles to the following Python::
 
-    class simple_function(Template):
+    @__fpt__.expose
+    def evenness(n):
+        if n % 2:
+            yield 'even'
+        else:
+            yield 'odd'
 
-        def evenness(self, context):
-            setup_locals(context)
-            if n % 2:
-                yield 'even'
-            else:
-                yield 'odd'
-
-        def __call__(self, context):    
-            setup_locals(context)
-            for i in range(5):
-                yield i
-                yield ' is '
-                yield evenness(context)
+    @__fpt__.expose
+    def __call__():    
+        for i in range(5):
+            yield i
+            yield ' is '
+            yield evenness(i)
 
 The %import directive allows you to package up your functions for reuse in
 another template file (or even in a Python package).  For instance, consider the
@@ -321,15 +304,13 @@ following file "import_test.txt":
 
 This would then compile to the following Python::
 
-    class import_test(Template):
-    
-        def __call__(self, context):
-            setup_locals(context)
-            simple_function = context.import("simple_function.txt")
-            for i in range(5):
-                yield i
-                yield ' is '
-                yield simple_function.evenness(i)
+    @__fpt__.expose
+    def __call__():
+        simple_function = _fpt.import("simple_function.txt")
+        for i in range(5):
+            yield i
+            yield ' is '
+            yield simple_function.evenness(i)
 
 Note that when using the %import directive, any "body" in the imported template
 is ignored and only functions are imported.  If you actually wanted to insert the
@@ -352,24 +333,22 @@ case, you can use the %call directive as shown in "call.txt":
 
 This results in the following Python::
 
-    class call(Template):
+    @__fpt__.expose
+    def quote():
+        for i in range(5):
+            yield 'Quoth '
+            yield speaker
+            yield ', "'
+            yield caller(i)
+            yield '."'
 
-        def quote(self, context):
-            setup_locals(context)
-            for i in range(5):
-                yield 'Quoth '
-                yield speaker
-                yield ', "'
-                yield caller(i)
-                yield '."'
-
-        def __call__(self, context):    
-            setup_locals(context)
-            def _fpt_lambda(n):
-                yield 'Nevermore '
-                yield n
-            yield quote(_fpt_lambda, 'the raven')
-            del _fpt_lambda
+    @__fpt__.expose
+    def __call__():    
+        def _fpt_lambda(n):
+            yield 'Nevermore '
+            yield n
+        yield quote(_fpt_lambda, 'the raven')
+        del _fpt_lambda
 
 Which in turn yields the following output:
 
@@ -395,13 +374,11 @@ verbatim.  For this, you use the %include directive as in "include_example.txt":
 
 which yields the following Python::
 
-    class include_example(Template):
-
-        def __call__(self, context):
-            setup_locals(context)
-            yield 'This is my story:\n'
-            yield context.import("simple_function.txt")()
-            yield 'Isn't it good?\n'
+    @__fpt__.expose
+    def __call__():
+        yield 'This is my story:\n'
+        yield _fpt.import("simple_function.txt")()
+        yield 'Isn't it good?\n'
 
 Which of course yields:
         
@@ -441,30 +418,28 @@ For instance, consider the following template "parent.txt":
 
 This would generate the following Python::
 
-    class parent(Template):
+    @__fpt__.expose
+    def greet(name):
+        yield 'Hello, '
+        yield name
+        yield '!'
 
-        def greet(self, context):
-            setup_locals(self, context)
-            yield 'Hello, '
-            yield name
-            yield '!'
+    @__fpt__.expose
+    def sign(name):
+        yield 'Sincerely,\n'
+        yield name
 
-        def sign(self, context):
-            setup_locals(self, context)
-            yield 'Sincerely,\n'
-            yield name
+    @__fpt__.expose
+    def _fpt_block_body():
+        yield 'It was good seeing you last Friday! Thanks for the gift!\n'
 
-        def _fpt_block_body(self, context):
-            setup_locals(self, context)
-            yield 'It was good seeing you last Friday! Thanks for the gift!\n'
-
-        def __call__(self, context):
-            setup_locals(self, context)
-            yield greet(to)
-            yield '\n\n'
-            yield _fpt_block_body()
-            yield '\n\n'
-            yield sign(from)
+    @__fpt__.expose
+    def __call__():
+        yield greet(to)
+        yield '\n\n'
+        yield _fpt_block_body()
+        yield '\n\n'
+        yield sign(from)
 
 Here is the corresponding "child.txt":
 
@@ -475,30 +450,28 @@ Here is the corresponding "child.txt":
     Dear $name:\
     %end
     %block body
-    ${super()}
+    ${parent()}
     
     And don't forget you owe me money!
     %end
 
 This would then yield the following Python::
 
-    class child(Template):
+    @__fpt__.expose
+    def greet(name):
+        yield 'Dear '
+        yield name
+        yield ':'
 
-        def greet(self, context):
-            setup_locals(self, context)
-            yield 'Dear '
-            yield name
-            yield ':'
+    @__fpt__.expose
+    def _fpt_block_body():
+        yield parent()
+        yield '\n\n'
+        yield 'And don\'t forget you owe me money!\n'
 
-        def _fpt_block_body(self, context):
-            setup_locals(self, context)
-            yield super._fpt_block_body()
-            yield '\n\n'
-            yield 'And don\'t forget you owe me money!\n'
-
-        def __call__(self, context):
-            setup_locals(self, context)
-            yield context.extends(self, 'parent.txt')
+    @__fpt__.expose
+    def __call__():
+        yield _fpt.extends(self, 'parent.txt')
 
 The final text would be (assuming context had to='Mark' and from='Rick':
 
