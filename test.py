@@ -15,7 +15,7 @@ class BasicTest(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == 'Hello,Rick\n', rsp
 
 class FunctionTest(TestCase):
@@ -37,7 +37,7 @@ class FunctionTest(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class CallTest(TestCase):
@@ -55,7 +55,7 @@ class CallTest(TestCase):
                     yield '."\n'
             @fpt.expose
             def __call__():
-                @_fpt.flattener.decorate
+                @__fpt__.flattener.decorate
                 def _fpt_lambda(n):
                     yield 'Nevermore '
                     yield n
@@ -64,7 +64,7 @@ class CallTest(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
@@ -87,7 +87,7 @@ class ImportTest(TestCase):
         class tpl:
             @fpt.expose
             def __call__():
-                simple_function = lib(_fpt.Context())
+                simple_function = lib(dict(globals()))
                 for i in range(4):
                     yield i
                     yield ' is '
@@ -97,7 +97,7 @@ class ImportTest(TestCase):
         self.tpl = tpl
 
     def test_import(self):
-        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert (rsp=='0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
@@ -115,18 +115,18 @@ class IncludeTest(TestCase):
             @fpt.expose
             def __call__():
                 yield 'a\n'
-                yield hdr(_fpt.Context())
+                yield hdr().__call__()
                 yield 'b\n'
         self.tpl = tpl
 
     def test_include(self):
-        rsp = self.tpl(fpt.Context(name='Rick')).render()
+        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         print rsp
 
 class ExtendsTest(TestCase):
     def setUp(_self):
         @fpt.Template
-        class parent:
+        class parent_tpl:
             @fpt.expose
             def __call__():
                 yield header()
@@ -134,32 +134,46 @@ class ExtendsTest(TestCase):
                 yield footer()
             @fpt.expose
             def header():
-                yield '# Header'
+                yield '# Header name='
                 yield name
                 yield '\n'
             @fpt.expose
             def body():
-                yield '## Body'
+                yield '## Parent Body\n'
+                yield 'local =  '
+                yield local
+                yield '\n'
+                yield 'self =  '
+                yield self
+                yield '\n'
+                yield 'child =  '
+                yield child
                 yield '\n'
             @fpt.expose
             def footer():
                 yield '# Footer'
                 yield '\n'
+            @fpt.expose
+            def id():
+                yield 'parent'
 
         @fpt.Template
-        class child:
+        class child_tpl:
             @fpt.expose
             def __call__():
-                yield self.extend(parent).__call__()
+                yield local.__fpt__.extend(parent_tpl).__call__()
             @fpt.expose
             def body():
-                yield '## Child Body'
-                yield '\n'
-        _self.parent = parent
-        _self.child = child
+                yield '## Child Body\n'
+                yield parent.body()
+            @fpt.expose
+            def id():
+                yield 'child'
+        _self.parent_tpl = parent_tpl
+        _self.child_tpl = child_tpl
 
     def test_extends(self):
-        rsp = self.child(fpt.Context(name='Rick')).render()
+        rsp = self.child_tpl(dict(name='Rick')).__fpt__.render()
         print rsp
 
         
