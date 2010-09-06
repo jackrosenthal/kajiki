@@ -3,8 +3,10 @@ from .util import UNDEFINED
 class Context(object):
 
     def __init__(self, *args, **kwargs):
+        from fastpt import v2 as _fpt
         self._stack = [ dict(
-                _frame=(self, 0)) ]
+                _frame=(self, 0),
+                _fpt=_fpt) ]
         self.stack_push(*args, **kwargs)
 
     def stack_push(self, *args, **kwargs):
@@ -28,6 +30,6 @@ class Context(object):
 
     def __setitem__(self, name, value):
         self.top()[name] = value
-        
+
     def update(self, *args, **kwargs):
         self.top().update(*args, **kwargs)

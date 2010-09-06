@@ -34,6 +34,12 @@ class flattener(object):
     def __init__(self, iterator):
         self.iterator = iterator
 
+    @classmethod
+    def decorate(cls, func):
+        def inner(*args, **kwargs):
+            return cls(func(*args, **kwargs))
+        return inner
+
     def __iter__(self):
         for x in self.iterator:
             if isinstance(x, flattener):

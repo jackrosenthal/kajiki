@@ -1,5 +1,7 @@
 Extends psuedocode
 
+- ctx_parentparent ctx = current_context.extend(child=self)
+- 
 - parent_dict = ctx.top()
 - bound_parent = ctx.bind(parent)
 - ctx.push()

@@ -324,7 +324,7 @@ case, you can use the %call directive as shown in "call.txt":
 
     %def quote(caller, speaker)
         %for i in range(5)
-    Quoth $speaker, "${caller()}."
+    Quoth $speaker, "${caller(i)}."
         %end
     %end
     %call(n) quote('the raven')

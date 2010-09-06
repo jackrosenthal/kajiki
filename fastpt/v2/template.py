@@ -16,6 +16,30 @@ class _Template(object):
     def render(self):
         return u''.join(self)
 
+    def extend(self, parent):
+        child = self.__class__
+        # Generate a new template instance
+        parent_context = dict(self._context.top())
+        child_context = dict(self._context.top())
+        child_symbols = dict(
+            (k, v.bind_context(child_context))
+            for k,v in child.__symbols__.iteritems()
+            if isinstance(v, TplFunc)
+            and k != '__call__')
+        parent_symbols = dict(
+            (k, v.bind_context(parent_context))
+            for k,v in parent.__symbols__.iteritems()
+            if isinstance(v, TplFunc))
+        symbols = dict(parent_symbols)
+        symbols.update(child_symbols)
+        derived = type(child.__name__, (_Template,), dict(__symbols__=symbols))
+        derived_inst = derived(None)
+        for k,v in symbols.iteritems():
+            setattr(derived_inst, k, v)
+            parent_context[k] = child_context[k] = v
+        print dir(derived_inst)
+        return derived_inst
+
 def Template(ns):
     dct = {}
     dct['__symbols__'] = dct
