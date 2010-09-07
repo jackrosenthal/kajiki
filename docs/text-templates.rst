@@ -13,7 +13,7 @@ Let's start with a hello world template:
 
 This converts to the equivalent Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield 'Hello, World!\n'
 
@@ -25,7 +25,7 @@ Slightly more verbose "hello_name.txt":
 
 This converts to the equivalent Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
          yield 'Hello, '
          yield name
@@ -41,7 +41,7 @@ as in "hello_arithmetic.txt":
 
 This converts to::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield 'Hello, 2 + 2 is '
         yield 2+2
@@ -68,7 +68,7 @@ following template "control_flow.txt" illustrates:
 
 This yields the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield 'A\n' # from the {%for... line
         for i in range(10):
@@ -81,12 +81,13 @@ This yields the following Python::
                 yield 'High'
             yield i
             yield '\n        ' # from the {%if... newline and next indent
-            _fpt.push_switch(i%2)
+            __fpt__.push_switch(i%2)
             # whitespace after {%switch is always stripped
-            if _fpt.case(0):
+            if __fpt__.case(0):
                 yield '\n            even\n        '
             else:    
                 yield '\n            odd\n        '
+            __fpt__.pop_switch()
 
 Which would in turn generate the following text:
 
@@ -134,7 +135,7 @@ whitespace removed "control_flow_ws.txt":
 
 This would generate the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield 'A' 
         for i in range(10):
@@ -252,7 +253,7 @@ This yields the following Python::
 
     import os
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield 'Hello'
 
@@ -277,14 +278,14 @@ see %def in action in "simple_function.txt":
 
 This compiles to the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def evenness(n):
         if n % 2:
             yield 'even'
         else:
             yield 'odd'
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():    
         for i in range(5):
             yield i
@@ -304,7 +305,7 @@ following file "import_test.txt":
 
 This would then compile to the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         simple_function = _fpt.import("simple_function.txt")
         for i in range(5):
@@ -333,7 +334,7 @@ case, you can use the %call directive as shown in "call.txt":
 
 This results in the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def quote():
         for i in range(5):
             yield 'Quoth '
@@ -342,7 +343,7 @@ This results in the following Python::
             yield caller(i)
             yield '."'
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():    
         def _fpt_lambda(n):
             yield 'Nevermore '
@@ -374,7 +375,7 @@ verbatim.  For this, you use the %include directive as in "include_example.txt":
 
 which yields the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield 'This is my story:\n'
         yield _fpt.import("simple_function.txt")()
@@ -418,22 +419,22 @@ For instance, consider the following template "parent.txt":
 
 This would generate the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def greet(name):
         yield 'Hello, '
         yield name
         yield '!'
 
-    @__fpt__.expose
+    @fpt.expose
     def sign(name):
         yield 'Sincerely,\n'
         yield name
 
-    @__fpt__.expose
+    @fpt.expose
     def _fpt_block_body():
         yield 'It was good seeing you last Friday! Thanks for the gift!\n'
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield greet(to)
         yield '\n\n'
@@ -457,19 +458,19 @@ Here is the corresponding "child.txt":
 
 This would then yield the following Python::
 
-    @__fpt__.expose
+    @fpt.expose
     def greet(name):
         yield 'Dear '
         yield name
         yield ':'
 
-    @__fpt__.expose
+    @fpt.expose
     def _fpt_block_body():
         yield parent()
         yield '\n\n'
         yield 'And don\'t forget you owe me money!\n'
 
-    @__fpt__.expose
+    @fpt.expose
     def __call__():
         yield _fpt.extends(self, 'parent.txt')
 

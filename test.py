@@ -2,7 +2,7 @@ from unittest import TestCase, main
 
 from fastpt import v2 as fpt
 
-class BasicTest(TestCase):
+class TestBasic(TestCase):
 
     def setUp(self):
         @fpt.Template
@@ -18,7 +18,28 @@ class BasicTest(TestCase):
         rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == 'Hello,Rick\n', rsp
 
-class FunctionTest(TestCase):
+class TestSwitch(TestCase):
+
+    def setUp(self):
+        @fpt.Template
+        class tpl:
+            @fpt.expose
+            def __call__():
+                for i in range(2):
+                    yield i
+                    yield ' is '
+                    local.__fpt__.push_switch(i % 2)
+                    if local.__fpt__.case(0):
+                        yield 'even\n'
+                    else:
+                        yield 'odd'
+        self.tpl = tpl
+
+    def test_basic(self):
+        rsp = self.tpl().__fpt__.render()
+        print rsp
+
+class TestFunction(TestCase):
     
     def setUp(self):
         @fpt.Template
@@ -40,7 +61,7 @@ class FunctionTest(TestCase):
         rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
-class CallTest(TestCase):
+class TestCall(TestCase):
     
     def setUp(self):
         @fpt.Template
@@ -69,7 +90,7 @@ class CallTest(TestCase):
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
 
-class ImportTest(TestCase):
+class TestImport(TestCase):
     def setUp(self):
         @fpt.Template
         class lib:
@@ -103,7 +124,7 @@ class ImportTest(TestCase):
                 '2 is even half of 2 is odd\n'
                 '3 is odd half of 3 is odd\n'), rsp
 
-class IncludeTest(TestCase):
+class TestInclude(TestCase):
     def setUp(self):
         @fpt.Template
         class hdr:
@@ -123,7 +144,7 @@ class IncludeTest(TestCase):
         rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == 'a\n# header\nb\n', rsp
 
-class ExtendsTest(TestCase):
+class TestExtends(TestCase):
     def setUp(_self):
         @fpt.Template
         class parent_tpl:

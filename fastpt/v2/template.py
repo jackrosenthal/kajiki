@@ -28,7 +28,11 @@ class _Template(object):
             self.__globals__[k] = v
         self.__fpt__ = _obj(
             render=self._render,
-            extend=self._extend)
+            extend=self._extend,
+            push_switch=self._push_switch,
+            pop_switch=self._pop_switch,
+            case=self._case)
+        self._switch_stack = []
 
     def __iter__(self):
         for chunk in self.__call__():
@@ -49,6 +53,15 @@ class _Template(object):
         p_globals['self'] = self.__globals__['self']
         self.__globals__['parent'] = p_inst
         return p_inst
+
+    def _push_switch(self, expr):
+        self._switch_stack.append(expr)
+
+    def _pop_switch(self, expr):
+        self._switch_stack.pop()
+
+    def _case(self, obj):
+        return obj == self._switch_stack[-1]
 
 def Template(ns):
     dct = {}
