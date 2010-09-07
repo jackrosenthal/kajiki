@@ -121,7 +121,7 @@ class IncludeTest(TestCase):
 
     def test_include(self):
         rsp = self.tpl(dict(name='Rick')).__fpt__.render()
-        print rsp
+        assert rsp == 'a\n# header\nb\n', rsp
 
 class ExtendsTest(TestCase):
     def setUp(_self):
@@ -183,9 +183,39 @@ class ExtendsTest(TestCase):
 
     def test_extends(self):
         rsp = self.child_tpl(dict(name='Rick')).__fpt__.render()
-        print rsp
+        assert (rsp == '# Header name=Rick\n'
+                '## Parent Body\n'
+                'local.id() =  parent\n'
+                'self.id() =  child\n'
+                'child.id() =  mid\n# Footer\n'), rsp
 
-        
-        
+class TestDynamicExtends(TestCase):
+    def setUp(_self):
+        @fpt.Template
+        class parent_0:
+            @fpt.expose
+            def __call__():
+                yield 'Parent 0'
+        @fpt.Template
+        class parent_1:
+            @fpt.expose
+            def __call__():
+                yield 'Parent 1'
+        @fpt.Template
+        class child_tpl:
+            @fpt.expose
+            def __call__():
+                if p == 0:
+                    yield local.__fpt__.extend(parent_0).__call__()
+                else:
+                    yield local.__fpt__.extend(parent_1).__call__()
+        _self.child_tpl = child_tpl
+
+    def test_extends(self):
+        rsp = self.child_tpl(dict(p=0)).__fpt__.render()
+        assert rsp == 'Parent 0', rsp
+        rsp = self.child_tpl(dict(p=1)).__fpt__.render()
+        assert rsp == 'Parent 1', rsp
+
 if __name__ == '__main__':
     main()

@@ -23,7 +23,7 @@ class _Template(object):
             __builtins__=__builtins__,
             __fpt__=fastpt.v2)
         for k,v in self.__methods__:
-            v.bind_instance(self)
+            v = v.bind_instance(self)
             setattr(self, k, v)
             self.__globals__[k] = v
         self.__fpt__ = _obj(
@@ -61,13 +61,13 @@ def Template(ns):
 
 class TplFunc(object):
 
-    def __init__(self, func):
+    def __init__(self, func, inst=None):
         self._func = func
-        self._inst = None
+        self._inst = inst
         self._bound_func = None
 
     def bind_instance(self, inst):
-        self._inst = inst
+        return TplFunc(self._func, inst)
 
     def __repr__(self):
         if self._inst:

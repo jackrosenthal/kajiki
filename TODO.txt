@@ -1,27 +1,3 @@
-class A:
-    def one():
-        one = C.one (?) 
-        local.one = A.one
-        self.one = C.one
-        child.one = B.one
-    
-class B(A):
-      def one():
-          globals = C.globals
-          local.one = B.one
-          self.one = C.one
-          parent.one = A.one
-          child.one = C.one
-
- class C(B):
-     def one():
-         globals = C.globals
-         local.one = C.one
-         self.one = C.one
-         parent.one = B.one
-
-
-* Test 3-level inheritance (are self, local, parent, and child set correctly?)
 * Test dynamic inheritance
 * Update docs for inheritance model
 * Develop Template IR
