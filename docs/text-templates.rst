@@ -81,13 +81,13 @@ This yields the following Python::
                 yield 'High'
             yield i
             yield '\n        ' # from the {%if... newline and next indent
-            __fpt__.push_switch(i%2)
+            local.__fpt__.push_switch(i%2)
             # whitespace after {%switch is always stripped
-            if __fpt__.case(0):
+            if local.__fpt__.case(0):
                 yield '\n            even\n        '
             else:    
                 yield '\n            odd\n        '
-            __fpt__.pop_switch()
+            local.__fpt__.pop_switch()
 
 Which would in turn generate the following text:
 
@@ -147,11 +147,12 @@ This would generate the following Python::
                 yield 'High'
             yield i
             yield '\n'
-            _fpt.push_switch(i%2)
-            if _fpt.case(0):
+            local.__fpt__.push_switch(i%2)
+            if local.__fpt__.case(0):
                 yield 'even\n'
             else:    
                 yield 'odd\n'
+            local.__fpt__.pop_switch()
 
 Which would generate the following text:
 
@@ -307,7 +308,7 @@ This would then compile to the following Python::
 
     @fpt.expose
     def __call__():
-        simple_function = _fpt.import("simple_function.txt")
+        simple_function = local.__fpt__.import_("simple_function.txt")
         for i in range(5):
             yield i
             yield ' is '
@@ -335,7 +336,7 @@ case, you can use the %call directive as shown in "call.txt":
 This results in the following Python::
 
     @fpt.expose
-    def quote():
+    def quote(caller, speaker):
         for i in range(5):
             yield 'Quoth '
             yield speaker
@@ -345,6 +346,7 @@ This results in the following Python::
 
     @fpt.expose
     def __call__():    
+        @fpt.expose
         def _fpt_lambda(n):
             yield 'Nevermore '
             yield n
@@ -438,7 +440,7 @@ This would generate the following Python::
     def __call__():
         yield greet(to)
         yield '\n\n'
-        yield _fpt_block_body()
+        yield self._fpt_block_body()
         yield '\n\n'
         yield sign(from)
 
@@ -466,13 +468,13 @@ This would then yield the following Python::
 
     @fpt.expose
     def _fpt_block_body():
-        yield parent()
+        yield parent.__call__()
         yield '\n\n'
         yield 'And don\'t forget you owe me money!\n'
 
     @fpt.expose
     def __call__():
-        yield _fpt.extends(self, 'parent.txt')
+        yield local.__fpt__.extend(local.__fpt__.import_('parent.txt')).__call__()
 
 The final text would be (assuming context had to='Mark' and from='Rick':
 
