@@ -1,32 +1,31 @@
-FastPt Tags
-=======
+class A:
+    def one():
+        one = C.one (?) 
+        local.one = A.one
+        self.one = C.one
+        child.one = B.one
+    
+class B(A):
+      def one():
+          globals = C.globals
+          local.one = B.one
+          self.one = C.one
+          parent.one = A.one
+          child.one = C.one
 
-for(each), if(test), while(test)
---------------------------------------
-Just like Python
+ class C(B):
+     def one():
+         globals = C.globals
+         local.one = C.one
+         self.one = C.one
+         parent.one = B.one
 
-switch(test), case(value), default/else
-----------------------------------
 
-<py:switch test="my_test">
-           <py:case value="True">Some stuff if true</py:case>
-           <div py:else>Stuff if false</div>          
-</py:switch>
-
-def(function)
------
-def is just like python, defining a function/method for the template.  
-
-call(
-------
-Allows a lambda block to be passed along to a function call as its first
-argument.  
-- def, call
-- import, include
-- extends, block
-
-* Implement py:method
-* Implement slot-chaining
-* Write XML language doc
-* Write FastPt usage doc
-* Implement memoization (?)
+* Test 3-level inheritance (are self, local, parent, and child set correctly?)
+* Test dynamic inheritance
+* Update docs for inheritance model
+* Develop Template IR
+* Write text => IR compiler (and document language)
+* Write XML => IR compiler (and document language)
+* Write HTML => IR compiler (and document language)
+* Write CSS => IR compiler (and document language)

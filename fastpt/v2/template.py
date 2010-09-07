@@ -39,20 +39,16 @@ class _Template(object):
 
     def _extend(self, parent):
         p_inst = parent(self._context)
-        d_inst = parent(self._context)
         p_globals = p_inst.__globals__
-        d_globals = d_inst.__globals__
         # Override methods from child
         for k,v in self.__methods__:
             if k == '__call__': continue
-            v = getattr(self, k)
-            setattr(d_inst, k, v)
-            d_globals[k] = v
-        p_globals['child'] = d_globals['child'] = self 
-        d_globals['self'] = self.__globals__['self']
-        d_globals['local'] = p_inst
-        self.__globals__.setdefault('parent', p_inst)
-        return d_inst
+            p_globals[k] = getattr(self, k)
+        p_globals['child'] = self
+        p_globals['local'] = p_inst
+        p_globals['self'] = self.__globals__['self']
+        self.__globals__['parent'] = p_inst
+        return p_inst
 
 def Template(ns):
     dct = {}
@@ -72,6 +68,13 @@ class TplFunc(object):
 
     def bind_instance(self, inst):
         self._inst = inst
+
+    def __repr__(self):
+        if self._inst:
+            return '<bound tpl_function %r of %r>' % (
+                self._func.func_name, self._inst)
+        else:
+            return '<unbound tpl_function %r>' % (self._func.func_name)
 
     def __call__(self, *args, **kwargs):
         if self._bound_func is None:

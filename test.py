@@ -140,14 +140,14 @@ class ExtendsTest(TestCase):
             @fpt.expose
             def body():
                 yield '## Parent Body\n'
-                yield 'local =  '
-                yield local
+                yield 'local.id() =  '
+                yield local.id()
                 yield '\n'
-                yield 'self =  '
-                yield self
+                yield 'self.id() =  '
+                yield self.id()
                 yield '\n'
-                yield 'child =  '
-                yield child
+                yield 'child.id() =  '
+                yield child.id()
                 yield '\n'
             @fpt.expose
             def footer():
@@ -158,10 +158,19 @@ class ExtendsTest(TestCase):
                 yield 'parent'
 
         @fpt.Template
-        class child_tpl:
+        class mid_tpl:
             @fpt.expose
             def __call__():
                 yield local.__fpt__.extend(parent_tpl).__call__()
+            @fpt.expose
+            def id():
+                yield 'mid'
+
+        @fpt.Template
+        class child_tpl:
+            @fpt.expose
+            def __call__():
+                yield local.__fpt__.extend(mid_tpl).__call__()
             @fpt.expose
             def body():
                 yield '## Child Body\n'
