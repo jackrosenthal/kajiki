@@ -1,8 +1,8 @@
 import sys
 from threading import local
 
-def debug():
-    def pm(etype, value, tb): # pragma no cover
+def debug():# pragma no cover
+    def pm(etype, value, tb): 
         import pdb, traceback
         try:
             from IPython.ipapi import make_session; make_session()
@@ -48,18 +48,3 @@ class flattener(object):
             else:
                 yield x
 
-class TLProxy(object):
-
-    def __init__(self, factory):
-        self._factory = factory
-        self._local = local()
-
-    def _get(self):
-        try:
-            result = self._local.value
-        except AttributeError:
-            result = self._local.value = self.factory()
-        return result
-
-    def __getattr__(self, name):
-        return getattr(self._get(), name)
