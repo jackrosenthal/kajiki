@@ -57,7 +57,7 @@ class _Template(object):
     def _push_switch(self, expr):
         self._switch_stack.append(expr)
 
-    def _pop_switch(self, expr):
+    def _pop_switch(self):
         self._switch_stack.pop()
 
     def _case(self, obj):
