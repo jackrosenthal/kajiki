@@ -1,4 +1,3 @@
-* Develop Template IR
 * Write text => IR compiler (and document language)
 * Write XML => IR compiler (and document language)
 * Write HTML => IR compiler (and document language)
