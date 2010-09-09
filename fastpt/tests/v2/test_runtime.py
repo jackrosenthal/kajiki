@@ -161,13 +161,13 @@ class TestExtends(TestCase):
             @fpt.expose
             def body():
                 yield '## Parent Body\n'
-                yield 'local.id() =  '
+                yield 'local.id() = '
                 yield local.id()
                 yield '\n'
-                yield 'self.id() =  '
+                yield 'self.id() = '
                 yield self.id()
                 yield '\n'
-                yield 'child.id() =  '
+                yield 'child.id() = '
                 yield child.id()
                 yield '\n'
             @fpt.expose
@@ -206,9 +206,10 @@ class TestExtends(TestCase):
         rsp = self.child_tpl(dict(name='Rick')).__fpt__.render()
         assert (rsp == '# Header name=Rick\n'
                 '## Parent Body\n'
-                'local.id() =  parent\n'
-                'self.id() =  child\n'
-                'child.id() =  mid\n# Footer\n'), rsp
+                'local.id() = parent\n'
+                'self.id() = child\n'
+                'child.id() = mid\n'
+                '# Footer\n'), rsp
 
 class TestDynamicExtends(TestCase):
     def setUp(_self):

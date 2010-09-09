@@ -12,6 +12,7 @@ class _obj(object):
 
 class _Template(object):
     __methods__=()
+    loader = None
 
     def __init__(self, context=None):
         if context is None: context = {}
@@ -31,7 +32,8 @@ class _Template(object):
             extend=self._extend,
             push_switch=self._push_switch,
             pop_switch=self._pop_switch,
-            case=self._case)
+            case=self._case,
+            import_=self._import)
         self._switch_stack = []
 
     def __iter__(self):
@@ -42,6 +44,8 @@ class _Template(object):
         return u''.join(self)
 
     def _extend(self, parent):
+        if isinstance(parent, basestring):
+            parent = self._import(parent)
         p_inst = parent(self._context)
         p_globals = p_inst.__globals__
         # Override methods from child
@@ -63,6 +67,9 @@ class _Template(object):
     def _case(self, obj):
         return obj == self._switch_stack[-1]
 
+    def _import(self, name):
+        return self.loader.import_(name)
+
 def Template(ns):
     dct = {}
     methods = dct['__methods__'] = []
@@ -71,6 +78,15 @@ def Template(ns):
         if getattr(value, 'exposed', False):
             methods.append((name, TplFunc(value.im_func)))
     return type(ns.__name__,(_Template,), dct)
+
+def from_ir(ir_node):
+    from fastpt import v2 as fpt
+    py_text = '\n'.join(map(str, ir_node.py()))
+    dct = dict(fpt=fpt)
+    exec py_text in dct
+    tpl = dct['template']
+    tpl.py_text = py_text
+    return tpl
 
 class TplFunc(object):
 
@@ -82,7 +98,7 @@ class TplFunc(object):
     def bind_instance(self, inst):
         return TplFunc(self._func, inst)
 
-    def __repr__(self):
+    def __repr__(self): # pragma no cover
         if self._inst:
             return '<bound tpl_function %r of %r>' % (
                 self._func.func_name, self._inst)

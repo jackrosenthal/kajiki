@@ -1,9 +1,11 @@
+from .util import gen_name
+
 class Node(object):
 
     def __init__(self):
         self._tpl = None
 
-    def py(self):
+    def py(self): # pragma no cover
         return []
 
     def line(self, text):
@@ -22,6 +24,40 @@ class TemplateNode(Node):
             for line in child.py():
                 yield line.indent()
 
+class ImportNode(Node):
+
+    def __init__(self, tpl_name, alias):
+        super(ImportNode, self).__init__()
+        self.tpl_name = tpl_name
+        self.alias = alias
+
+    def py(self):
+        yield self.line(
+            '%s = local.__fpt__.import_(%r)(globals())' % (
+                self.alias, self.tpl_name))
+
+class IncludeNode(Node):
+
+    def __init__(self, tpl_name):
+        super(IncludeNode, self).__init__()
+        self.tpl_name = tpl_name
+
+    def py(self):
+        yield self.line(
+            'yield local.__fpt__.import_(%r)().__call__()' % (
+                self.tpl_name))
+
+class ExtendNode(Node):
+
+    def __init__(self, tpl_name):
+        super(ExtendNode, self).__init__()
+        self.tpl_name = tpl_name
+
+    def py(self):
+        yield self.line(
+            'yield local.__fpt__.extend(%r).__call__()' % (
+                self.tpl_name))
+
 class DefNode(Node):
 
     def __init__(self, decl, *body):
@@ -35,6 +71,23 @@ class DefNode(Node):
         for child in self.body:
             for line in child.py():
                 yield line.indent()
+
+class CallNode(Node):
+
+    def __init__(self, caller, callee, *body):
+        super(CallNode, self).__init__()
+        fname = gen_name()
+        self.decl = caller.replace('$caller', fname)
+        self.call = callee.replace('$caller', fname)
+        self.body = body
+
+    def py(self):
+        yield self.line('@__fpt__.flattener.decorate')
+        yield self.line('def %s:' % (self.decl))
+        for child in self.body:
+            for line in child.py():
+                yield line.indent()
+        yield self.line('yield ' + self.call)
 
 class ForNode(Node):
 
@@ -72,6 +125,19 @@ class CaseNode(Node):
 
     def py(self):
         yield self.line('if local.__fpt__.case(%s):' % self.decl)
+        for child in self.body:
+            for line in child.py():
+                yield line.indent()
+
+class IfNode(Node):
+
+    def __init__(self, decl, *body):
+        super(IfNode, self).__init__()
+        self.decl = decl
+        self.body = body
+
+    def py(self):
+        yield self.line('if %s:' % self.decl)
         for child in self.body:
             for line in child.py():
                 yield line.indent()
