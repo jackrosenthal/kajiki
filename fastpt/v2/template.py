@@ -83,7 +83,12 @@ def from_ir(ir_node):
     from fastpt import v2 as fpt
     py_text = '\n'.join(map(str, ir_node.py()))
     dct = dict(fpt=fpt)
-    exec py_text in dct
+    try:
+        exec py_text in dct
+    except SyntaxError:
+        for i, line in enumerate(py_text.splitlines()):
+            print '%3d %s' % (i+1, line)
+        raise
     tpl = dct['template']
     tpl.py_text = py_text
     return tpl

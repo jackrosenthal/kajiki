@@ -3,13 +3,14 @@ from .util import gen_name
 class Node(object):
 
     def __init__(self):
-        self._tpl = None
+        self.filename = '<string>'
+        self.lineno = 0
 
     def py(self): # pragma no cover
         return []
 
     def line(self, text):
-        return PyLine(self._tpl, 0, text)
+        return PyLine(self.filename, self.lineno, text)
 
 class TemplateNode(Node):
 
@@ -174,14 +175,14 @@ class ExprNode(Node):
 
 class PyLine(object):
 
-    def __init__(self, tpl, lineno, text, indent=0):
-        self._tpl = tpl
+    def __init__(self, filename, lineno, text, indent=0):
+        self._filename = filename
         self._lineno = lineno
         self._text = text
         self._indent = indent
 
     def indent(self, sz=4):
-        return PyLine(self._tpl, self._lineno, self._text, self._indent + sz)
+        return PyLine(self._filename, self._lineno, self._text, self._indent + sz)
 
     def __str__(self):
         return (' ' * self._indent) + self._text
