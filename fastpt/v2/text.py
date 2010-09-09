@@ -1,28 +1,44 @@
+'''Text template syntax
+
+Expressions:
+
+${<python expr>}
+$foo, $foo.bar
+
+Tags:
+
+\w*%<tagname> .* \n
+{%<tagname> %}
+
+Escaping via backslash
+\$ => $
+\% => %
+\{ => {
+\\ => \
+
+'''
 import re
 from fastpt import v2 as fpt
 
-# Expressions: $foo.bar or ${foo.bar[baz]}
-_expr_pattern = r'''
-    %(delim)s(?:
-      (?P<escaped>%(delim)s) |   # Escape sequence of two delimiters
-      (?P<named>%(id)s)      |   # delimiter and a Python identifier
-      {(?P<braced>%(id)s)}   |   # delimiter and a braced identifier
-      (?P<invalid>)              # Other ill-formed delimiter exprs
-)''' % dict(
-    delim=re.escape('$'),
-    id=r'[_a-z][_a-z0-9.]*')
-_re_expr_pattern = re.compile(_expr_pattern, re.VERBOSE | re.IGNORECASE)
-
-_tag_pattern = r'''
-    %(delim)s(?:
-      (?P<escaped>%(delim)s) |   # Escape sequence of two delimiters
-      (?P<named>%(id)s)      |   # delimiter and a Python identifier
-      {(?P<braced>%(id)s)}   |   # delimiter and a braced identifier
-      (?P<invalid>)              # Other ill-formed delimiter exprs
-)''' % dict(
-    delim=re.escape('{%'),
-    id=r'[_a-z][_a-z0-9.]*')
-_re_expr_pattern = re.compile(_expr_pattern, re.VERBOSE | re.IGNORECASE)
+_pattern = r'''
+\$(?:
+    (?P<expr_escaped>\$) |      # Escape $$
+    (?P<expr_named>[_a-z][_a-z.]*) | # $foo.bar
+    {(?P<expr_braced>) | # ${....
+    (?P<expr_invalid>)
+) |
+%(?:
+    (?P<tag_bare>[a-z]+\w) | # %for, %end, etc.
+    (?P<tag_bare_invalid>)
+)|
+{%(?:
+    (?P<tag_begin>[a-z]+\w) | # {%for, {%end, etc.
+    (?P<tag_begin_ljust>-[a-z]+\w) | # {%-for, {%-end, etc.
+    (?P<tag_begin_invalid>)
+)|
+(?P<tag_end>%}) # %}
+'''
+_re_pattern = re.compile(_pattern)
 
 def TextTemplate(
     source=None,
