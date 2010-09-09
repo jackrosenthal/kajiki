@@ -16,7 +16,7 @@ class TemplateNode(Node):
 
     def __init__(self, *body):
         super(TemplateNode, self).__init__()
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('@fpt.Template')
@@ -64,7 +64,7 @@ class DefNode(Node):
     def __init__(self, decl, *body):
         super(DefNode, self).__init__()
         self.decl = decl
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('@fpt.expose')
@@ -80,7 +80,7 @@ class CallNode(Node):
         fname = gen_name()
         self.decl = caller.replace('$caller', fname)
         self.call = callee.replace('$caller', fname)
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('@__fpt__.flattener.decorate')
@@ -95,7 +95,7 @@ class ForNode(Node):
     def __init__(self, decl, *body):
         super(ForNode, self).__init__()
         self.decl = decl
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('for %s:' % (self.decl))
@@ -108,7 +108,7 @@ class SwitchNode(Node):
     def __init__(self, decl, *body):
         super(SwitchNode, self).__init__()
         self.decl = decl
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('local.__fpt__.push_switch(%s)' % self.decl)
@@ -122,7 +122,7 @@ class CaseNode(Node):
     def __init__(self, decl, *body):
         super(CaseNode, self).__init__()
         self.decl = decl
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('if local.__fpt__.case(%s):' % self.decl)
@@ -135,7 +135,7 @@ class IfNode(Node):
     def __init__(self, decl, *body):
         super(IfNode, self).__init__()
         self.decl = decl
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('if %s:' % self.decl)
@@ -147,7 +147,7 @@ class ElseNode(Node):
 
     def __init__(self,  *body):
         super(ElseNode, self).__init__()
-        self.body = body
+        self.body = tuple(x for x in body if x is not None)
 
     def py(self):
         yield self.line('else:')

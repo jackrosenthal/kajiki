@@ -31,19 +31,17 @@ _pattern = r'''
     {(?P<expr_braced>) | # ${....
     (?P<expr_invalid>)
 ) |
-^\w*%(?:
+^\s*%(?:
     (?P<tag_bare>[a-z]+) | # %for, %end, etc.
     (?P<tag_bare_invalid>)
 )|
+^\s*{%-(?P<tag_begin_ljust>[a-z]+)|  # {%-for, {%-end, etc.
 {%(?:
     (?P<tag_begin>[a-z]+) | # {%for, {%end, etc.
     (?P<tag_begin_invalid>)
-)|
-^\w*{%-(?P<tag_begin_ljust>-[a-z]+)  # {%-for, {%-end, etc.
+)
 '''
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
-
-_re_newline_join = re.compile(r'(?<!\\)\\\n')
 
 def TextTemplate(
     source=None,
@@ -52,6 +50,9 @@ def TextTemplate(
         source = open(filename).read()
     if filename is None:
         filename = '<string>'
+    # for tok in _Tokenizer(filename, source):
+    #     print tok
+    # print 'TOKENIZED'
     tokenizer = _Tokenizer(filename, source)
     ast = _Parser(tokenizer).parse()
     return fpt.template.from_ir(ast)
@@ -63,6 +64,7 @@ class _Parser(object):
         self.functions = defaultdict(list)
         self.functions['__call__()'] = []
         self.iterator = iter(self.tokenizer)
+        self._in_def = False
 
     def parse(self):
         body = list(self._parse_body())
@@ -71,7 +73,7 @@ class _Parser(object):
             *[ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ])
 
     def text(self, token):
-        text = _re_newline_join.sub('', token.text)
+        text = ''.join(_unescape_newlines(token.text))
         node = ir.TextNode(text)
         node.filename = token.filename
         node.lineno = token.lineno
@@ -107,6 +109,35 @@ class _Parser(object):
                 yield None
                 break
 
+    def _parse_def(self, token):
+        old_in_def, self._in_def = self._in_def, True
+        body = list(self._parse_body('end'))
+        self._in_def = old_in_def
+        if self._in_def:
+            return ir.InnerDefNode(token.body, *body[:-1])
+        else:
+            self.functions[token.body] = body[:-1]
+            return None
+
+    def _parse_call(self, token):
+        b = token.body.find('(')
+        e = token.body.find(')', b)
+        assert e > b > -1
+        arglist = token.body[b:e+1]
+        call = token.body[e+1:].strip()
+        body = list(self._parse_body('end'))
+        return ir.CallNode(
+            '$caller%s' % arglist,
+            call.replace('%caller', '$caller'),
+            *body[:-1])
+
+    def _parse_if(self, token):
+        body = list(self._parse_body('end', 'else'))
+        stoptok = body[-1]
+        if stoptok.tagname == 'else':
+            self.push_tok(stoptok)
+        return ir.IfNode(token.body, *body[:-1])
+
     def _parse_for(self, token):
         body = list(self._parse_body('end'))
         return ir.ForNode(token.body, *body[:-1])
@@ -123,8 +154,6 @@ class _Parser(object):
 
     def _parse_else(self, token):
         body = list(self._parse_body('end'))
-        stoptok = body[-1]
-        self.push_tok(stoptok)
         return ir.ElseNode(*body[:-1])
 
 class _Tokenizer(object):
@@ -155,6 +184,9 @@ class _Tokenizer(object):
             elif groups['tag_begin'] is not None:
                 self.pos = mo.end()
                 yield self._get_tag(groups['tag_begin'])
+            elif groups['tag_begin_ljust'] is not None:
+                self.pos = mo.end()
+                yield self._get_tag(groups['tag_begin_ljust'])
             elif groups['tag_bare_invalid'] is not None:
                 continue
             else:
@@ -197,6 +229,7 @@ class _Tokenizer(object):
 
     def _get_tag(self, tagname):
         end = self.source.find('%}', self.pos)
+        assert end > 0
         body = self.source[self.pos:end]
         self.pos = end+2
         return self.tag(tagname, body)
@@ -229,3 +262,17 @@ class _Tag(_Token):
         self.body = body
         text = tagname + ' ' + body
         super(_Tag, self).__init__(filename, lineno, text)
+
+def _unescape_newlines(text):
+    i = 0
+    while i < len(text):
+        if text[i] == '\\':
+            if text[i+1] != '\n':
+                yield text[i+1]
+            i += 2
+        else:
+            yield text[i]
+            i += 1
+            
+            
+    
