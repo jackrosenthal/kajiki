@@ -1,21 +1,12 @@
-'''Text template syntax
+'''Text template compiler
 
-Expressions:
+Notable in this module are
 
-${<python expr>}
-$foo, $foo.bar
-
-Tags:
-
-%<tagname> .* \n
-{%<tagname> %}
-
-Escaping via backslash
-\$ => $
-\% => %
-\{ => {
-\\ => \
-
+TextTemplate - function building a template from text string or filename
+_pattern - the regex used to find the beginnings of tags and expressions
+_Scanner - scans text and generates a stream of tokens
+_Parser - parses a stream of tokens into an ast of IR nodes
+_Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node
 '''
 import re
 import os
@@ -52,13 +43,101 @@ def TextTemplate(
         source = open(filename).read()
     if filename is None:
         filename = '<string>'
-    # for tok in _Tokenizer(filename, source):
-    #     print tok
-    # print 'TOKENIZED'
-    tokenizer = _Tokenizer(filename, source)
-    ast = _Parser(tokenizer).parse()
+    scanner = _Scanner(filename, source)
+    ast = _Parser(scanner).parse()
     return fpt.template.from_ir(ast)
 
+class _Scanner(object):
+
+    def __init__(self, filename, source):
+        self.filename = filename
+        self.source = source
+        self.lineno = 1
+        self.pos = 0
+
+    def __iter__(self):
+        source = self.source
+        for mo in _re_pattern.finditer(source):
+            start = mo.start()
+            if start > self.pos:
+                yield self.text(source[self.pos:start])
+                self.pos = start
+            groups = mo.groupdict()
+            if groups['expr_braced'] is not None:
+                self.pos = mo.end()
+                yield self._get_braced_expr()
+            elif groups['expr_named'] is not None:
+                self.pos = mo.end()
+                yield self.expr(groups['expr_named'])
+            elif groups['tag_bare'] is not None:
+                self.pos = mo.end()
+                yield self._get_tag_bare(groups['tag_bare'])
+            elif groups['tag_begin'] is not None:
+                self.pos = mo.end()
+                yield self._get_tag(groups['tag_begin'])
+            elif groups['tag_begin_ljust'] is not None:
+                self.pos = mo.end()
+                yield self._get_tag(groups['tag_begin_ljust'])
+            elif groups['tag_bare_invalid'] is not None:
+                continue
+            else:
+                msg = 'Syntax error %s:%s' % (self.filename, self.lineno)
+                for i, line in enumerate(self.source.splitlines()):
+                    print '%3d %s' % (i+1, line)
+                print msg
+                assert False, groups
+        if self.pos != len(source):
+            yield self.text(source[self.pos:])
+
+    def _get_pos(self):
+        return self._pos
+    def _set_pos(self, value):
+        assert value >= getattr(self, '_pos', 0)
+        self._pos = value
+    pos = property(_get_pos, _set_pos)
+
+    def text(self, text):
+        self.lineno += text.count('\n')
+        return _Text(self.filename, self.lineno, text)
+
+    def expr(self, text):
+        self.lineno += text.count('\n')
+        return _Expr(self.filename, self.lineno, text)
+
+    def tag(self, tagname, body):
+        tag = _Tag(self.filename, self.lineno, tagname, body)
+        self.lineno += tag.text.count('\n')
+        return tag
+
+    def _get_tag_bare(self, tagname):
+        end = self.source.find('\n', self.pos)
+        if end == -1:
+            end = len(self.source)
+        body = self.source[self.pos:end]
+        self.lineno += 1
+        self.pos = end+1
+        return self.tag(tagname, body)
+
+    def _get_tag(self, tagname):
+        end = self.source.find('%}', self.pos)
+        assert end > 0
+        body = self.source[self.pos:end]
+        self.pos = end+2
+        if body.endswith('-'):
+            body = body[:-1]
+            while self.source[self.pos] in ' \t':
+                self.pos += 1
+        return self.tag(tagname, body)
+
+    def _get_braced_expr(self):
+        try:
+            compile(self.source[self.pos:], '', 'eval')
+        except SyntaxError, se:
+            end = se.offset+self.pos
+            text = self.source[self.pos:end-1]
+            self.pos = end
+            return self.expr(text)
+    
 class _Parser(object):
 
     def __init__(self, tokenizer):
@@ -208,97 +287,6 @@ class _Parser(object):
         else:
             return ir.ExprNode(decl)
 
-class _Tokenizer(object):
-
-    def __init__(self, filename, source):
-        self.filename = filename
-        self.source = source
-        self.lineno = 1
-        self.pos = 0
-
-    def __iter__(self):
-        source = self.source
-        for mo in _re_pattern.finditer(source):
-            start = mo.start()
-            if start > self.pos:
-                yield self.text(source[self.pos:start])
-                self.pos = start
-            groups = mo.groupdict()
-            if groups['expr_braced'] is not None:
-                self.pos = mo.end()
-                yield self._get_braced_expr()
-            elif groups['expr_named'] is not None:
-                self.pos = mo.end()
-                yield self.expr(groups['expr_named'])
-            elif groups['tag_bare'] is not None:
-                self.pos = mo.end()
-                yield self._get_tag_bare(groups['tag_bare'])
-            elif groups['tag_begin'] is not None:
-                self.pos = mo.end()
-                yield self._get_tag(groups['tag_begin'])
-            elif groups['tag_begin_ljust'] is not None:
-                self.pos = mo.end()
-                yield self._get_tag(groups['tag_begin_ljust'])
-            elif groups['tag_bare_invalid'] is not None:
-                continue
-            else:
-                msg = 'Syntax error %s:%s' % (self.filename, self.lineno)
-                for i, line in enumerate(self.source.splitlines()):
-                    print '%3d %s' % (i+1, line)
-                print msg
-                assert False, groups
-        if self.pos != len(source):
-            yield self.text(source[self.pos:])
-
-    def _get_pos(self):
-        return self._pos
-    def _set_pos(self, value):
-        assert value >= getattr(self, '_pos', 0)
-        self._pos = value
-    pos = property(_get_pos, _set_pos)
-
-    def text(self, text):
-        self.lineno += text.count('\n')
-        return _Text(self.filename, self.lineno, text)
-
-    def expr(self, text):
-        self.lineno += text.count('\n')
-        return _Expr(self.filename, self.lineno, text)
-
-    def tag(self, tagname, body):
-        tag = _Tag(self.filename, self.lineno, tagname, body)
-        self.lineno += tag.text.count('\n')
-        return tag
-
-    def _get_tag_bare(self, tagname):
-        end = self.source.find('\n', self.pos)
-        if end == -1:
-            end = len(self.source)
-        body = self.source[self.pos:end]
-        self.lineno += 1
-        self.pos = end+1
-        return self.tag(tagname, body)
-
-    def _get_tag(self, tagname):
-        end = self.source.find('%}', self.pos)
-        assert end > 0
-        body = self.source[self.pos:end]
-        self.pos = end+2
-        if body.endswith('-'):
-            body = body[:-1]
-            while self.source[self.pos] in ' \t':
-                self.pos += 1
-        return self.tag(tagname, body)
-
-    def _get_braced_expr(self):
-        try:
-            compile(self.source[self.pos:], '', 'eval')
-        except SyntaxError, se:
-            end = se.offset+self.pos
-            text = self.source[self.pos:end-1]
-            self.pos = end
-            return self.expr(text)
-    
 class _Token(object):
     def __init__(self, filename, lineno, text):
         self.filename = filename
