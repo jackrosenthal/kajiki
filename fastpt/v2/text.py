@@ -5,7 +5,7 @@ Notable in this module are
 TextTemplate - function building a template from text string or filename
 _pattern - the regex used to find the beginnings of tags and expressions
 _Scanner - scans text and generates a stream of tokens
-_Parser - parses a stream of tokens into an ast of IR nodes
+_Parser - parses a stream of tokens into the internal representation (IR) tree
 _Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node
 '''
 import re
@@ -44,8 +44,8 @@ def TextTemplate(
     if filename is None:
         filename = '<string>'
     scanner = _Scanner(filename, source)
-    ast = _Parser(scanner).parse()
-    return fpt.template.from_ir(ast)
+    tree = _Parser(scanner).parse()
+    return fpt.template.from_ir(tree)
 
 class _Scanner(object):
 

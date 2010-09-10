@@ -1,5 +1,7 @@
-* Write XML => IR compiler (and document language)
-* Write HTML => IR compiler (and document language)
+* Build DOM-like model to parse XML and HTML into 
+* Write XML => IR compiler (use only stdlib if possible)
+* Write HTML => IR compiler (use only stdlib if possible)
+* Write HTML5 => IR compiler (use html5lib)
 * Write CSS => IR compiler (and document language)
    - Make sure it replicates the features of Sass plus even more
 * Template designer documentation for text templates

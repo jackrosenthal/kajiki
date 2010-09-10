@@ -181,7 +181,7 @@ class ExprNode(Node):
         self.text = text
 
     def py(self):
-        yield self.line('yield %s' % self.text)
+        yield self.line('yield self.__fpt__.escape(%s)' % self.text)
 
 class PythonNode(Node):
 

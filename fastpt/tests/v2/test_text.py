@@ -5,6 +5,16 @@ from fastpt.v2.text import TextTemplate
 
 class TestBasic(TestCase):
 
+    def test_auto_escape(self):
+        tpl = TextTemplate(source="${'<h1>'}")
+        rsp = tpl().__fpt__.render() 
+        assert rsp == '&lt;h1&gt;', rsp
+
+    def test_auto_escape_disable(self):
+        tpl = TextTemplate(source="${literal('<h1>')}")
+        rsp = tpl().__fpt__.render() 
+        assert rsp == '<h1>', rsp
+
     def test_expr_brace(self):
         tpl = TextTemplate(source='Hello, ${name}\n')
         rsp = tpl(dict(name='Rick')).__fpt__.render() 

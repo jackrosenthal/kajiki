@@ -1,6 +1,9 @@
 import types
+from cgi import escape
 from functools import update_wrapper
 from pprint import pprint
+
+from webhelpers.html import literal
 
 import fastpt
 from .util import flattener
@@ -23,6 +26,7 @@ class _Template(object):
             base_globals,
             local=self,
             self=self,
+            literal=literal,
             __builtins__=__builtins__,
             __fpt__=fastpt.v2)
         for k,v in self.__methods__:
@@ -35,7 +39,8 @@ class _Template(object):
             push_switch=self._push_switch,
             pop_switch=self._pop_switch,
             case=self._case,
-            import_=self._import)
+            import_=self._import,
+            escape=self._escape)
         self._switch_stack = []
         self.__globals__.update(context)
 
@@ -72,6 +77,14 @@ class _Template(object):
 
     def _import(self, name):
         return self.loader.import_(name)
+
+    def _escape(self, value):
+        if isinstance(value, flattener):
+            value = u''.join(self._escape(s) for s in value)
+        if hasattr(value, '__html__'):
+            return value.__html__()
+        else:
+            return escape(unicode(value))
 
 def Template(ns):
     dct = {}
