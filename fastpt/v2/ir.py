@@ -14,14 +14,20 @@ class Node(object):
 
 class TemplateNode(Node):
 
-    def __init__(self, *body):
+    def __init__(self, mod_py=None, defs=None):
         super(TemplateNode, self).__init__()
-        self.body = tuple(x for x in body if x is not None)
+        if mod_py is None: mod_py = []
+        if defs is None: defs = []
+        self.mod_py = [ x for x in mod_py if x is not None ]
+        self.defs = [ x for x in defs if x is not None ]
 
     def py(self):
+        for block in self.mod_py:
+            for  line in block.py():
+                yield line
         yield self.line('@fpt.Template')
         yield self.line('class template:')
-        for child in self.body:
+        for child in self.defs:
             for line in child.py():
                 yield line.indent()
 
@@ -60,6 +66,7 @@ class ExtendNode(Node):
                 self.tpl_name))
 
 class DefNode(Node):
+    prefix = '@fpt.expose'
 
     def __init__(self, decl, *body):
         super(DefNode, self).__init__()
@@ -67,11 +74,14 @@ class DefNode(Node):
         self.body = tuple(x for x in body if x is not None)
 
     def py(self):
-        yield self.line('@fpt.expose')
+        yield self.line(self.prefix)
         yield self.line('def %s:' % (self.decl))
         for child in self.body:
             for line in child.py():
                 yield line.indent()
+
+class InnerDefNode(DefNode):
+    prefix='@__fpt__.flattener.decorate'
 
 class CallNode(Node):
 
@@ -172,6 +182,34 @@ class ExprNode(Node):
 
     def py(self):
         yield self.line('yield %s' % self.text)
+
+class PythonNode(Node):
+
+    def __init__(self, *body):
+        super(PythonNode, self).__init__()
+        self.module_level = False
+        blocks = []
+        for b in body:
+            assert isinstance(b, TextNode)
+            blocks.append(b.text)
+        text = ''.join(blocks)
+        if text[0] == '%':
+            self.module_level = True
+            text = text[1:]
+        self.lines = list(self._normalize(text))
+
+    def py(self):
+        for line in self.lines:
+            yield self.line(line)
+
+    def _normalize(self, text):
+        prefix = None
+        for line in text.splitlines():
+            if prefix is None:
+                rest = line.lstrip()
+                prefix = line[:len(line)-len(rest)]
+            assert line.startswith(prefix)
+            yield line[len(prefix):]
 
 class PyLine(object):
 

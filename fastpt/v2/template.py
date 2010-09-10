@@ -13,12 +13,14 @@ class _obj(object):
 class _Template(object):
     __methods__=()
     loader = None
+    base_globals = None
 
     def __init__(self, context=None):
         if context is None: context = {}
         self._context = context
+        base_globals = self.base_globals or {}
         self.__globals__ = dict(
-            context,
+            base_globals,
             local=self,
             self=self,
             __builtins__=__builtins__,
@@ -35,6 +37,7 @@ class _Template(object):
             case=self._case,
             import_=self._import)
         self._switch_stack = []
+        self.__globals__.update(context)
 
     def __iter__(self):
         for chunk in self.__call__():
@@ -85,11 +88,12 @@ def from_ir(ir_node):
     dct = dict(fpt=fpt)
     try:
         exec py_text in dct
-    except SyntaxError:
+    except SyntaxError: # pragma no cover
         for i, line in enumerate(py_text.splitlines()):
             print '%3d %s' % (i+1, line)
         raise
     tpl = dct['template']
+    tpl.base_globals = dct
     tpl.py_text = py_text
     return tpl
 

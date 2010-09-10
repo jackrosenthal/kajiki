@@ -7,11 +7,11 @@ class TestBasic(TestCase):
 
     def setUp(self):
         self.tpl = ir.TemplateNode(
-            ir.DefNode(
+            defs=[ir.DefNode(
                 '__call__()',
                 ir.TextNode('Hello, '),
                 ir.ExprNode('name'),
-                ir.TextNode('\n')))
+                ir.TextNode('\n'))])
 
     def test(self):
         tpl = fpt.template.from_ir(self.tpl)
@@ -22,20 +22,20 @@ class TestSwitch(TestCase):
 
     def setUp(self):
         self.tpl = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.ForNode(
-                    'i in range(2)',
-                    ir.ExprNode('i'),
-                    ir.TextNode(' is '),
-                    ir.SwitchNode(
-                        'i % 2',
-                        ir.CaseNode(
-                            '0',
-                            ir.TextNode('even\n')),
-                        ir.ElseNode(
-                            ir.TextNode('odd\n'))))))
-
+            defs=[ir.DefNode(
+                    '__call__()',
+                    ir.ForNode(
+                        'i in range(2)',
+                        ir.ExprNode('i'),
+                        ir.TextNode(' is '),
+                        ir.SwitchNode(
+                            'i % 2',
+                            ir.CaseNode(
+                                '0',
+                                ir.TextNode('even\n')),
+                            ir.ElseNode(
+                                ir.TextNode('odd\n')))))])
+            
     def test_basic(self):
         tpl = fpt.template.from_ir(self.tpl)
         rsp = tpl(dict()).__fpt__.render() 
@@ -45,21 +45,21 @@ class TestFunction(TestCase):
 
     def setUp(self):
         self.tpl = ir.TemplateNode(
-            ir.DefNode(
-                'evenness(n)',
-                ir.IfNode(
-                    'n % 2 == 0',
-                    ir.TextNode('even')),
-                ir.ElseNode(
-                    ir.TextNode('odd'))),
-            ir.DefNode(
-                '__call__()',
-                ir.ForNode(
-                    'i in range(2)',
-                    ir.ExprNode('i'),
-                    ir.TextNode(' is '),
-                    ir.ExprNode('evenness(i)'),
-                    ir.TextNode('\n'))))
+            defs=[ir.DefNode(
+                    'evenness(n)',
+                    ir.IfNode(
+                        'n % 2 == 0',
+                        ir.TextNode('even')),
+                    ir.ElseNode(
+                        ir.TextNode('odd'))),
+                  ir.DefNode(
+                    '__call__()',
+                    ir.ForNode(
+                        'i in range(2)',
+                        ir.ExprNode('i'),
+                        ir.TextNode(' is '),
+                        ir.ExprNode('evenness(i)'),
+                        ir.TextNode('\n')))])
 
     def test_basic(self):
         tpl = fpt.template.from_ir(self.tpl)
@@ -70,23 +70,23 @@ class TestCall(TestCase):
     
     def setUp(self):
         self.tpl = ir.TemplateNode(
-            ir.DefNode(
-                'quote(caller, speaker)',
-                ir.ForNode(
-                    'i in range(2)',
-                    ir.TextNode('Quoth '),
-                    ir.ExprNode('speaker'),
-                    ir.TextNode(', "'),
-                    ir.ExprNode('caller(i)'),
-                    ir.TextNode('."\n'))),
-            ir.DefNode(
-                '__call__()',
-                ir.CallNode(
-                    '$caller(n)',
-                    "quote($caller, 'the raven')",
-                    ir.TextNode('Nevermore '),
-                    ir.ExprNode('n'))))
-        
+            defs=[ir.DefNode(
+                    'quote(caller, speaker)',
+                    ir.ForNode(
+                        'i in range(2)',
+                        ir.TextNode('Quoth '),
+                        ir.ExprNode('speaker'),
+                        ir.TextNode(', "'),
+                        ir.ExprNode('caller(i)'),
+                        ir.TextNode('."\n'))),
+                  ir.DefNode(
+                    '__call__()',
+                    ir.CallNode(
+                        '$caller(n)',
+                        "quote($caller, 'the raven')",
+                        ir.TextNode('Nevermore '),
+                        ir.ExprNode('n')))])
+            
     def test_basic(self):
         tpl = fpt.template.from_ir(self.tpl)
         rsp = tpl(dict(name='Rick')).__fpt__.render()
@@ -98,32 +98,32 @@ class TestImport(TestCase):
     
     def setUp(self):
         lib = ir.TemplateNode(
-            ir.DefNode(
-                'evenness(n)',
-                ir.IfNode(
-                    'n % 2 == 0',
-                    ir.TextNode('even')),
-                ir.ElseNode(
-                    ir.TextNode('odd'))),
-            ir.DefNode(
-                'half_evenness(n)',
-                ir.TextNode(' half of '),
-                ir.ExprNode('n'),
-                ir.TextNode(' is '),
-                ir.ExprNode('evenness(n/2)')))
-        tpl = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.ImportNode(
-                    'lib.txt',
-                    'simple_function'),
-                ir.ForNode(
-                    'i in range(4)',
-                    ir.ExprNode('i'),
+            defs=[ir.DefNode(
+                    'evenness(n)',
+                    ir.IfNode(
+                        'n % 2 == 0',
+                        ir.TextNode('even')),
+                    ir.ElseNode(
+                        ir.TextNode('odd'))),
+                  ir.DefNode(
+                    'half_evenness(n)',
+                    ir.TextNode(' half of '),
+                    ir.ExprNode('n'),
                     ir.TextNode(' is '),
-                    ir.ExprNode('simple_function.evenness(i)'),
-                    ir.ExprNode('simple_function.half_evenness(i)'),
-                    ir.TextNode('\n'))))
+                    ir.ExprNode('evenness(n/2)'))])
+        tpl = ir.TemplateNode(
+            defs=[ir.DefNode(
+                    '__call__()',
+                    ir.ImportNode(
+                        'lib.txt',
+                        'simple_function'),
+                    ir.ForNode(
+                        'i in range(4)',
+                        ir.ExprNode('i'),
+                        ir.TextNode(' is '),
+                        ir.ExprNode('simple_function.evenness(i)'),
+                        ir.ExprNode('simple_function.half_evenness(i)'),
+                        ir.TextNode('\n')))])
         loader = fpt.loader.MockLoader({
             'lib.txt':fpt.template.from_ir(lib),
             'tpl.txt':fpt.template.from_ir(tpl)})
@@ -140,15 +140,17 @@ class TestInclude(TestCase):
     
     def setUp(self):
         hdr = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.TextNode('# header\n')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.TextNode('# header\n'))])
         tpl = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.TextNode('a\n'),
-                ir.IncludeNode('hdr.txt'),
-                ir.TextNode('b\n')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.TextNode('a\n'),
+                    ir.IncludeNode('hdr.txt'),
+                    ir.TextNode('b\n'))])
         loader = fpt.loader.MockLoader({
             'hdr.txt':fpt.template.from_ir(hdr),
             'tpl.txt':fpt.template.from_ir(tpl)})
@@ -162,52 +164,55 @@ class TestExtends(TestCase):
 
     def setUp(self):
         parent_tpl = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.ExprNode('header()'),
-                ir.ExprNode('body()'),
-                ir.ExprNode('footer()')),
-            ir.DefNode(
-                'header()',
-                ir.TextNode('# Header name='),
-                ir.ExprNode('name'),
-                ir.TextNode('\n')),
-            ir.DefNode(
-                'body()',
-                ir.TextNode('## Parent Body\n'),
-                ir.TextNode('local.id() = '),
-                ir.ExprNode('local.id()'),
-                ir.TextNode('\n'),
-                ir.TextNode('self.id() = '),
-                ir.ExprNode('self.id()'),
-                ir.TextNode('\n'),
-                ir.TextNode('child.id() = '),
-                ir.ExprNode('child.id()'),
-                ir.TextNode('\n')),
-            ir.DefNode(
-                'footer()',
-                ir.TextNode('# Footer\n')),
-            ir.DefNode(
-                'id()',
-                ir.TextNode('parent')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.ExprNode('header()'),
+                    ir.ExprNode('body()'),
+                    ir.ExprNode('footer()')),
+                ir.DefNode(
+                    'header()',
+                    ir.TextNode('# Header name='),
+                    ir.ExprNode('name'),
+                    ir.TextNode('\n')),
+                ir.DefNode(
+                    'body()',
+                    ir.TextNode('## Parent Body\n'),
+                    ir.TextNode('local.id() = '),
+                    ir.ExprNode('local.id()'),
+                    ir.TextNode('\n'),
+                    ir.TextNode('self.id() = '),
+                    ir.ExprNode('self.id()'),
+                    ir.TextNode('\n'),
+                    ir.TextNode('child.id() = '),
+                    ir.ExprNode('child.id()'),
+                    ir.TextNode('\n')),
+                ir.DefNode(
+                    'footer()',
+                    ir.TextNode('# Footer\n')),
+                ir.DefNode(
+                    'id()',
+                    ir.TextNode('parent'))])
         mid_tpl = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.ExtendNode('parent.txt')),
-            ir.DefNode(
-                'id()',
-                ir.TextNode('mid')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.ExtendNode('parent.txt')),
+                ir.DefNode(
+                    'id()',
+                    ir.TextNode('mid'))])
         child_tpl = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.ExtendNode('mid.txt')),
-            ir.DefNode(
-                'body()',
-                ir.TextNode('## Child Body\n'),
-                ir.ExprNode('parent.body()')),
-            ir.DefNode(
-                'id()',
-                ir.TextNode('child')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.ExtendNode('mid.txt')),
+                ir.DefNode(
+                    'body()',
+                    ir.TextNode('## Child Body\n'),
+                    ir.ExprNode('parent.body()')),
+                ir.DefNode(
+                    'id()',
+                    ir.TextNode('child'))])
         loader = fpt.loader.MockLoader({
             'parent.txt':fpt.template.from_ir(parent_tpl),
             'mid.txt':fpt.template.from_ir(mid_tpl),
@@ -227,21 +232,24 @@ class TestExtends(TestCase):
 class TestDynamicExtends(TestCase):
     def setUp(self):
         p0 = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.TextNode('Parent 0')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.TextNode('Parent 0'))])
         p1 = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.TextNode('Parent 1')))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.TextNode('Parent 1'))])
         child = ir.TemplateNode(
-            ir.DefNode(
-                '__call__()',
-                ir.IfNode(
-                    'p==0',
-                    ir.ExtendNode('parent0.txt')),
-                ir.ElseNode(
-                    ir.ExtendNode('parent1.txt'))))
+            defs=[
+                ir.DefNode(
+                    '__call__()',
+                    ir.IfNode(
+                        'p==0',
+                        ir.ExtendNode('parent0.txt')),
+                    ir.ElseNode(
+                        ir.ExtendNode('parent1.txt')))])
         loader = fpt.loader.MockLoader({
             'parent0.txt':fpt.template.from_ir(p0),
             'parent1.txt':fpt.template.from_ir(p1),

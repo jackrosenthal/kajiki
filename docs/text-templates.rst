@@ -57,14 +57,14 @@ following template "control_flow.txt" illustrates:
 
 .. code-block:: none
 
-    A{%for i in range(5)}
-        {%if i < 2}Low{%elif i < 4}Mid{%else}High{%end}$i
-        {%switch i % 2}
-            {%case 0}
+    A{%for i in range(5)%}
+        {%if i < 2%}Low{%elif i < 4%}Mid{%else%}High{%end%}$i
+        {%switch i % 2%}
+            {%case 0%}
                 even
-            {%default}
+            {%default%}
                 odd    
-            {%end}{%end}{%end}
+            {%end%}{%end%}{%end%}
 
 This yields the following Python::
 
@@ -115,23 +115,23 @@ Which would in turn generate the following text:
             even
 
 This can be quite inconvient, however.  If you want to strip whitespace before or
-after a tag, just replace {%with {%-(for stripping leading whitespace) or }
-with -} (for stripping trailing whitespace).  If you would like to remove
+after a tag, just replace {%with {%-(for stripping leading whitespace) or %}
+with -%} (for stripping trailing whitespace).  If you would like to remove
 newlines, just end a line with a backslash.  Here is the equivalent template with
 whitespace removed "control_flow_ws.txt":
 
 .. code-block:: none
 
-    A{%-for i in range(5) -}\
-        {%-if i < 2}Low{%elif i < 4}Mid{%else}High{%end}$i
-        {%-switch i % 2}\
-            {%-case 0}\
+    A{%-for i in range(5) -%}\
+        {%-if i < 2%}Low{%elif i < 4%}Mid{%else%}High{%end%}$i
+        {%-switch i % 2%}\
+            {%-case 0%}\
                 even
-            {%-default}\
+            {%-default%}\
                 odd    
-            {%-end}\
-        {%-end}\
-    {%-end}\
+            {%-end%}\
+        {%-end%}\
+    {%-end%}\
 
 This would generate the following Python::
 
@@ -183,7 +183,7 @@ that allows for line-oriented control flow as seen in
             Mid\
         %else
             High\
-        {%-end}$i    
+        {%-end%}$i    
         %switch i % 2
             %case 0
                 even
@@ -203,9 +203,9 @@ in "simple_py_block.txt":
 
 .. code-block:: none
 
-    {%py}\
+    {%py%}\
         yield 'Prefix'
-    {%end}\
+    {%end%}\
     Body
 
 or alternatively:
@@ -222,7 +222,6 @@ or even more succinctly:
 .. code-block:: none
 
     %py yield 'Prefix'
-    %end    
     Body
 
 all of which will generate the following Python::
@@ -234,7 +233,7 @@ all of which will generate the following Python::
 Note in particular that the Python block can have any indentation, as long as it
  is consistent (the amount of leading whitespace in the first non-empty line of
  the block is stripped from all lines within the block).  You can insert
- module-level Python (imports, etc.) by using the %py% directive as in
+ module-level Python (imports, etc.) by using the %py% directive (or {%py%%} as in
  "module_py_block.txt": 
 
 .. code-block:: none
@@ -453,7 +452,7 @@ Here is the corresponding "child.txt":
     Dear $name:\
     %end
     %block body
-    ${parent()}
+    ${parent_block()}\\
     
     And don't forget you owe me money!
     %end
@@ -468,7 +467,7 @@ This would then yield the following Python::
 
     @fpt.expose
     def _fpt_block_body():
-        yield parent.__call__()
+        yield parent._fpt_block_body()
         yield '\n\n'
         yield 'And don\'t forget you owe me money!\n'
 

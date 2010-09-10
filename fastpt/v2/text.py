@@ -18,6 +18,8 @@ Escaping via backslash
 
 '''
 import re
+import os
+import shlex
 from collections import defaultdict
 from itertools import chain
 
@@ -63,14 +65,16 @@ class _Parser(object):
         self.tokenizer = tokenizer
         self.functions = defaultdict(list)
         self.functions['__call__()'] = []
+        self.mod_py = [] # module-level python blocks
         self.iterator = iter(self.tokenizer)
         self._in_def = False
+        self._is_child = False
 
     def parse(self):
         body = list(self._parse_body())
         self.functions['__call__()'] = body[:-1]
-        return ir.TemplateNode(
-            *[ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ])
+        defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
+        return ir.TemplateNode(self.mod_py, defs)
 
     def text(self, token):
         text = ''.join(_unescape_newlines(token.text))
@@ -116,7 +120,7 @@ class _Parser(object):
         if self._in_def:
             return ir.InnerDefNode(token.body, *body[:-1])
         else:
-            self.functions[token.body] = body[:-1]
+            self.functions[token.body.strip()] = body[:-1]
             return None
 
     def _parse_call(self, token):
@@ -155,6 +159,54 @@ class _Parser(object):
     def _parse_else(self, token):
         body = list(self._parse_body('end'))
         return ir.ElseNode(*body[:-1])
+
+    def _parse_extends(self, token):
+        parts = shlex.split(token.body)
+        fn = parts[0]
+        assert len(parts) == 1
+        self._is_child = True
+        return ir.ExtendNode(fn)
+
+    def _parse_import(self, token):
+        parts = shlex.split(token.body)
+        fn = parts[0]
+        if len(parts) > 1:
+            assert parts[1] == 'as'
+            alias = parts[2]
+        else:
+            alias = os.path.splitext(os.path.basename(fn))[0]
+        return ir.ImportNode(fn, alias)
+
+    def _parse_include(self, token):
+        parts = shlex.split(token.body)
+        fn = parts[0]
+        assert len(parts) == 1
+        return ir.IncludeNode(fn)
+
+    def _parse_py(self, token):
+        body = token.body.strip()
+        if body:
+            body = [ ir.TextNode(body), None ]
+        else:
+            body = list(self._parse_body('end'))
+        node = ir.PythonNode(*body[:-1])
+        if node.module_level:
+            self.mod_py.append(node)
+            return None
+        else:
+            return node
+
+    def _parse_block(self, token):
+        fname = '_fpt_block_' + token.body.strip()
+        decl = fname + '()'
+        body = list(self._parse_body('end'))[:-1]
+        self.functions[decl] = body
+        if self._is_child:
+            parent_block = 'parent.' + fname
+            body.insert(0, ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
+            return None
+        else:
+            return ir.ExprNode(decl)
 
 class _Tokenizer(object):
 
@@ -232,6 +284,10 @@ class _Tokenizer(object):
         assert end > 0
         body = self.source[self.pos:end]
         self.pos = end+2
+        if body.endswith('-'):
+            body = body[:-1]
+            while self.source[self.pos] in ' \t':
+                self.pos += 1
         return self.tag(tagname, body)
 
     def _get_braced_expr(self):
@@ -249,7 +305,7 @@ class _Token(object):
         self.lineno = lineno
         self.text = text
 
-    def __repr__(self):
+    def __repr__(self): # pragma no cover
         return '<%s %r>' % (
             self.__class__.__name__,
             self.text)

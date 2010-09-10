@@ -1,4 +1,7 @@
-* Write text => IR compiler (and document language)
 * Write XML => IR compiler (and document language)
 * Write HTML => IR compiler (and document language)
 * Write CSS => IR compiler (and document language)
+   - Make sure it replicates the features of Sass plus even more
+* Template designer documentation for text templates
+* Template designer documentation for xml/html templates
+* Template designer documentation for CSS templates

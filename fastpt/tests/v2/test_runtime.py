@@ -32,12 +32,12 @@ class TestSwitch(TestCase):
                     if local.__fpt__.case(0):
                         yield 'even\n'
                     else:
-                        yield 'odd'
+                        yield 'odd\n'
         self.tpl = tpl
 
     def test_basic(self):
         rsp = self.tpl().__fpt__.render()
-        print rsp
+        assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestFunction(TestCase):
     
