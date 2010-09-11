@@ -50,10 +50,10 @@ class _Parser(sax.ContentHandler):
         popped = self._els.pop()
         assert name == popped.tagName
 
-    def startElementNS(self, name, qname, attrs):
+    def startElementNS(self, name, qname, attrs): # pragma no cover
         raise NotImplementedError, 'startElementNS'
 
-    def endElementNS(self, name, qname):
+    def endElementNS(self, name, qname):# pragma no cover
         raise NotImplementedError, 'startElementNS'
 
     def characters(self, content):
@@ -68,17 +68,19 @@ class _Parser(sax.ContentHandler):
         content = unicode(HTMLParser.entitydefs[name], 'latin-1')
         return self.characters(content)
 
-    def startPrefixMapping(self, prefix, uri):
+    def startPrefixMapping(self, prefix, uri):# pragma no cover
         raise NotImplemented, 'startPrefixMapping'
 
-    def endPrefixMapping(self, prefix):
+    def endPrefixMapping(self, prefix):# pragma no cover
         raise NotImplemented, 'endPrefixMapping'
 
 def expand(tree, parent=None):
     if not isinstance(tree.tagName, basestring): return tree
     if tree.tagName in QDIRECTIVES_DICT:
-        tree.attributes[tree.tag] = tree.attributes.pop(QDIRECTIVES_DICT[tree.tag])
-        tree.tag = 'py:nop'
+        tree.setAttribute(
+            tree.tag,
+            tree.getAttribute(QDIRECTIVES_DICT[tree.tag]))
+        tree.tagName = 'py:nop'
     for directive, attr in QDIRECTIVES:
         if not tree.hasAttribute(directive): continue
         value = tree.getAttribute(directive)
@@ -95,12 +97,7 @@ def expand(tree, parent=None):
         el.appendChild(tree)
         expand(tree, el)
         return el
-    new_children = []
     for child in tree.childNodes:
-        new_children.append(expand(child, tree))
-    for ch in tree.childNodes:
-        tree.removeChild(ch)
-    for ch in new_children:
-        tree.appendChild(ch)
+        expand(child, tree)
     return tree
 

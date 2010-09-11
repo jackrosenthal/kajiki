@@ -32,6 +32,7 @@ setup(name='FastPt',
       zip_safe=False,
       install_requires=[
         'webhelpers',
+        'html5lib'
       ],
       entry_points="""
       # -*- Entry points: -*-
