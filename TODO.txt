@@ -1,9 +1,9 @@
-* Track line number information in Text and XML templates
-* Write XML => IR compiler (use only stdlib if possible)
-* Write HTML => IR compiler (use only stdlib if possible)
-* Write HTML5 => IR compiler (use html5lib)
+* Track line number information in Text  templates
+* Write XML => IR compiler
+* Add HTML5 support to XML language (flag in XMLTemplate to omit some close tags &
+  namespaces)
 * Write CSS => IR compiler (and document language)
    - Make sure it replicates the features of Sass plus even more
 * Template designer documentation for text templates
-* Template designer documentation for xml/html templates
+* Template designer documentation for xml templates
 * Template designer documentation for CSS templates

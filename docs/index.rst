@@ -16,6 +16,7 @@ Contents:
    :maxdepth: 2
 
    text-templates.rst
+   xml-templates.rst
    migrating_from_genshi.rst
 
 Indices and tables

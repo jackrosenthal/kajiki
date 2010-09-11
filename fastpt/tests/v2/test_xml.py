@@ -39,8 +39,8 @@ class TestExpand(TestCase):
         py:with="with"
         py:replace="replace"
         py:block="block"
-        py:extends="extends"/>''').parse()
-        fpt.xml_template.expand(doc.firstChild)
+        py:extends="extends">Foo</div>''').parse()
+        fpt.xml_template.expand(doc)
         node = doc.childNodes[0]
         for tagname, attr in fpt.markup_template.QDIRECTIVES:
             assert node.tagName == tagname, '%s != %s' %(
@@ -53,6 +53,23 @@ class TestExpand(TestCase):
                 assert len(node.attributes) == 0
             assert len(node.childNodes)==1
             node = node.childNodes[0]
+
+class TestSimple(TestCase):
+
+    def test_expr_name(self):
+        tpl = XMLTemplate(source='<div>Hello, $name</div>')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '<div >Hello, Rick</div>', rsp
+
+    def test_expr_braced(self):
+        tpl = XMLTemplate(source='<div>Hello, ${name}</div>')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '<div >Hello, Rick</div>', rsp
+
+    def test_expr_brace_complex(self):
+        tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}\n</div>")
+        rsp = tpl(dict(name='Rick')).__fpt__.render() 
+        assert rsp == '<div >Hello, Rick</div>', rsp
 
 if __name__ == '__main__':
     main()
