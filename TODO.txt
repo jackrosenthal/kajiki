@@ -1,4 +1,4 @@
-* Build DOM-like model to parse XML and HTML into 
+* Track line number information in Text and XML templates
 * Write XML => IR compiler (use only stdlib if possible)
 * Write HTML => IR compiler (use only stdlib if possible)
 * Write HTML5 => IR compiler (use html5lib)
