@@ -1,5 +1,6 @@
 DIRECTIVES=[
     ('def','function'),
+    ('call','function'),
     ('case', 'value'),
     ('else',''),
     ('for','each'),

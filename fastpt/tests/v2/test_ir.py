@@ -223,6 +223,7 @@ class TestExtends(TestCase):
     def test_extends(self):
         rsp = self.tpl(dict(name='Rick')).__fpt__.render()
         assert (rsp == '# Header name=Rick\n'
+                '## Child Body\n'
                 '## Parent Body\n'
                 'local.id() = parent\n'
                 'self.id() = child\n'

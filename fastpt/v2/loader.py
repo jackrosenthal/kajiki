@@ -1,3 +1,4 @@
+import os
 class Loader(object):
 
     def __init__(self):
@@ -10,6 +11,9 @@ class Loader(object):
         self.modules[name] = mod
         return mod
 
+    def default_alias_for(self, name):
+        return name.replace('/', '_').replace('.', '_')
+
 class MockLoader(Loader):
 
     def __init__(self, modules):
@@ -18,4 +22,6 @@ class MockLoader(Loader):
         for v in self.modules.itervalues():
             v.loader = self
             
+    def default_alias_for(self, name):
+        return os.path.splitext(os.path.basename(name))[0]
 

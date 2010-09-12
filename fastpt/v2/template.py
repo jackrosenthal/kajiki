@@ -1,4 +1,5 @@
 import types
+from cStringIO import StringIO
 from cgi import escape
 from functools import update_wrapper
 from pprint import pprint
@@ -29,6 +30,7 @@ class _Template(object):
             literal=literal,
             __builtins__=__builtins__,
             __fpt__=fastpt.v2)
+        self._buffer = StringIO()
         for k,v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)
@@ -40,7 +42,8 @@ class _Template(object):
             pop_switch=self._pop_switch,
             case=self._case,
             import_=self._import,
-            escape=self._escape)
+            escape=self._escape,
+            write=self._buffer.write)
         self._switch_stack = []
         self.__globals__.update(context)
 
@@ -49,21 +52,43 @@ class _Template(object):
             yield unicode(chunk)
 
     def _render(self):
-        return u''.join(self)
+        try:
+            return u''.join(self)
+        except:
+            for i, line in enumerate(self.py_text.splitlines()):
+                print '%3d %s' % (i+1, line)
+            raise
 
     def _extend(self, parent):
+        print 'Extends %s' % parent
         if isinstance(parent, basestring):
-            parent = self._import(parent)
+            parent = self.loader.import_(parent)
         p_inst = parent(self._context)
         p_globals = p_inst.__globals__
-        # Override methods from child
-        for k,v in self.__methods__:
+        # Find overrides
+        for k,v in self.__globals__.iteritems():
             if k == '__call__': continue
-            p_globals[k] = getattr(self, k)
+            if not isinstance(v, TplFunc): continue
+            p_globals[k] = v
+        # Find inherited funcs
+        for k, v in p_inst.__globals__.iteritems():
+            if k == '__call__': continue
+            if not isinstance(v, TplFunc): continue
+            if k not in self.__globals__: 
+                self.__globals__[k] = v
+            if not hasattr(self, k):
+                def _(k=k):
+                    '''Capture the 'k' variable in a closure'''
+                    def trampoline(*a, **kw):
+                        global parent
+                        return getattr(parent, k)(*a, **kw)
+                    return trampoline
+                setattr(self, k, TplFunc(_()).bind_instance(self))
         p_globals['child'] = self
         p_globals['local'] = p_inst
         p_globals['self'] = self.__globals__['self']
         self.__globals__['parent'] = p_inst
+        self.__globals__['local'] = self
         return p_inst
 
     def _push_switch(self, expr):
@@ -75,8 +100,12 @@ class _Template(object):
     def _case(self, obj):
         return obj == self._switch_stack[-1]
 
-    def _import(self, name):
-        return self.loader.import_(name)
+    def _import(self, name, alias, gbls):
+        tpl_cls = self.loader.import_(name)
+        if alias is None:
+            alias = self.loader.default_alias_for(name)
+        r = gbls[alias] = tpl_cls(gbls)
+        return r
 
     def _escape(self, value):
         if isinstance(value, flattener):

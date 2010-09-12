@@ -167,6 +167,7 @@ class TestExtends(TestCase):
 %end
 %def body()
 ## Parent Body
+id() = ${id()}
 local.id() = ${local.id()}
 self.id() = ${self.id()}
 child.id() = ${child.id()}
@@ -186,7 +187,7 @@ child\\
 %end
 %def body()
 ## Child Body
-${parent.body()}\
+${parent.body()}\\
 %end
 ''')
         loader = fpt.loader.MockLoader({
@@ -196,7 +197,9 @@ ${parent.body()}\
         tpl = loader.import_('child.txt')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
         assert (rsp == '# Header name=Rick\n'
+                '## Child Body\n'
                 '## Parent Body\n'
+                'id() = child\n'
                 'local.id() = parent\n'
                 'self.id() = child\n'
                 'child.id() = mid\n'

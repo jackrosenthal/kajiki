@@ -33,15 +33,15 @@ class TemplateNode(Node):
 
 class ImportNode(Node):
 
-    def __init__(self, tpl_name, alias):
+    def __init__(self, tpl_name, alias=None):
         super(ImportNode, self).__init__()
         self.tpl_name = tpl_name
         self.alias = alias
 
     def py(self):
         yield self.line(
-            '%s = local.__fpt__.import_(%r)(globals())' % (
-                self.alias, self.tpl_name))
+            'local.__fpt__.import_(%r, %r, globals())' % (
+                self.tpl_name, self.alias))
 
 class IncludeNode(Node):
 
@@ -51,7 +51,7 @@ class IncludeNode(Node):
 
     def py(self):
         yield self.line(
-            'yield local.__fpt__.import_(%r)().__call__()' % (
+            'yield local.__fpt__.import_(%r, None, {}).__call__()' % (
                 self.tpl_name))
 
 class ExtendNode(Node):

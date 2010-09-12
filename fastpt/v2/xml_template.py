@@ -66,7 +66,7 @@ class _Compiler(object):
             return self._compile_html(node)
 
     def _compile_xml(self, node):
-        yield ir.TextNode(u'<%s ' % node.tagName)
+        yield ir.TextNode(u'<%s' % node.tagName)
         for k,v in node.attributes.items():
             if k.startswith('py:'):
                 raise NotImplemented, '_compile_attr(%s)' % k
@@ -80,6 +80,24 @@ class _Compiler(object):
         else:
             yield ir.TextNode(u'/>')
 
+    def _compile_import(self, node):
+        href = node.getAttribute('href')
+        if node.hasAttribute('alias'):
+            yield ir.ImportNode(href, node.getAttribute('alias'))
+        else:
+            yield ir.ImportNode(href)
+
+    def _compile_extends(self, node):
+        self.is_child = True
+        href = node.getAttribute('href')
+        yield ir.ExtendNode(href)
+        for x in self._compile_nop(node):
+            yield x
+
+    def _compile_include(self, node):
+        href = node.getAttribute('href')
+        yield ir.IncludeNode(href)
+
     def _compile_def(self, node):
         old_in_def, self.in_def = self.in_def, True
         body = self._compile_nop(node)
@@ -89,10 +107,24 @@ class _Compiler(object):
         else:
             self.functions[node.getAttribute('function')] = body
 
+    def _compile_call(self, node):
+        if node.childNodes[0].hasAttribute('args'):
+            defn = '$caller(' + node.childNodes[0].getAttribute('args') + ')'
+        else:
+            defn = '$caller()'
+        yield ir.CallNode(
+            defn,
+            node.getAttribute('function').replace('%caller', '$caller'),
+            *self._compile_nop(node))
+
     def _compile_text(self, node):
         tc = _TextCompiler(self.filename, node.data, node.lineno)
         for x in tc:
             yield x
+
+    def _compile_comment(self, node):
+        if node.data.startswith('!'):
+            yield ir.TextNode('<!-- %s -->' % node.data)
 
     def _compile_for(self, node):
         yield ir.ForNode(node.getAttribute('each'),
@@ -271,10 +303,7 @@ def expand(tree, parent=None):
         if attr:
             el.setAttribute(attr, value)
         # el.setsourceline = tree.sourceline
-        if parent is None:
-            tree.parentNode.replaceChild(newChild=el, oldChild=tree)
-        else:
-            parent.replaceChild(newChild=el, oldChild=tree)
+        parent.replaceChild(newChild=el, oldChild=tree)
         el.appendChild(tree)
         expand(tree, el)
         return el

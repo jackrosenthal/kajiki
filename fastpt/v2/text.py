@@ -9,7 +9,6 @@ _Parser - parses a stream of tokens into the internal representation (IR) tree
 _Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node
 '''
 import re
-import os
 import shlex
 from collections import defaultdict
 from itertools import chain
@@ -251,10 +250,9 @@ class _Parser(object):
         fn = parts[0]
         if len(parts) > 1:
             assert parts[1] == 'as'
-            alias = parts[2]
+            return ir.ImportNode(fn, parts[2])
         else:
-            alias = os.path.splitext(os.path.basename(fn))[0]
-        return ir.ImportNode(fn, alias)
+            return ir.ImportNode(fn)
 
     def _parse_include(self, token):
         parts = shlex.split(token.body)

@@ -31,6 +31,7 @@ class TestExpand(TestCase):
     def test_expand(self):
         doc = fpt.xml_template._Parser('<string>', '''<div
         py:def="def"
+        py:call="call"
         py:case="case"
         py:else="else"
         py:for="for"
@@ -59,17 +60,17 @@ class TestSimple(TestCase):
     def test_expr_name(self):
         tpl = XMLTemplate(source='<div>Hello, $name</div>')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == '<div >Hello, Rick</div>', rsp
+        assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_expr_braced(self):
         tpl = XMLTemplate(source='<div>Hello, ${name}</div>')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == '<div >Hello, Rick</div>', rsp
+        assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_expr_brace_complex(self):
         tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}</div>")
         rsp = tpl(dict(name='Rick')).__fpt__.render() 
-        assert rsp == '<div >Hello, Rick</div>', rsp
+        assert rsp == '<div>Hello, Rick</div>', rsp
 
 class TestSwitch(TestCase):
 
@@ -80,8 +81,8 @@ $i is <py:switch test="i % 2">
 <py:else>odd</py:else>
 </py:switch></div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == '''<div >
-0 is even</div><div >
+        assert rsp == '''<div>
+0 is even</div><div>
 1 is odd</div>''', rsp
 
 class TestFunction(TestCase):
@@ -93,10 +94,159 @@ class TestFunction(TestCase):
 </py:for
 ></div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == '''<div >
-0 is <div >even</div>
-1 is <div >odd</div>
+        assert rsp == '''<div>
+0 is <div>even</div>
+1 is <div>odd</div>
 </div>''', rsp
+
+class TestCall(TestCase):
+
+    def test_call(self):
+        tpl = XMLTemplate(source='''<div
+><py:def function="quote(caller, speaker)"
+><ul>
+    <li py:for="i in range(2)">Quoth $speaker, ${caller(i)}</li>
+</ul></py:def
+><py:call args="n" function="quote(%caller, 'the raven')"
+>Nevermore $n</py:call></div>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '''<div><ul>
+    <li>Quoth the raven, Nevermore 0</li><li>Quoth the raven, Nevermore 1</li>
+</ul></div>''', rsp
+
+class TestImport(TestCase):
+    
+    def test_import(self):
+        loader = fpt.loader.MockLoader({
+            'lib.html':XMLTemplate(source='''<div>
+<span py:def="evenness(n)"
+    ><py:if test="n % 2 == 0"
+        >even</py:if
+    ><py:else
+        >odd</py:else
+></span>
+<py:def function="half_evenness(n)"
+    >half of $n is ${evenness(n/2)}</py:def>
+</div>'''),
+            'tpl.html':XMLTemplate(source='''<div>
+<py:import href="lib.html" alias="simple_function"
+/><ul>
+    <li py:for="i in range(4)">
+        $i is ${simple_function.evenness(i)} ${simple_function.half_evenness(i)}
+    </li>
+</ul>
+</div>''')
+            })
+        tpl = loader.import_('tpl.html')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '''<div>
+<ul>
+    <li>
+        0 is <span>even</span> half of 0 is <span>even</span>
+    </li><li>
+        1 is <span>odd</span> half of 1 is <span>even</span>
+    </li><li>
+        2 is <span>even</span> half of 2 is <span>odd</span>
+    </li><li>
+        3 is <span>odd</span> half of 3 is <span>odd</span>
+    </li>
+</ul>
+</div>''', rsp
+
+    def test_import_auto(self):
+        loader = fpt.loader.MockLoader({
+            'lib.html':XMLTemplate(source='''<div>
+<span py:def="evenness(n)"
+    ><py:if test="n % 2 == 0"
+        >even</py:if
+    ><py:else
+        >odd</py:else
+></span>
+<py:def function="half_evenness(n)"
+    >half of $n is ${evenness(n/2)}</py:def>
+</div>'''),
+            'tpl.html':XMLTemplate(source='''<div>
+<py:import href="lib.html"
+/><ul>
+    <li py:for="i in range(4)">
+        $i is ${lib.evenness(i)} ${lib.half_evenness(i)}
+    </li>
+</ul>
+</div>''')
+            })
+        tpl = loader.import_('tpl.html')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '''<div>
+<ul>
+    <li>
+        0 is <span>even</span> half of 0 is <span>even</span>
+    </li><li>
+        1 is <span>odd</span> half of 1 is <span>even</span>
+    </li><li>
+        2 is <span>even</span> half of 2 is <span>odd</span>
+    </li><li>
+        3 is <span>odd</span> half of 3 is <span>odd</span>
+    </li>
+</ul>
+</div>''', rsp
+
+    def test_include(self):
+        loader = fpt.loader.MockLoader({
+                'hdr.html':XMLTemplate('<h1>Header</h1>\n'),
+                'tpl.html':XMLTemplate('''<html><body>
+<py:include href="hdr.html"/>
+<p>This is the body</p>
+</body></html>''')
+                })
+        tpl = loader.import_('tpl.html')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '''<html><body>
+<h1>Header</h1>
+<p>This is the body</p>
+</body></html>''', rsp
+
+class TestExtends(TestCase):
+
+    def test_basic(self):
+        loader = fpt.loader.MockLoader({
+                'parent.html':XMLTemplate('''<div
+><h1 py:def="header()">Header name=$name</h1
+><h6 py:def="footer()">Footer</h6
+><div py:def="body()">
+id() = ${id()}
+local.id() = ${local.id()}
+self.id() = ${self.id()}
+child.id() = ${child.id()}
+</div><span py:def="id()">parent</span>
+${header()}
+${body()}
+${footer()}
+</div>'''),
+                'mid.html':XMLTemplate('''<py:extends href="parent.html"
+><span py:def="id()">mid</span
+></py:extends>'''),
+                'child.html':XMLTemplate('''<py:extends href="mid.html"
+><span py:def="id()">child</span
+><div py:def="body()">
+<h2>Child Body</h2>
+${parent.body()}
+</div></py:extends>''')})
+        tpl = loader.import_('child.html')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp=='''<div>
+<h1>Header name=Rick</h1>
+<div>
+<h2>Child Body</h2>
+<div>
+id() = <span>child</span>
+local.id() = <span>parent</span>
+self.id() = <span>child</span>
+child.id() = <span>mid</span>
+</div>
+</div>
+<h6>Footer</h6>
+</div>''', rsp
+
 
 if __name__ == '__main__':
     main()

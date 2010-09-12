@@ -1,3 +1,11 @@
+* Make py:extends work even when it's not bare (or get better semantics for when it's not)
+* XML dynamic extends
+* XML blocks
+* XML closures
+* XML PIs
+* XML Comment tests
+* XML attribute support (non-py:-namespaced)
+* XML attributes: py:content, py:replace, py:strip, py:attrs
 * Track line number information in Text  templates
 * Write XML => IR compiler
 * Add HTML5 support to XML language (flag in XMLTemplate to omit some close tags &
