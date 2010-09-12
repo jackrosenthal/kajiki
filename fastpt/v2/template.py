@@ -80,7 +80,7 @@ class _Template(object):
 
     def _escape(self, value):
         if isinstance(value, flattener):
-            value = u''.join(self._escape(s) for s in value)
+            return u''.join(value) # assume flattener results are already escaped
         if hasattr(value, '__html__'):
             return value.__html__()
         else:

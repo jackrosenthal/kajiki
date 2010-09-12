@@ -2,6 +2,8 @@ import sys
 from random import randint
 from threading import local
 
+from webhelpers.html import literal
+
 def debug():# pragma no cover
     def pm(etype, value, tb): 
         import pdb, traceback

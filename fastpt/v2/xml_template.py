@@ -66,24 +66,60 @@ class _Compiler(object):
             return self._compile_html(node)
 
     def _compile_xml(self, node):
-        yield ir.TextNode('<%s ' % node.tagName)
+        yield ir.TextNode(u'<%s ' % node.tagName)
         for k,v in node.attributes.items():
             if k.startswith('py:'):
                 raise NotImplemented, '_compile_attr(%s)' % k
             yield ir.AttrNode(k, list(self._compile_text(v)))
         if node.childNodes:
-            yield ir.TextNode('>')
+            yield ir.TextNode(u'>')
             for cn in node.childNodes:
                 for x in self._compile_node(cn):
                     yield x
-            yield ir.TextNode('</%s>' % node.tagName)
+            yield ir.TextNode(u'</%s>' % node.tagName)
         else:
-            yield ir.TextNode('/>')
+            yield ir.TextNode(u'/>')
+
+    def _compile_def(self, node):
+        old_in_def, self.in_def = self.in_def, True
+        body = self._compile_nop(node)
+        self.in_def = old_in_def
+        if self.in_def:
+            yield ir.InnerDefNode(node.getAttribute('function'), *body)
+        else:
+            self.functions[node.getAttribute('function')] = body
 
     def _compile_text(self, node):
         tc = _TextCompiler(self.filename, node.data, node.lineno)
         for x in tc:
             yield x
+
+    def _compile_for(self, node):
+        yield ir.ForNode(node.getAttribute('each'),
+                         *list(self._compile_nop(node)))
+
+    def _compile_switch(self, node):
+        # Filter out text nodes
+        body = [ x for x in self._compile_nop(node)
+                 if not isinstance(x, ir.TextNode) ]
+        yield ir.SwitchNode(node.getAttribute('test'), *body)
+
+    def _compile_case(self, node):
+        yield ir.CaseNode(node.getAttribute('value'),
+                         *list(self._compile_nop(node)))
+
+    def _compile_if(self, node):
+        yield ir.IfNode(node.getAttribute('test'),
+                        *list(self._compile_nop(node)))
+
+    def _compile_else(self, node):
+        yield ir.ElseNode(
+            *list(self._compile_nop(node)))
+
+    def _compile_nop(self, node):
+        for c in node.childNodes:
+            for x in self._compile_node(c):
+                yield x
 
 class _TextCompiler(object):
 
@@ -130,6 +166,8 @@ class _TextCompiler(object):
                     print '%3d %s' % (i+1, line)
                 print msg
                 assert False, groups
+        if self.pos != len(source):
+            yield self.text(source[self.pos:])
 
     def _get_braced_expr(self):
         try:
@@ -220,8 +258,8 @@ def expand(tree, parent=None):
         return tree
     if tree.tagName in QDIRECTIVES_DICT:
         tree.setAttribute(
-            tree.tag,
-            tree.getAttribute(QDIRECTIVES_DICT[tree.tag]))
+            tree.tagName,
+            tree.getAttribute(QDIRECTIVES_DICT[tree.tagName]))
         tree.tagName = 'py:nop'
     for directive, attr in QDIRECTIVES:
         if not tree.hasAttribute(directive): continue

@@ -67,9 +67,36 @@ class TestSimple(TestCase):
         assert rsp == '<div >Hello, Rick</div>', rsp
 
     def test_expr_brace_complex(self):
-        tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}\n</div>")
+        tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}</div>")
         rsp = tpl(dict(name='Rick')).__fpt__.render() 
         assert rsp == '<div >Hello, Rick</div>', rsp
+
+class TestSwitch(TestCase):
+
+    def test_switch(self):
+        tpl = XMLTemplate(source='''<div py:for="i in range(2)">
+$i is <py:switch test="i % 2">
+<py:case value="0">even</py:case>
+<py:else>odd</py:else>
+</py:switch></div>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '''<div >
+0 is even</div><div >
+1 is odd</div>''', rsp
+
+class TestFunction(TestCase):
+
+    def test_function(self):
+        tpl = XMLTemplate(source='''<div
+><div py:def="evenness(n)"><py:if test="n % 2 == 0">even</py:if><py:else>odd</py:else></div>
+<py:for each="i in range(2)">$i is ${evenness(i)}
+</py:for
+></div>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '''<div >
+0 is <div >even</div>
+1 is <div >odd</div>
+</div>''', rsp
 
 if __name__ == '__main__':
     main()
