@@ -247,5 +247,21 @@ child.id() = <span>mid</span>
 <h6>Footer</h6>
 </div>''', rsp
 
+    def test_dynamic(self):
+        loader = fpt.loader.MockLoader({
+                'parent0.html':XMLTemplate('<span>Parent 0</span>'),
+                'parent1.html':XMLTemplate('<span>Parent 1</span>'),
+                'child.html':XMLTemplate('''<div
+><py:if test="p == 0"><py:extends href="parent0.html"/></py:if
+><py:else><py:extends href="parent1.html"/></py:else
+></div>
+''')
+                })
+        tpl = loader.import_('child.html')
+        rsp = tpl(dict(p=0)).__fpt__.render()
+        assert rsp == '<div><span>Parent 0</span></div>', rsp
+        rsp = tpl(dict(p=1)).__fpt__.render()
+        assert rsp == '<div><span>Parent 1</span></div>', rsp
+
 if __name__ == '__main__':
     main()
