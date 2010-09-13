@@ -60,7 +60,6 @@ class _Template(object):
             raise
 
     def _extend(self, parent):
-        print 'Extends %s' % parent
         if isinstance(parent, basestring):
             parent = self.loader.import_(parent)
         p_inst = parent(self._context)

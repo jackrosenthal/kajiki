@@ -48,7 +48,6 @@ class _Compiler(object):
         defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
         return ir.TemplateNode(self.mod_py, defs)
 
-
     def _compile_node(self, node):
         if isinstance(node, dom.Comment):
             return self._compile_comment(node)
@@ -293,6 +292,14 @@ def expand(tree, parent=None):
             tree.tagName,
             tree.getAttribute(QDIRECTIVES_DICT[tree.tagName]))
         tree.tagName = 'py:nop'
+    if tree.tagName != 'py:nop' and tree.hasAttribute('py:extends'):
+        import pdb; pdb.set_trace()
+        value = tree.getAttribute('py:extends')
+        el = tree.ownerDocument.createElement('py:extends')
+        el.setAttribute('href', value)
+        el.lineno = tree.lineno
+        tree.removeAttribute('py:extends')
+        tree.childNodes.insert(0, el)
     for directive, attr in QDIRECTIVES:
         if not tree.hasAttribute(directive): continue
         value = tree.getAttribute(directive)

@@ -247,6 +247,5 @@ child.id() = <span>mid</span>
 <h6>Footer</h6>
 </div>''', rsp
 
-
 if __name__ == '__main__':
     main()

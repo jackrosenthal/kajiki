@@ -1,4 +1,3 @@
-* Make py:extends work even when it's not bare (or get better semantics for when it's not)
 * XML dynamic extends
 * XML blocks
 * XML closures
