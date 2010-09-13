@@ -293,7 +293,6 @@ def expand(tree, parent=None):
             tree.getAttribute(QDIRECTIVES_DICT[tree.tagName]))
         tree.tagName = 'py:nop'
     if tree.tagName != 'py:nop' and tree.hasAttribute('py:extends'):
-        import pdb; pdb.set_trace()
         value = tree.getAttribute('py:extends')
         el = tree.ownerDocument.createElement('py:extends')
         el.setAttribute('href', value)

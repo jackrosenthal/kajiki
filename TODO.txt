@@ -4,10 +4,8 @@
 * XML Comment tests
 * XML attribute support (non-py:-namespaced)
 * XML attributes: py:content, py:replace, py:strip, py:attrs
+* XML serialization to HTML4, HTML5
 * Track line number information in Text  templates
-* Write XML => IR compiler
-* Add HTML5 support to XML language (flag in XMLTemplate to omit some close tags &
-  namespaces)
 * Write CSS => IR compiler (and document language)
    - Make sure it replicates the features of Sass plus even more
 * Template designer documentation for text templates
