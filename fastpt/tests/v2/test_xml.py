@@ -42,6 +42,7 @@ class TestExpand(TestCase):
         py:block="block"
         py:extends="extends">Foo</div>''').parse()
         fpt.xml_template.expand(doc)
+        print doc.toprettyxml()
         node = doc.childNodes[0]
         for tagname, attr in fpt.markup_template.QDIRECTIVES:
             assert node.tagName == tagname, '%s != %s' %(
@@ -262,6 +263,46 @@ child.id() = <span>mid</span>
         assert rsp == '<div><span>Parent 0</span></div>', rsp
         rsp = tpl(dict(p=1)).__fpt__.render()
         assert rsp == '<div><span>Parent 1</span></div>', rsp
+
+    def test_block(self):
+        loader = fpt.loader.MockLoader({
+                'parent.html':XMLTemplate('''<div
+><py:def function="greet(name)"
+>Hello, $name!</py:def
+><py:def function="sign(name)"
+>Sincerely,<br/><em>$name</em></py:def
+>${greet(to)}
+
+<p py:block="body">It was good seeing you last Friday.
+Thanks for the gift!</p>
+
+${sign(from_)}
+</div>
+'''),
+                'child.html':XMLTemplate('''<py:extends href="parent.html"
+><py:def function="greet(name)"
+>Dear $name:</py:def
+><p py:block="body">${parent_block()}
+And don't forget you owe me money!
+</p>
+</py:extends>
+''')})
+        parent = loader.import_('parent.html')
+        rsp = parent({'to':'Mark', 'from_':'Rick'}).__fpt__.render()
+        print rsp
+        child = loader.import_('child.txt')
+        rsp = child({'to':'Mark', 'from_':'Rick'}).__fpt__.render()
+        print rsp
+        return
+        assert (rsp=='''Dear Mark:
+It was good seeing you last Friday.  Thanks for the gift!
+
+And don't forget you owe me money!
+
+Sincerely,
+Rick
+'''), rsp
+        
 
 if __name__ == '__main__':
     main()
