@@ -356,5 +356,16 @@ import os
         rsp = tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == '<div>a/b/c</div>'
 
+class TestComment(TestCase):
+
+    def test_basic(self):
+        tpl = XMLTemplate('''<div>
+<!-- This comment is preserved. -->
+<!--! This comment is stripped. -->
+</div>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        print rsp
+        
+
 if __name__ == '__main__':
     main()
