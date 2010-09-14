@@ -110,7 +110,7 @@ class _Compiler(object):
 
     def _compile_def(self, node):
         old_in_def, self.in_def = self.in_def, True
-        body = self._compile_nop(node)
+        body = list(self._compile_nop(node))
         self.in_def = old_in_def
         if self.in_def:
             yield ir.InnerDefNode(node.getAttribute('function'), *body)

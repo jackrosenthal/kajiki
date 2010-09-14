@@ -319,8 +319,7 @@ class TestClosure(TestCase):
     >${inner(x*2)}</py:def
 >${add(5)}</div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        print rsp
-        assert rsp == '15\n', rsp
+        assert rsp == '<div>15</div>', rsp
 
 if __name__ == '__main__':
     main()
