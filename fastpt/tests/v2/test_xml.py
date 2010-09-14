@@ -309,5 +309,18 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
 
+class TestClosure(TestCase):
+    
+    def test(self):
+        tpl = XMLTemplate('''<div
+><py:def function="add(x)"
+    ><py:def function="inner(y)"
+        >${x+y}</py:def
+    >${inner(x*2)}</py:def
+>${add(5)}</div>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        print rsp
+        assert rsp == '15\n', rsp
+
 if __name__ == '__main__':
     main()
