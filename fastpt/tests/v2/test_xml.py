@@ -42,9 +42,11 @@ class TestExpand(TestCase):
         py:block="block"
         py:extends="extends">Foo</div>''').parse()
         fpt.xml_template.expand(doc)
-        print doc.toprettyxml()
         node = doc.childNodes[0]
         for tagname, attr in fpt.markup_template.QDIRECTIVES:
+            if node.tagName == 'div':
+                node = node.childNodes[0]
+                continue
             assert node.tagName == tagname, '%s != %s' %(
                 node.tagName, tagname)
             if attr:
@@ -277,32 +279,35 @@ child.id() = <span>mid</span>
 Thanks for the gift!</p>
 
 ${sign(from_)}
-</div>
-'''),
+</div>'''),
                 'child.html':XMLTemplate('''<py:extends href="parent.html"
 ><py:def function="greet(name)"
 >Dear $name:</py:def
-><p py:block="body">${parent_block()}
-And don't forget you owe me money!
-</p>
-</py:extends>
+><py:block name="body">${parent_block()}
+<p>And don't forget you owe me money!</p>
+</py:block
+></py:extends>
 ''')})
         parent = loader.import_('parent.html')
         rsp = parent({'to':'Mark', 'from_':'Rick'}).__fpt__.render()
-        print rsp
-        child = loader.import_('child.txt')
+        assert rsp == '''<div>Hello, Mark!
+
+<p>It was good seeing you last Friday.
+Thanks for the gift!</p>
+
+Sincerely,<br/><em>Rick</em>
+</div>''', rsp
+        child = loader.import_('child.html')
         rsp = child({'to':'Mark', 'from_':'Rick'}).__fpt__.render()
-        print rsp
-        return
-        assert (rsp=='''Dear Mark:
-It was good seeing you last Friday.  Thanks for the gift!
+        assert rsp=='''<div>Dear Mark:
 
-And don't forget you owe me money!
+<p>It was good seeing you last Friday.
+Thanks for the gift!</p>
+<p>And don't forget you owe me money!</p>
 
-Sincerely,
-Rick
-'''), rsp
-        
+
+Sincerely,<br/><em>Rick</em>
+</div>''', rsp
 
 if __name__ == '__main__':
     main()

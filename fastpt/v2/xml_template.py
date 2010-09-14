@@ -97,6 +97,17 @@ class _Compiler(object):
         href = node.getAttribute('href')
         yield ir.IncludeNode(href)
 
+    def _compile_block(self, node):
+        fname = '_fpt_block_' + node.getAttribute('name')
+        decl = fname + '()'
+        body = list(self._compile_nop(node))
+        self.functions[decl] = body
+        if self.is_child:
+            parent_block = 'parent.' + fname
+            body.insert(0, ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
+        else:
+            yield ir.ExprNode(decl)
+
     def _compile_def(self, node):
         old_in_def, self.in_def = self.in_def, True
         body = self._compile_nop(node)
