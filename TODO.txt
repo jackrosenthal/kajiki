@@ -1,4 +1,3 @@
-* XML Comment tests
 * XML attribute support (non-py:-namespaced)
 * XML attributes: py:content, py:replace, py:strip, py:attrs
 * XML serialization to HTML4, HTML5

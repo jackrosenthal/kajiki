@@ -141,7 +141,7 @@ class _Compiler(object):
             yield x
 
     def _compile_comment(self, node):
-        if node.data.startswith('!'):
+        if not node.data.startswith('!'):
             yield ir.TextNode('<!-- %s -->' % node.data)
 
     def _compile_for(self, node):
