@@ -321,5 +321,40 @@ class TestClosure(TestCase):
         rsp = tpl(dict(name='Rick')).__fpt__.render()
         assert rsp == '<div>15</div>', rsp
 
+class TestPython(TestCase):
+
+    def test_basic(self):
+        tpl = XMLTemplate('''<div
+><?py
+import os
+?>${os.path.join('a', 'b', 'c')}</div>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        print rsp
+        assert rsp == 'a/b/c'
+
+    def test_indent(self):
+        tpl = XMLTemplate('''%py
+    import os
+    import re
+%end
+${os.path.join('a','b','c')}''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == 'a/b/c'
+
+    def test_short(self):
+        tpl = XMLTemplate('''%py import os
+${os.path.join('a','b','c')}''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == 'a/b/c'
+
+    def test_mod(self):
+        tpl = XMLTemplate('''%py% import os
+%def test()
+${os.path.join('a','b','c')}\\
+%end
+${test()}''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == 'a/b/c'
+
 if __name__ == '__main__':
     main()
