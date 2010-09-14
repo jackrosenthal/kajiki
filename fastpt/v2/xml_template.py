@@ -53,12 +53,12 @@ class _Compiler(object):
             return self._compile_comment(node)
         elif isinstance(node, dom.Text):
             return self._compile_text(node)
+        elif isinstance(node, dom.ProcessingInstruction):
+            return self._compile_pi(node)
         elif node.tagName.startswith('py:'):
             # Handle directives
             compiler = getattr(self, '_compile_%s' % node.tagName.split(':')[-1])
             return compiler(node)
-        elif isinstance(node, dom.ProcessingInstruction):
-            return self._compile_pi(node)
         elif self.mode == 'xml':
             return self._compile_xml(node)
         else:
@@ -78,6 +78,14 @@ class _Compiler(object):
             yield ir.TextNode(u'</%s>' % node.tagName)
         else:
             yield ir.TextNode(u'/>')
+
+    def _compile_pi(self, node):
+        body = ir.TextNode(node.data.strip())
+        node = ir.PythonNode(body)
+        if node.module_level:
+            self.mod_py.append(node)
+        else:
+            yield node
 
     def _compile_import(self, node):
         href = node.getAttribute('href')

@@ -203,6 +203,8 @@ class PythonNode(Node):
             yield self.line(line)
 
     def _normalize(self, text):
+        if text.startswith('#\n'):
+            text = text[2:]
         prefix = None
         for line in text.splitlines():
             if prefix is None:

@@ -329,32 +329,32 @@ class TestPython(TestCase):
 import os
 ?>${os.path.join('a', 'b', 'c')}</div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        print rsp
-        assert rsp == 'a/b/c'
+        assert rsp == '<div>a/b/c</div>'
 
     def test_indent(self):
-        tpl = XMLTemplate('''%py
+        tpl = XMLTemplate('''<div
+><?py #
     import os
     import re
-%end
-${os.path.join('a','b','c')}''')
+?>${os.path.join('a','b','c')}</div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == 'a/b/c'
+        assert rsp == '<div>a/b/c</div>'
 
     def test_short(self):
-        tpl = XMLTemplate('''%py import os
-${os.path.join('a','b','c')}''')
+        tpl = XMLTemplate('''<div
+><?py import os
+?>${os.path.join('a', 'b', 'c')}</div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == 'a/b/c'
+        assert rsp == '<div>a/b/c</div>'
 
     def test_mod(self):
-        tpl = XMLTemplate('''%py% import os
-%def test()
-${os.path.join('a','b','c')}\\
-%end
-${test()}''')
+        tpl = XMLTemplate('''<div
+><?py %import os
+?><py:def function="test()"
+>${os.path.join('a', 'b', 'c')}</py:def
+>${test()}</div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        assert rsp == 'a/b/c'
+        assert rsp == '<div>a/b/c</div>'
 
 if __name__ == '__main__':
     main()
