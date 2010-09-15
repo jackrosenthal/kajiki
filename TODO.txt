@@ -1,5 +1,3 @@
-* XML attribute support (non-py:-namespaced)
-* XML attributes: py:content, py:replace, py:strip, py:attrs
 * XML serialization to HTML4, HTML5
 * Track line number information in Text  templates
 * Write CSS => IR compiler (and document language)

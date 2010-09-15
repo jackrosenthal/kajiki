@@ -364,8 +364,42 @@ class TestComment(TestCase):
 <!--! This comment is stripped. -->
 </div>''')
         rsp = tpl(dict(name='Rick')).__fpt__.render()
-        print rsp
+        assert rsp == '''<div>
+<!--  This comment is preserved.  -->
+
+</div>''', rsp
+
+class TestAttributes(TestCase):
+
+    def test_basic(self):
+        tpl = XMLTemplate('''<div id="foo"/>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '<div id="foo"/>', rsp
         
+    def test_content(self):
+        tpl = XMLTemplate('''<div py:content="'foo'"/>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '<div>foo</div>', rsp
+        
+    def test_replace(self):
+        tpl = XMLTemplate('''<div py:replace="'foo'"/>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == 'foo', rsp
+
+    def test_attrs(self):
+        tpl = XMLTemplate('''<div py:attrs="dict(a=5, b=6)"/>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '<div a="5" b="6"/>'
+        tpl = XMLTemplate('''<div py:attrs="[('a', 5), ('b', 6)]"/>''')
+        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        assert rsp == '<div a="5" b="6"/>'
+
+    def test_strip(self):
+        tpl = XMLTemplate('''<div><h1 py:strip="header">Header</h1></div>''')
+        rsp = tpl(dict(header=True)).__fpt__.render()
+        assert rsp == '<div><h1>Header</h1></div>', rsp
+        rsp = tpl(dict(header=False)).__fpt__.render()
+        assert rsp == '<div>Header</div>', rsp
 
 if __name__ == '__main__':
     main()

@@ -167,12 +167,17 @@ class ElseNode(Node):
 
 class TextNode(Node):
 
-    def __init__(self, text):
+    def __init__(self, text, guard=None):
         super(TextNode, self).__init__()
         self.text = text
+        self.guard = guard
 
     def py(self):
-        yield self.line('yield %r' % self.text)
+        s = 'yield %r' % self.text
+        if self.guard:
+            yield self.line('if %s: %s' % (self.guard, s))
+        else:
+            yield self.line(s)
 
 class ExprNode(Node):
 
@@ -182,6 +187,40 @@ class ExprNode(Node):
 
     def py(self):
         yield self.line('yield self.__fpt__.escape(%s)' % self.text)
+
+class AttrNode(Node):
+
+    def __init__(self, attr, value, guard=None):
+        super(AttrNode, self).__init__()
+        self.attr = attr
+        self.value = value
+        self.guard = guard
+
+    def py(self):
+        s = 'yield \' %s="%s"\'' % (self.attr, self.value)
+        if self.guard:
+            yield self.line('if %s: %s' % (self.guard, s))
+        else:
+            yield self.line(s)
+
+class AttrsNode(Node):
+
+    def __init__(self, attrs, guard=None):
+        super(AttrsNode, self).__init__()
+        self.attrs = attrs
+        self.guard = guard
+
+    def py(self):
+        k,v = gen_name(), gen_name()
+        def _body():
+            yield self.line('for %s,%s in self.__fpt__.iter_attrs(%s):' % (k, v, self.attrs))
+            yield self.line('    yield \' %%s="%%s"\' %% (%s, %s)' % (k,v))
+        if self.guard:
+            yield self.line('if %s:' % self.guard)
+            for l in _body():
+                yield l.indent()
+        else:
+            for l in _body(): yield l
 
 class PythonNode(Node):
 

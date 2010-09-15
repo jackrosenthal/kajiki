@@ -65,19 +65,39 @@ class _Compiler(object):
             return self._compile_html(node)
 
     def _compile_xml(self, node):
-        yield ir.TextNode(u'<%s' % node.tagName)
+        content = attrs = guard = None
+        if node.hasAttribute('py:strip'):
+            guard = node.getAttribute('py:strip')
+            node.removeAttribute('py:strip')
+        yield ir.TextNode(u'<%s' % node.tagName, guard)
         for k,v in node.attributes.items():
-            if k.startswith('py:'):
-                raise NotImplemented, '_compile_attr(%s)' % k
-            yield ir.AttrNode(k, list(self._compile_text(v)))
-        if node.childNodes:
-            yield ir.TextNode(u'>')
-            for cn in node.childNodes:
-                for x in self._compile_node(cn):
-                    yield x
-            yield ir.TextNode(u'</%s>' % node.tagName)
+            tc = _TextCompiler(self.filename, v, node.lineno)
+            v = u''.join(n.text for n in tc)
+            if k == 'py:content':
+                content = node.getAttribute('py:content')
+                continue
+            elif k == 'py:attrs':
+                attrs = node.getAttribute('py:attrs')
+                continue
+            yield ir.AttrNode(k, v, guard)
+        if attrs:
+            yield ir.AttrsNode(attrs, guard)
+        if content:
+            yield ir.TextNode(u'>', guard)
+            yield ir.ExprNode(content)
+            yield ir.TextNode(u'</%s>' % node.tagName, guard)
         else:
-            yield ir.TextNode(u'/>')
+            if node.childNodes:
+                yield ir.TextNode(u'>', guard)
+                for cn in node.childNodes:
+                    for x in self._compile_node(cn):
+                        yield x
+                yield ir.TextNode(u'</%s>' % node.tagName, guard)
+            else:
+                yield ir.TextNode(u'/>', guard)
+
+    def _compile_replace(self, node):
+        yield ir.ExprNode(node.getAttribute('value'))
 
     def _compile_pi(self, node):
         body = ir.TextNode(node.data.strip())

@@ -30,7 +30,6 @@ class _Template(object):
             literal=literal,
             __builtins__=__builtins__,
             __fpt__=fastpt.v2)
-        self._buffer = StringIO()
         for k,v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)
@@ -43,7 +42,7 @@ class _Template(object):
             case=self._case,
             import_=self._import,
             escape=self._escape,
-            write=self._buffer.write)
+            iter_attrs=self._iter_attrs)
         self._switch_stack = []
         self.__globals__.update(context)
 
@@ -113,6 +112,12 @@ class _Template(object):
             return value.__html__()
         else:
             return escape(unicode(value))
+
+    def _iter_attrs(self, attrs):
+        if hasattr(attrs, 'items'):
+            attrs = attrs.items()
+        for k,v in attrs:
+            yield k, self._escape(v)
 
 def Template(ns):
     dct = {}
