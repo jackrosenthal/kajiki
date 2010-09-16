@@ -35,6 +35,13 @@ def XMLTemplate(
     ir_ = _Compiler(filename, doc, mode, is_fragment).compile()
     return template.from_ir(ir_)
 
+def annotate(gen):
+    def inner(self, node, *args, **kwargs):
+        for x in gen(self, node, *args, **kwargs):
+            self._anno(node, x)
+            yield x
+    return inner
+
 class _Compiler(object):
 
     def __init__(self, filename, doc, mode='xml', is_fragment=False):
@@ -60,6 +67,11 @@ class _Compiler(object):
         defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
         return ir.TemplateNode(self.mod_py, defs)
 
+    def _anno(self, dom_node, ir_node):
+        if ir_node.lineno != 0: return
+        ir_node._filename = self.filename
+        ir_node._lineno = dom_node.lineno
+
     def _compile_node(self, node):
         if isinstance(node, dom.Comment):
             return self._compile_comment(node)
@@ -74,6 +86,7 @@ class _Compiler(object):
         else:
             return self._compile_xml(node)
 
+    @annotate
     def _compile_xml(self, node):
         content = attrs = guard = None
         if node.hasAttribute('py:strip'):
@@ -113,9 +126,11 @@ class _Compiler(object):
                 else:
                     yield ir.TextNode(u'/>', guard)
 
+    @annotate
     def _compile_replace(self, node):
         yield ir.ExprNode(node.getAttribute('value'))
 
+    @annotate
     def _compile_pi(self, node):
         body = ir.TextNode(node.data.strip())
         node = ir.PythonNode(body)
@@ -124,6 +139,7 @@ class _Compiler(object):
         else:
             yield node
 
+    @annotate
     def _compile_import(self, node):
         href = node.getAttribute('href')
         if node.hasAttribute('alias'):
@@ -131,6 +147,7 @@ class _Compiler(object):
         else:
             yield ir.ImportNode(href)
 
+    @annotate
     def _compile_extends(self, node):
         self.is_child = True
         href = node.getAttribute('href')
@@ -138,10 +155,12 @@ class _Compiler(object):
         for x in self._compile_nop(node):
             yield x
 
+    @annotate
     def _compile_include(self, node):
         href = node.getAttribute('href')
         yield ir.IncludeNode(href)
 
+    @annotate
     def _compile_block(self, node):
         fname = '_kj_block_' + node.getAttribute('name')
         decl = fname + '()'
@@ -153,6 +172,7 @@ class _Compiler(object):
         else:
             yield ir.ExprNode(decl)
 
+    @annotate
     def _compile_def(self, node):
         old_in_def, self.in_def = self.in_def, True
         body = list(self._compile_nop(node))
@@ -162,6 +182,7 @@ class _Compiler(object):
         else:
             self.functions[node.getAttribute('function')] = body
 
+    @annotate
     def _compile_call(self, node):
         if node.childNodes[0].hasAttribute('args'):
             defn = '$caller(' + node.childNodes[0].getAttribute('args') + ')'
@@ -172,37 +193,45 @@ class _Compiler(object):
             node.getAttribute('function').replace('%caller', '$caller'),
             *self._compile_nop(node))
 
+    @annotate
     def _compile_text(self, node):
         tc = _TextCompiler(self.filename, node.data, node.lineno)
         for x in tc:
             yield x
 
+    @annotate
     def _compile_comment(self, node):
         if not node.data.startswith('!'):
             yield ir.TextNode('<!-- %s -->' % node.data)
 
+    @annotate
     def _compile_for(self, node):
         yield ir.ForNode(node.getAttribute('each'),
                          *list(self._compile_nop(node)))
 
+    @annotate
     def _compile_switch(self, node):
         # Filter out text nodes
         body = [ x for x in self._compile_nop(node)
                  if not isinstance(x, ir.TextNode) ]
         yield ir.SwitchNode(node.getAttribute('test'), *body)
 
+    @annotate
     def _compile_case(self, node):
         yield ir.CaseNode(node.getAttribute('value'),
                          *list(self._compile_nop(node)))
 
+    @annotate
     def _compile_if(self, node):
         yield ir.IfNode(node.getAttribute('test'),
                         *list(self._compile_nop(node)))
 
+    @annotate
     def _compile_else(self, node):
         yield ir.ElseNode(
             *list(self._compile_nop(node)))
 
+    @annotate
     def _compile_nop(self, node):
         for c in node.childNodes:
             for x in self._compile_node(c):

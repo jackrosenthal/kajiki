@@ -1,4 +1,5 @@
 * Track line number information in Text  templates
+* Update lnotab and source filename on template functions to reflect template info
 * Write CSS => IR compiler (and document language)
    - Make sure it replicates the features of Sass plus even more
 * Template designer documentation for text templates

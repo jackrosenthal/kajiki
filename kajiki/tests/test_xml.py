@@ -299,6 +299,7 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
         child = loader.import_('child.html')
+        print child.py_text
         rsp = child({'to':'Mark', 'from_':'Rick'}).__kj__.render()
         assert rsp=='''<div>Dear Mark:
 
