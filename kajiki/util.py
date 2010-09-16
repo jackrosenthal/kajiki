@@ -69,6 +69,6 @@ class NameGen(object):
         self.names.add(r)
         return r
 
-def gen_name(hint='_fpt_'):
+def gen_name(hint='_kj_'):
     return NameGen.gen(hint)
     

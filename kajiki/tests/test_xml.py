@@ -2,8 +2,9 @@ import os
 import xml.dom.minidom
 from unittest import TestCase, main
 
-from fastpt import v2 as fpt
-from fastpt.v2.xml_template import XMLTemplate
+import kajiki
+from kajiki import MockLoader, XMLTemplate
+
 
 DATA = os.path.join(
     os.path.dirname(__file__),
@@ -12,7 +13,7 @@ DATA = os.path.join(
 class TestParser(TestCase):
 
     def test_parser(self):
-        doc = fpt.xml_template._Parser('<string>', '''<?xml version="1.0"?>
+        doc = kajiki.xml_template._Parser('<string>', '''<?xml version="1.0"?>
 <!DOCTYPE div PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <div xmlns="http://www.w3.org/1999/xhtml"
@@ -29,7 +30,7 @@ class TestParser(TestCase):
 class TestExpand(TestCase):
 
     def test_expand(self):
-        doc = fpt.xml_template._Parser('<string>', '''<div
+        doc = kajiki.xml_template._Parser('<string>', '''<div
         py:def="def"
         py:call="call"
         py:case="case"
@@ -41,9 +42,9 @@ class TestExpand(TestCase):
         py:replace="replace"
         py:block="block"
         py:extends="extends">Foo</div>''').parse()
-        fpt.xml_template.expand(doc)
+        kajiki.xml_template.expand(doc)
         node = doc.childNodes[0]
-        for tagname, attr in fpt.markup_template.QDIRECTIVES:
+        for tagname, attr in kajiki.markup_template.QDIRECTIVES:
             if node.tagName == 'div':
                 node = node.childNodes[0]
                 continue
@@ -62,17 +63,17 @@ class TestSimple(TestCase):
 
     def test_expr_name(self):
         tpl = XMLTemplate(source='<div>Hello, $name</div>')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_expr_braced(self):
         tpl = XMLTemplate(source='<div>Hello, ${name}</div>')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_expr_brace_complex(self):
         tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}</div>")
-        rsp = tpl(dict(name='Rick')).__fpt__.render() 
+        rsp = tpl(dict(name='Rick')).__kj__.render() 
         assert rsp == '<div>Hello, Rick</div>', rsp
 
 class TestSwitch(TestCase):
@@ -83,7 +84,7 @@ $i is <py:switch test="i % 2">
 <py:case value="0">even</py:case>
 <py:else>odd</py:else>
 </py:switch></div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<div>
 0 is even</div><div>
 1 is odd</div>''', rsp
@@ -96,7 +97,7 @@ class TestFunction(TestCase):
 <py:for each="i in range(2)">$i is ${evenness(i)}
 </py:for
 ></div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<div>
 0 is <div>even</div>
 1 is <div>odd</div>
@@ -112,7 +113,7 @@ class TestCall(TestCase):
 </ul></py:def
 ><py:call args="n" function="quote(%caller, 'the raven')"
 >Nevermore $n</py:call></div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<div><ul>
     <li>Quoth the raven, Nevermore 0</li><li>Quoth the raven, Nevermore 1</li>
 </ul></div>''', rsp
@@ -120,7 +121,7 @@ class TestCall(TestCase):
 class TestImport(TestCase):
     
     def test_import(self):
-        loader = fpt.loader.MockLoader({
+        loader = MockLoader({
             'lib.html':XMLTemplate(source='''<div>
 <span py:def="evenness(n)"
     ><py:if test="n % 2 == 0"
@@ -141,7 +142,7 @@ class TestImport(TestCase):
 </div>''')
             })
         tpl = loader.import_('tpl.html')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<div>
 <ul>
     <li>
@@ -157,7 +158,7 @@ class TestImport(TestCase):
 </div>''', rsp
 
     def test_import_auto(self):
-        loader = fpt.loader.MockLoader({
+        loader = MockLoader({
             'lib.html':XMLTemplate(source='''<div>
 <span py:def="evenness(n)"
     ><py:if test="n % 2 == 0"
@@ -178,7 +179,7 @@ class TestImport(TestCase):
 </div>''')
             })
         tpl = loader.import_('tpl.html')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<div>
 <ul>
     <li>
@@ -194,7 +195,7 @@ class TestImport(TestCase):
 </div>''', rsp
 
     def test_include(self):
-        loader = fpt.loader.MockLoader({
+        loader = MockLoader({
                 'hdr.html':XMLTemplate('<h1>Header</h1>\n'),
                 'tpl.html':XMLTemplate('''<html><body>
 <py:include href="hdr.html"/>
@@ -202,7 +203,7 @@ class TestImport(TestCase):
 </body></html>''')
                 })
         tpl = loader.import_('tpl.html')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<html><body>
 <h1>Header</h1>
 <p>This is the body</p>
@@ -211,7 +212,7 @@ class TestImport(TestCase):
 class TestExtends(TestCase):
 
     def test_basic(self):
-        loader = fpt.loader.MockLoader({
+        loader = MockLoader({
                 'parent.html':XMLTemplate('''<div
 ><h1 py:def="header()">Header name=$name</h1
 ><h6 py:def="footer()">Footer</h6
@@ -235,7 +236,7 @@ ${footer()}
 ${parent.body()}
 </div></py:extends>''')})
         tpl = loader.import_('child.html')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp=='''<div>
 <h1>Header name=Rick</h1>
 <div>
@@ -251,7 +252,7 @@ child.id() = <span>mid</span>
 </div>''', rsp
 
     def test_dynamic(self):
-        loader = fpt.loader.MockLoader({
+        loader = MockLoader({
                 'parent0.html':XMLTemplate('<span>Parent 0</span>'),
                 'parent1.html':XMLTemplate('<span>Parent 1</span>'),
                 'child.html':XMLTemplate('''<div
@@ -261,13 +262,13 @@ child.id() = <span>mid</span>
 ''')
                 })
         tpl = loader.import_('child.html')
-        rsp = tpl(dict(p=0)).__fpt__.render()
+        rsp = tpl(dict(p=0)).__kj__.render()
         assert rsp == '<div><span>Parent 0</span></div>', rsp
-        rsp = tpl(dict(p=1)).__fpt__.render()
+        rsp = tpl(dict(p=1)).__kj__.render()
         assert rsp == '<div><span>Parent 1</span></div>', rsp
 
     def test_block(self):
-        loader = fpt.loader.MockLoader({
+        loader = MockLoader({
                 'parent.html':XMLTemplate('''<div
 ><py:def function="greet(name)"
 >Hello, $name!</py:def
@@ -289,7 +290,7 @@ ${sign(from_)}
 ></py:extends>
 ''')})
         parent = loader.import_('parent.html')
-        rsp = parent({'to':'Mark', 'from_':'Rick'}).__fpt__.render()
+        rsp = parent({'to':'Mark', 'from_':'Rick'}).__kj__.render()
         assert rsp == '''<div>Hello, Mark!
 
 <p>It was good seeing you last Friday.
@@ -298,7 +299,7 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
         child = loader.import_('child.html')
-        rsp = child({'to':'Mark', 'from_':'Rick'}).__fpt__.render()
+        rsp = child({'to':'Mark', 'from_':'Rick'}).__kj__.render()
         assert rsp=='''<div>Dear Mark:
 
 <p>It was good seeing you last Friday.
@@ -318,7 +319,7 @@ class TestClosure(TestCase):
         >${x+y}</py:def
     >${inner(x*2)}</py:def
 >${add(5)}</div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>15</div>', rsp
 
 class TestPython(TestCase):
@@ -328,7 +329,7 @@ class TestPython(TestCase):
 ><?py
 import os
 ?>${os.path.join('a', 'b', 'c')}</div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>a/b/c</div>'
 
     def test_indent(self):
@@ -337,14 +338,14 @@ import os
     import os
     import re
 ?>${os.path.join('a','b','c')}</div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>a/b/c</div>'
 
     def test_short(self):
         tpl = XMLTemplate('''<div
 ><?py import os
 ?>${os.path.join('a', 'b', 'c')}</div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>a/b/c</div>'
 
     def test_mod(self):
@@ -353,7 +354,7 @@ import os
 ?><py:def function="test()"
 >${os.path.join('a', 'b', 'c')}</py:def
 >${test()}</div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>a/b/c</div>'
 
 class TestComment(TestCase):
@@ -363,7 +364,7 @@ class TestComment(TestCase):
 <!-- This comment is preserved. -->
 <!--! This comment is stripped. -->
 </div>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '''<div>
 <!--  This comment is preserved.  -->
 
@@ -373,32 +374,32 @@ class TestAttributes(TestCase):
 
     def test_basic(self):
         tpl = XMLTemplate('''<div id="foo"/>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div id="foo"/>', rsp
         
     def test_content(self):
         tpl = XMLTemplate('''<div py:content="'foo'"/>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div>foo</div>', rsp
         
     def test_replace(self):
         tpl = XMLTemplate('''<div py:replace="'foo'"/>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == 'foo', rsp
 
     def test_attrs(self):
         tpl = XMLTemplate('''<div py:attrs="dict(a=5, b=6)"/>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div a="5" b="6"/>'
         tpl = XMLTemplate('''<div py:attrs="[('a', 5), ('b', 6)]"/>''')
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '<div a="5" b="6"/>'
 
     def test_strip(self):
         tpl = XMLTemplate('''<div><h1 py:strip="header">Header</h1></div>''')
-        rsp = tpl(dict(header=True)).__fpt__.render()
+        rsp = tpl(dict(header=True)).__kj__.render()
         assert rsp == '<div><h1>Header</h1></div>', rsp
-        rsp = tpl(dict(header=False)).__fpt__.render()
+        rsp = tpl(dict(header=False)).__kj__.render()
         assert rsp == '<div>Header</div>', rsp
 
 if __name__ == '__main__':

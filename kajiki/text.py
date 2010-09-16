@@ -13,8 +13,8 @@ import shlex
 from collections import defaultdict
 from itertools import chain
 
-from fastpt import v2 as fpt
-from fastpt.v2 import ir
+import kajiki
+from . import ir
 
 _pattern = r'''
 \$(?:
@@ -44,7 +44,7 @@ def TextTemplate(
         filename = '<string>'
     scanner = _Scanner(filename, source)
     tree = _Parser(scanner).parse()
-    return fpt.template.from_ir(tree)
+    return kajiki.template.from_ir(tree)
 
 class _Scanner(object):
 
@@ -274,7 +274,7 @@ class _Parser(object):
             return node
 
     def _parse_block(self, token):
-        fname = '_fpt_block_' + token.body.strip()
+        fname = '_kj_block_' + token.body.strip()
         decl = fname + '()'
         body = list(self._parse_body('end'))[:-1]
         self.functions[decl] = body

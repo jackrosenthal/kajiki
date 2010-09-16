@@ -126,7 +126,7 @@ class _Compiler(object):
         yield ir.IncludeNode(href)
 
     def _compile_block(self, node):
-        fname = '_fpt_block_' + node.getAttribute('name')
+        fname = '_kj_block_' + node.getAttribute('name')
         decl = fname + '()'
         body = list(self._compile_nop(node))
         self.functions[decl] = body

@@ -25,7 +25,7 @@ class TemplateNode(Node):
         for block in self.mod_py:
             for  line in block.py():
                 yield line
-        yield self.line('@fpt.Template')
+        yield self.line('@kajiki.Template')
         yield self.line('class template:')
         for child in self.defs:
             for line in child.py():
@@ -40,7 +40,7 @@ class ImportNode(Node):
 
     def py(self):
         yield self.line(
-            'local.__fpt__.import_(%r, %r, globals())' % (
+            'local.__kj__.import_(%r, %r, globals())' % (
                 self.tpl_name, self.alias))
 
 class IncludeNode(Node):
@@ -51,7 +51,7 @@ class IncludeNode(Node):
 
     def py(self):
         yield self.line(
-            'yield local.__fpt__.import_(%r, None, {}).__call__()' % (
+            'yield local.__kj__.import_(%r, None, {}).__call__()' % (
                 self.tpl_name))
 
 class ExtendNode(Node):
@@ -62,11 +62,11 @@ class ExtendNode(Node):
 
     def py(self):
         yield self.line(
-            'yield local.__fpt__.extend(%r).__call__()' % (
+            'yield local.__kj__.extend(%r).__call__()' % (
                 self.tpl_name))
 
 class DefNode(Node):
-    prefix = '@fpt.expose'
+    prefix = '@kajiki.expose'
 
     def __init__(self, decl, *body):
         super(DefNode, self).__init__()
@@ -81,7 +81,7 @@ class DefNode(Node):
                 yield line.indent()
 
 class InnerDefNode(DefNode):
-    prefix='@__fpt__.flattener.decorate'
+    prefix='@__kj__.flattener.decorate'
 
 class CallNode(Node):
 
@@ -93,7 +93,7 @@ class CallNode(Node):
         self.body = tuple(x for x in body if x is not None)
 
     def py(self):
-        yield self.line('@__fpt__.flattener.decorate')
+        yield self.line('@__kj__.flattener.decorate')
         yield self.line('def %s:' % (self.decl))
         for child in self.body:
             for line in child.py():
@@ -121,11 +121,11 @@ class SwitchNode(Node):
         self.body = tuple(x for x in body if x is not None)
 
     def py(self):
-        yield self.line('local.__fpt__.push_switch(%s)' % self.decl)
+        yield self.line('local.__kj__.push_switch(%s)' % self.decl)
         for child in self.body:
             for line in child.py():
                 yield line
-        yield self.line('local.__fpt__.pop_switch()')
+        yield self.line('local.__kj__.pop_switch()')
 
 class CaseNode(Node):
 
@@ -135,7 +135,7 @@ class CaseNode(Node):
         self.body = tuple(x for x in body if x is not None)
 
     def py(self):
-        yield self.line('if local.__fpt__.case(%s):' % self.decl)
+        yield self.line('if local.__kj__.case(%s):' % self.decl)
         for child in self.body:
             for line in child.py():
                 yield line.indent()
@@ -186,7 +186,7 @@ class ExprNode(Node):
         self.text = text
 
     def py(self):
-        yield self.line('yield self.__fpt__.escape(%s)' % self.text)
+        yield self.line('yield self.__kj__.escape(%s)' % self.text)
 
 class AttrNode(Node):
 
@@ -213,7 +213,7 @@ class AttrsNode(Node):
     def py(self):
         k,v = gen_name(), gen_name()
         def _body():
-            yield self.line('for %s,%s in self.__fpt__.iter_attrs(%s):' % (k, v, self.attrs))
+            yield self.line('for %s,%s in self.__kj__.iter_attrs(%s):' % (k, v, self.attrs))
             yield self.line('    yield \' %%s="%%s"\' %% (%s, %s)' % (k,v))
         if self.guard:
             yield self.line('if %s:' % self.guard)

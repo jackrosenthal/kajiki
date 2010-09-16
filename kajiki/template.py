@@ -6,7 +6,7 @@ from pprint import pprint
 
 from webhelpers.html import literal
 
-import fastpt
+import kajiki
 from .util import flattener
 
 class _obj(object):
@@ -29,12 +29,12 @@ class _Template(object):
             self=self,
             literal=literal,
             __builtins__=__builtins__,
-            __fpt__=fastpt.v2)
+            __kj__=kajiki)
         for k,v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)
             self.__globals__[k] = v
-        self.__fpt__ = _obj(
+        self.__kj__ = _obj(
             render=self._render,
             extend=self._extend,
             push_switch=self._push_switch,
@@ -129,9 +129,8 @@ def Template(ns):
     return type(ns.__name__,(_Template,), dct)
 
 def from_ir(ir_node):
-    from fastpt import v2 as fpt
     py_text = '\n'.join(map(str, ir_node.py()))
-    dct = dict(fpt=fpt)
+    dct = dict(kajiki=kajiki)
     try:
         exec py_text in dct
     except SyntaxError: # pragma no cover

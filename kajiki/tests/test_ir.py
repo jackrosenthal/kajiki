@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 
-from fastpt import v2 as fpt
-from fastpt.v2 import ir 
+import kajiki
+from kajiki import ir
 
 class TestBasic(TestCase):
 
@@ -14,8 +14,8 @@ class TestBasic(TestCase):
                 ir.TextNode('\n'))])
 
     def test(self):
-        tpl = fpt.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).__fpt__.render() 
+        tpl = kajiki.template.from_ir(self.tpl)
+        rsp = tpl(dict(name='Rick')).__kj__.render() 
         assert rsp == 'Hello, Rick\n', rsp
 
 class TestSwitch(TestCase):
@@ -37,8 +37,8 @@ class TestSwitch(TestCase):
                                 ir.TextNode('odd\n')))))])
             
     def test_basic(self):
-        tpl = fpt.template.from_ir(self.tpl)
-        rsp = tpl(dict()).__fpt__.render() 
+        tpl = kajiki.template.from_ir(self.tpl)
+        rsp = tpl(dict()).__kj__.render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestFunction(TestCase):
@@ -62,8 +62,8 @@ class TestFunction(TestCase):
                         ir.TextNode('\n')))])
 
     def test_basic(self):
-        tpl = fpt.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        tpl = kajiki.template.from_ir(self.tpl)
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestCall(TestCase):
@@ -88,8 +88,8 @@ class TestCall(TestCase):
                         ir.ExprNode('n')))])
             
     def test_basic(self):
-        tpl = fpt.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).__fpt__.render()
+        tpl = kajiki.template.from_ir(self.tpl)
+        rsp = tpl(dict(name='Rick')).__kj__.render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
@@ -124,13 +124,13 @@ class TestImport(TestCase):
                         ir.ExprNode('simple_function.evenness(i)'),
                         ir.ExprNode('simple_function.half_evenness(i)'),
                         ir.TextNode('\n')))])
-        loader = fpt.loader.MockLoader({
-            'lib.txt':fpt.template.from_ir(lib),
-            'tpl.txt':fpt.template.from_ir(tpl)})
+        loader = kajiki.loader.MockLoader({
+            'lib.txt':kajiki.template.from_ir(lib),
+            'tpl.txt':kajiki.template.from_ir(tpl)})
         self.tpl = loader.import_('tpl.txt')
 
     def test_import(self):
-        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
+        rsp = self.tpl(dict(name='Rick')).__kj__.render()
         assert (rsp=='0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
@@ -151,13 +151,13 @@ class TestInclude(TestCase):
                     ir.TextNode('a\n'),
                     ir.IncludeNode('hdr.txt'),
                     ir.TextNode('b\n'))])
-        loader = fpt.loader.MockLoader({
-            'hdr.txt':fpt.template.from_ir(hdr),
-            'tpl.txt':fpt.template.from_ir(tpl)})
+        loader = kajiki.loader.MockLoader({
+            'hdr.txt':kajiki.template.from_ir(hdr),
+            'tpl.txt':kajiki.template.from_ir(tpl)})
         self.tpl = loader.import_('tpl.txt')
 
     def test_include(self):
-        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
+        rsp = self.tpl(dict(name='Rick')).__kj__.render()
         assert rsp == 'a\n# header\nb\n', rsp
 
 class TestExtends(TestCase):
@@ -213,15 +213,15 @@ class TestExtends(TestCase):
                 ir.DefNode(
                     'id()',
                     ir.TextNode('child'))])
-        loader = fpt.loader.MockLoader({
-            'parent.txt':fpt.template.from_ir(parent_tpl),
-            'mid.txt':fpt.template.from_ir(mid_tpl),
-            'child.txt':fpt.template.from_ir(child_tpl)})
+        loader = kajiki.loader.MockLoader({
+            'parent.txt':kajiki.template.from_ir(parent_tpl),
+            'mid.txt':kajiki.template.from_ir(mid_tpl),
+            'child.txt':kajiki.template.from_ir(child_tpl)})
         self.loader = loader
         self.tpl = loader.import_('child.txt')
         
     def test_extends(self):
-        rsp = self.tpl(dict(name='Rick')).__fpt__.render()
+        rsp = self.tpl(dict(name='Rick')).__kj__.render()
         assert (rsp == '# Header name=Rick\n'
                 '## Child Body\n'
                 '## Parent Body\n'
@@ -251,17 +251,17 @@ class TestDynamicExtends(TestCase):
                         ir.ExtendNode('parent0.txt')),
                     ir.ElseNode(
                         ir.ExtendNode('parent1.txt')))])
-        loader = fpt.loader.MockLoader({
-            'parent0.txt':fpt.template.from_ir(p0),
-            'parent1.txt':fpt.template.from_ir(p1),
-            'child.txt':fpt.template.from_ir(child)})
+        loader = kajiki.loader.MockLoader({
+            'parent0.txt':kajiki.template.from_ir(p0),
+            'parent1.txt':kajiki.template.from_ir(p1),
+            'child.txt':kajiki.template.from_ir(child)})
         self.loader = loader
         self.tpl = loader.import_('child.txt')
 
     def test_extends(self):
-        rsp = self.tpl(dict(p=0)).__fpt__.render()
+        rsp = self.tpl(dict(p=0)).__kj__.render()
         assert rsp == 'Parent 0', rsp
-        rsp = self.tpl(dict(p=1)).__fpt__.render()
+        rsp = self.tpl(dict(p=1)).__kj__.render()
         assert rsp == 'Parent 1', rsp
 
 if __name__ == '__main__':
