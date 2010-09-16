@@ -1,4 +1,14 @@
-HTML_EMPTY_ATTRS=set([ 'disabled',  'readonly',  'checked', 'selected' ])
+HTML_EMPTY_ATTRS=set([
+        'checked',
+        'disabled',
+        'readonly',
+        'multiple',
+        'selected',
+        'nohref',
+        'ismap',
+        'declare',
+        'defer',
+        ])
 HTML_OPTIONAL_END_TAGS=set([
     'area',
     'base',
