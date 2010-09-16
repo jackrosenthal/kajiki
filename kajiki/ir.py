@@ -279,7 +279,7 @@ class PyLine(object):
         return PyLine(self._filename, self._lineno, self._text, self._indent + sz)
 
     def __str__(self):
-        if self._lineno != 0:
+        if self._lineno:
             return (' ' * self._indent) + self._text + '\t# %s:%d' % (self._filename, self._lineno)
         else:
             return (' ' * self._indent) + self._text

@@ -1,9 +1,11 @@
 import os
+import sys
+import traceback
 import xml.dom.minidom
 from unittest import TestCase, main
 
 import kajiki
-from kajiki import MockLoader, XMLTemplate
+from kajiki import MockLoader, XMLTemplate, FileLoader
 
 
 DATA = os.path.join(
@@ -420,6 +422,23 @@ class TestAttributes(TestCase):
                           mode='html5', is_fragment=True)
         rsp = tpl(dict(checked=True)).__kj__.render()
         assert rsp == '<input type="checkbox" CHECKED>', rsp
+
+class TestDebug(TestCase):
+    
+    def test_debug(self):
+        loader = FileLoader(base=os.path.join(os.path.dirname(__file__), 'data'))
+        tpl = loader.import_('debug.html')
+        try:
+            tpl().__kj__.render()
+            assert False, 'Should have raised ValueError'
+        except ValueError:
+            exc_info = sys.exc_info()
+            stack = traceback.extract_tb(exc_info[2])
+        # Verify we have stack trace entries in the template
+        for fn, lno, func, line in stack:
+            if fn.endswith('debug.html'): break
+        else:
+            assert False, 'Stacktrace is all python'
 
 if __name__ == '__main__':
     main()

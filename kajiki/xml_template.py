@@ -32,7 +32,8 @@ def XMLTemplate(
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    ir_ = _Compiler(filename, doc, mode, is_fragment).compile()
+    compiler = _Compiler(filename, doc, mode, is_fragment)
+    ir_ = compiler.compile()
     return template.from_ir(ir_)
 
 def annotate(gen):
@@ -50,6 +51,7 @@ class _Compiler(object):
         self.mode = mode
         self.functions = defaultdict(list)
         self.functions['__call__()'] = []
+        self.function_lnos = {}
         self.mod_py = []
         self.in_def = False
         self.is_child = False
@@ -57,20 +59,32 @@ class _Compiler(object):
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
-        if not self.is_fragment:
-            # Never emit doctypes on fragments
+        if not self.is_fragment: # Never emit doctypes on fragments
             if self.mode == 'xml' and self.doc.doctype:
-                body = [ ir.TextNode(self.doc.doctype.toxml()) ] + body
+                dt = ir.TextNode(self.doc.doctype.toxml())
+                dt.filename = self.filename
+                dt.lineno = 1
+                body.insert(0, dt)
             elif self.mode == 'html5':
-                body = [ ir.TextNode('<!DOCTYPE html>')] +body
+                dt = ir.TextNode('<!DOCTYPE html>')
+                dt.filename = self.filename
+                dt.lineno = 1
+                body.insert(0, dt)
         self.functions['__call__()'] = body
-        defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
-        return ir.TemplateNode(self.mod_py, defs)
+        defs = []
+        for k,v in self.functions.iteritems():
+            node = ir.DefNode(k, *v)
+            node.lineno = self.function_lnos.get(k)
+            defs.append(node)
+        node = ir.TemplateNode(self.mod_py, defs)
+        node.filename = self.filename
+        node.lineno = 0
+        return node
 
     def _anno(self, dom_node, ir_node):
-        if ir_node.lineno != 0: return
-        ir_node._filename = self.filename
-        ir_node._lineno = dom_node.lineno
+        if ir_node.lineno: return
+        ir_node.filename = self.filename
+        ir_node.lineno = dom_node.lineno
 
     def _compile_node(self, node):
         if isinstance(node, dom.Comment):
