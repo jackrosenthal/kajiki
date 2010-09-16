@@ -10,6 +10,8 @@ from . import template
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 from .html_utils import HTML_OPTIONAL_END_TAGS
 
+impl = dom.getDOMImplementation(' ')
+
 _pattern = r'''
 \$(?:
     (?P<expr_escaped>\$) |      # Escape $$
@@ -46,6 +48,10 @@ class _Compiler(object):
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
+        if self.mode == 'xml' and self.doc.doctype:
+            body = [ ir.TextNode(self.doc.doctype.toxml()) ] + body
+        elif self.mode == 'html5':
+            body = [ ir.TextNode('<!DOCTYPE html>')] +body
         self.functions['__call__()'] = body
         defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
         return ir.TemplateNode(self.mod_py, defs)
@@ -324,7 +330,8 @@ class _Parser(sax.ContentHandler):
 
     def startCDATA(self): pass
     def endCDATA(self): pass
-    def startDTD(self, name, pubid, sysid): pass
+    def startDTD(self, name, pubid, sysid):
+        self._doc.doctype = impl.createDocumentType(name, pubid, sysid)
     def endDTD(self): pass
 
 def expand(tree, parent=None):
