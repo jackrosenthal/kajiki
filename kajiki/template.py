@@ -132,7 +132,13 @@ def Template(ns):
     return type(ns.__name__,(_Template,), dct)
 
 def from_ir(ir_node):
-    py_text = '\n'.join(map(str, ir_node.py()))
+    py_lines = list(ir_node.py())
+    py_text = '\n'.join(map(str, py_lines))
+    py_linenos = [
+        (i+1, l._lineno)
+        for i,l in enumerate(py_lines)
+        if l._lineno ]
+    print py_linenos
     dct = dict(kajiki=kajiki)
     try:
         exec py_text in dct
