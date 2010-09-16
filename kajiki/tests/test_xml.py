@@ -416,6 +416,10 @@ class TestAttributes(TestCase):
                           mode='html5')
         rsp = tpl(dict(checked=True)).__kj__.render()
         assert rsp == '<!DOCTYPE html><input type="checkbox" CHECKED>', rsp
+        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
+                          mode='html5', is_fragment=True)
+        rsp = tpl(dict(checked=True)).__kj__.render()
+        assert rsp == '<input type="checkbox" CHECKED>', rsp
 
 if __name__ == '__main__':
     main()

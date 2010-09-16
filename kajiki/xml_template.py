@@ -24,19 +24,20 @@ _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
 def XMLTemplate(
     source=None,
     filename=None,
-    mode='xml'):
+    mode='xml',
+    is_fragment=False):
     if source is None:
         source = open(filename).read()
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    ir_ = _Compiler(filename, doc, mode).compile()
+    ir_ = _Compiler(filename, doc, mode, is_fragment).compile()
     return template.from_ir(ir_)
 
 class _Compiler(object):
 
-    def __init__(self, filename, doc, mode='xml'):
+    def __init__(self, filename, doc, mode='xml', is_fragment=False):
         self.filename = filename
         self.doc = doc
         self.mode = mode
@@ -45,13 +46,16 @@ class _Compiler(object):
         self.mod_py = []
         self.in_def = False
         self.is_child = False
+        self.is_fragment = is_fragment
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
-        if self.mode == 'xml' and self.doc.doctype:
-            body = [ ir.TextNode(self.doc.doctype.toxml()) ] + body
-        elif self.mode == 'html5':
-            body = [ ir.TextNode('<!DOCTYPE html>')] +body
+        if not self.is_fragment:
+            # Never emit doctypes on fragments
+            if self.mode == 'xml' and self.doc.doctype:
+                body = [ ir.TextNode(self.doc.doctype.toxml()) ] + body
+            elif self.mode == 'html5':
+                body = [ ir.TextNode('<!DOCTYPE html>')] +body
         self.functions['__call__()'] = body
         defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
         return ir.TemplateNode(self.mod_py, defs)
