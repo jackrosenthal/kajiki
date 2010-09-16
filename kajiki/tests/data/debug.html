@@ -1,0 +1,8 @@
+<div>
+  <py:def function="one()">${two()}</py:def>
+  <py:def function="two()">${three()}</py:def>
+  <py:def function="three()">
+    <?py raise ValueError, 'Test error' ?>
+  </py:def>
+  ${one()}
+</div>
