@@ -8,6 +8,7 @@ from xml.dom import minidom as dom
 from . import ir
 from . import template
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
+from .html_utils import HTML_OPTIONAL_END_TAGS
 
 _pattern = r'''
 \$(?:
@@ -20,14 +21,15 @@ _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
 
 def XMLTemplate(
     source=None,
-    filename=None):
+    filename=None,
+    mode='xml'):
     if source is None:
         source = open(filename).read()
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    ir_ = _Compiler(filename, doc).compile()
+    ir_ = _Compiler(filename, doc, mode).compile()
     return template.from_ir(ir_)
 
 class _Compiler(object):
@@ -59,10 +61,8 @@ class _Compiler(object):
             # Handle directives
             compiler = getattr(self, '_compile_%s' % node.tagName.split(':')[-1])
             return compiler(node)
-        elif self.mode == 'xml':
-            return self._compile_xml(node)
         else:
-            return self._compile_html(node)
+            return self._compile_xml(node)
 
     def _compile_xml(self, node):
         content = attrs = guard = None
@@ -72,16 +72,17 @@ class _Compiler(object):
         yield ir.TextNode(u'<%s' % node.tagName, guard)
         for k,v in node.attributes.items():
             tc = _TextCompiler(self.filename, v, node.lineno)
-            v = u''.join(n.text for n in tc)
+            v = list(tc)
+            # v = u''.join(n.text for n in tc)
             if k == 'py:content':
                 content = node.getAttribute('py:content')
                 continue
             elif k == 'py:attrs':
                 attrs = node.getAttribute('py:attrs')
                 continue
-            yield ir.AttrNode(k, v, guard)
+            yield ir.AttrNode(k, v, guard, self.mode)
         if attrs:
-            yield ir.AttrsNode(attrs, guard)
+            yield ir.AttrsNode(attrs, guard, self.mode)
         if content:
             yield ir.TextNode(u'>', guard)
             yield ir.ExprNode(content)
@@ -92,9 +93,15 @@ class _Compiler(object):
                 for cn in node.childNodes:
                     for x in self._compile_node(cn):
                         yield x
-                yield ir.TextNode(u'</%s>' % node.tagName, guard)
+                if not (self.mode.startswith('html')
+                        and node.tagName in HTML_OPTIONAL_END_TAGS):
+                    yield ir.TextNode(u'</%s>' % node.tagName, guard)
             else:
-                yield ir.TextNode(u'/>', guard)
+                if (self.mode.startswith('html')
+                    and node.tagName in HTML_OPTIONAL_END_TAGS):
+                    yield ir.TextNode(u'>', guard)
+                else:
+                    yield ir.TextNode(u'/>', guard)
 
     def _compile_replace(self, node):
         yield ir.ExprNode(node.getAttribute('value'))

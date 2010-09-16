@@ -1,4 +1,3 @@
-* XML serialization to HTML4, HTML5
 * Track line number information in Text  templates
 * Write CSS => IR compiler (and document language)
    - Make sure it replicates the features of Sass plus even more

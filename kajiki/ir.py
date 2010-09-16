@@ -190,31 +190,46 @@ class ExprNode(Node):
 
 class AttrNode(Node):
 
-    def __init__(self, attr, value, guard=None):
+    def __init__(self, attr, value, guard=None, mode='xml'):
         super(AttrNode, self).__init__()
         self.attr = attr
         self.value = value
         self.guard = guard
+        self.mode = mode
 
     def py(self):
-        s = 'yield \' %s="%s"\'' % (self.attr, self.value)
+        x,gen = gen_name(), gen_name()
+        def _body():
+            yield self.line('def %s():' % gen)
+            for part in self.value:
+                for line in part.py():
+                    yield line.indent()
+            yield self.line("%s = ''.join(%s())" % (gen,gen))
+            yield self.line(
+                'for %s in self.__kj__.render_attrs({%r:%s}, %r):'
+                % (x, self.attr, gen, self.mode))
+            yield self.line('    yield %s' % x)
         if self.guard:
-            yield self.line('if %s: %s' % (self.guard, s))
+            yield self.line('if %s:' % self.guard)
+            for l in _body():
+                yield l.indent()
         else:
-            yield self.line(s)
+            for l in _body(): yield l
 
 class AttrsNode(Node):
 
-    def __init__(self, attrs, guard=None):
+    def __init__(self, attrs, guard=None, mode='xml'):
         super(AttrsNode, self).__init__()
         self.attrs = attrs
         self.guard = guard
+        self.mode = mode
 
     def py(self):
-        k,v = gen_name(), gen_name()
+        x = gen_name()
         def _body():
-            yield self.line('for %s,%s in self.__kj__.iter_attrs(%s):' % (k, v, self.attrs))
-            yield self.line('    yield \' %%s="%%s"\' %% (%s, %s)' % (k,v))
+            yield self.line(
+                'for %s in self.__kj__.render_attrs(%s, %r):' % (x, self.attrs, self.mode))
+            yield self.line('    yield %s' % x)
         if self.guard:
             yield self.line('if %s:' % self.guard)
             for l in _body():

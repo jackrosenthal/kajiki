@@ -402,5 +402,13 @@ class TestAttributes(TestCase):
         rsp = tpl(dict(header=False)).__kj__.render()
         assert rsp == '<div>Header</div>', rsp
 
+    def test_html_attrs(self):
+        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='xml')
+        rsp = tpl(dict(checked=True)).__kj__.render()
+        assert rsp == '<input type="checkbox" checked="True"/>', rsp
+        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='html')
+        rsp = tpl(dict(checked=True)).__kj__.render()
+        assert rsp == '<input type="checkbox" CHECKED>', rsp
+
 if __name__ == '__main__':
     main()

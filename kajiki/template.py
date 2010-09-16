@@ -8,6 +8,7 @@ from webhelpers.html import literal
 
 import kajiki
 from .util import flattener
+from .html_utils import HTML_EMPTY_ATTRS
 
 class _obj(object):
     def __init__(self, **kw):
@@ -42,7 +43,7 @@ class _Template(object):
             case=self._case,
             import_=self._import,
             escape=self._escape,
-            iter_attrs=self._iter_attrs)
+            render_attrs=self._render_attrs)
         self._switch_stack = []
         self.__globals__.update(context)
 
@@ -113,11 +114,13 @@ class _Template(object):
         else:
             return escape(unicode(value))
 
-    def _iter_attrs(self, attrs):
+    def _render_attrs(self, attrs, mode):
         if hasattr(attrs, 'items'):
             attrs = attrs.items()
         for k,v in attrs:
-            yield k, self._escape(v)
+            if v is None: continue
+            if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.upper()
+            else: yield ' %s="%s"' % (k,self._escape(v))
 
 def Template(ns):
     dct = {}
