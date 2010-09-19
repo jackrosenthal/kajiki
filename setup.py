@@ -10,8 +10,8 @@ setup(name='Kajiki',
       you still long for the assurance that your output is well-formed that you
       miss from all those other templating engines? Do you wish you had Jinja's
       blocks with Genshi's syntax? Then look  no further, Kajiki is for you!
-      Kajiki uses the stdlib's HTMLParser to *quickly* compile Genshi-like syntax to *real python
-      bytecode* that renders with blazing-fast speed! Don't delay! Pick up your
+      Kajiki quickly compiles Genshi-like syntax to *real python bytecode*
+      that renders with blazing-fast speed! Don't delay! Pick up your
       copy of Kajiki today!""",  
       classifiers=[
         'Development Status :: 3 - Alpha',

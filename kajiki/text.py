@@ -44,6 +44,7 @@ def TextTemplate(
         filename = '<string>'
     scanner = _Scanner(filename, source)
     tree = _Parser(scanner).parse()
+    tree.filename = filename
     return kajiki.template.from_ir(tree)
 
 class _Scanner(object):

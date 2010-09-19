@@ -1,6 +1,9 @@
+import os
+import sys
+import traceback
 from unittest import TestCase, main
 
-from kajiki import MockLoader, TextTemplate
+from kajiki import MockLoader, FileLoader, TextTemplate
 
 class TestBasic(TestCase):
 
@@ -307,6 +310,23 @@ ${os.path.join('a','b','c')}\\
 ${test()}''')
         rsp = tpl(dict(name='Rick')).__kj__.render()
         assert rsp == 'a/b/c'
+
+class TestDebug(TestCase):
+    
+    def test_debug(self):
+        loader = FileLoader(base=os.path.join(os.path.dirname(__file__), 'data'))
+        tpl = loader.import_('debug.txt')
+        try:
+            tpl().__kj__.render()
+            assert False, 'Should have raised ValueError'
+        except ValueError:
+            exc_info = sys.exc_info()
+            stack = traceback.extract_tb(exc_info[2])
+        # Verify we have stack trace entries in the template
+        for fn, lno, func, line in stack:
+            if fn.endswith('debug.txt'): break
+        else:
+            assert False, 'Stacktrace is all python'
 
 if __name__ == '__main__':
     main()
