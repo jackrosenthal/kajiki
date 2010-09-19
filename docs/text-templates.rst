@@ -1,5 +1,5 @@
 ==================================
-FastPt Text Templates
+Kajiki Text Templates
 ==================================
 
 Basic Expressions
@@ -52,7 +52,7 @@ If you wish to include a literal $, simply prefix it with a backslash.
 Control Flow
 ============
 
-FastPt provides several tags that affect the rendering of a template.  The
+Kajiki provides several tags that affect the rendering of a template.  The
 following template "control_flow.txt" illustrates:
 
 .. code-block:: none
@@ -260,7 +260,7 @@ This yields the following Python::
 Functions and Imports
 ====================================
 
-FastPt provides for code reuse via the %def and %import directives.  First, let's
+Kajiki provides for code reuse via the %def and %import directives.  First, let's
 see %def in action in "simple_function.txt":
 
 .. code-block:: none
@@ -397,7 +397,7 @@ Which of course yields:
 Inheritance
 ==============
 
-FastPt supports a concept of inheritance whereby child templates can extend
+Kajiki supports a concept of inheritance whereby child templates can extend
 parent templates, replacing their methods and "blocks" (to be defined below).
 For instance, consider the following template "parent.txt":
 

@@ -1,7 +1,7 @@
 Migrating from Genshi
 ======================================
 
-FastPt uses syntax derived from the syntax of Genshi.  In particular, the
+Kajiki uses syntax derived from the syntax of Genshi.  In particular, the
 following directives are supported, with semantics intended to be nearly identical to
 those of Genshi_.
 
@@ -18,7 +18,7 @@ those of Genshi_.
  * `py:strip`
  * `xi:include`
 
-Note that, in particular, `py:match` is not supported.  In addition, FastPt
+Note that, in particular, `py:match` is not supported.  In addition, Kajiki
 supports the following additional directives: 
 
  * `py:include` - same semantics as `xi:include`, use if you don't like lots of
@@ -38,7 +38,7 @@ simple cases where you have one `master.html` template with a few `py:match`
 directives that is `xi:included` into all your page templates, the following
 steps should suffice:
 
- * You may need to rewrite some of our `xi:include` directives to use FastPt's
+ * You may need to rewrite some of our `xi:include` directives to use Kajiki's
    module naming system and relative imports.
  * In a simple case where you have only a few `py:match` directives, all of which
    are in a `master.html` template that is being included from child templates,
@@ -68,7 +68,7 @@ Likewise, the contents of `index.html` are as follows:
    :linenos:
    :language: html
 
-In order to perform our fastpt migration, we begin by creating two empty
+In order to perform our kajiki migration, we begin by creating two empty
 templates.  The first one will replace our `master.html`, and we will call it
 `layout.html`:
 
@@ -87,9 +87,9 @@ instance, the "title" slot in `layout.html`:
    :language: html
    :lines: 10
 
-can be replaced by a similarly-named slot in the child document `index_fastpt.html`:
+can be replaced by a similarly-named slot in the child document `index_kajiki.html`:
 
-.. literalinclude:: include/index_fastpt.html
+.. literalinclude:: include/index_kajiki.html
    :linenos:
    :language: html
    :lines: 1-6, 9-10
@@ -102,9 +102,9 @@ a child template's slot using `<py:super/>`.  The following slot in `layout.html
    :language: html
    :lines:  18
 
-can be replaced in `include/index_fastpt.html` with:
+can be replaced in `include/index_kajiki.html` with:
   
-.. literalinclude:: include/index_fastpt.html
+.. literalinclude:: include/index_kajiki.html
    :linenos:
    :language: html
    :lines: 12-15

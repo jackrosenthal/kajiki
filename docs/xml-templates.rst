@@ -1,5 +1,5 @@
 ==================================
-FastPt XML Templates
+Kajiki XML Templates
 ==================================
 
 Tags

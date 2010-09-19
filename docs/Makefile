@@ -33,8 +33,8 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
-upload: html
-	scp -r _build/html/* pythonisito.com:pythonisito.com/fastpt
+# upload: html
+# 	scp -r _build/html/* pythonisito.com:pythonisito.com/kajiki
 
 clean:
 	-rm -rf $(BUILDDIR)/*
@@ -75,17 +75,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/FastPt.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/Kajiki.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/FastPt.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/Kajiki.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/FastPt"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/FastPt"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/Kajiki"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/Kajiki"
 	@echo "# devhelp"
 
 epub:

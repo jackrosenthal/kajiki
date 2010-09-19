@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# FastPt documentation build configuration file, created by
+# Kajiki documentation build configuration file, created by
 # sphinx-quickstart on Wed Jul  7 22:31:03 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'FastPt'
+project = u'Kajiki'
 copyright = u'2010, Rick Copeland'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'FastPtdoc'
+htmlhelp_basename = 'Kajikidoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -178,7 +178,7 @@ htmlhelp_basename = 'FastPtdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'FastPt.tex', u'FastPt Documentation',
+  ('index', 'Kajiki.tex', u'Kajiki Documentation',
    u'Rick Copeland', 'manual'),
 ]
 
@@ -211,6 +211,6 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'fastpt', u'FastPt Documentation',
+    ('index', 'kajiki', u'Kajiki Documentation',
      [u'Rick Copeland'], 1)
 ]
