@@ -50,7 +50,7 @@ class _Compiler(object):
         self.doc = doc
         self.mode = mode
         self.functions = defaultdict(list)
-        self.functions['__call__()'] = []
+        self.functions['__main__()'] = []
         self.function_lnos = {}
         self.mod_py = []
         self.in_def = False
@@ -70,7 +70,7 @@ class _Compiler(object):
                 dt.filename = self.filename
                 dt.lineno = 1
                 body.insert(0, dt)
-        self.functions['__call__()'] = body
+        self.functions['__main__()'] = body
         defs = []
         for k,v in self.functions.iteritems():
             node = ir.DefNode(k, *v)
@@ -179,6 +179,8 @@ class _Compiler(object):
         fname = '_kj_block_' + node.getAttribute('name')
         decl = fname + '()'
         body = list(self._compile_nop(node))
+        if not body:
+            body = [ ir.PassNode() ]
         self.functions[decl] = body
         if self.is_child:
             parent_block = 'parent.' + fname

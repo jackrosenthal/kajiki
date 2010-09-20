@@ -8,11 +8,14 @@ class Loader(object):
         mod = self.modules.get(name)
         if mod: return mod
         mod = self._load(name)
+        mod.loader = self
         self.modules[name] = mod
         return mod
 
     def default_alias_for(self, name):
         return os.path.splitext(os.path.basename(name))[0]
+
+    load=import_
 
 class MockLoader(Loader):
 

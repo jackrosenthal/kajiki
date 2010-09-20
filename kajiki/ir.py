@@ -51,7 +51,7 @@ class IncludeNode(Node):
 
     def py(self):
         yield self.line(
-            'yield local.__kj__.import_(%r, None, {}).__call__()' % (
+            'yield local.__kj__.import_(%r, None, {}).__main__()' % (
                 self.tpl_name))
 
 class ExtendNode(Node):
@@ -62,7 +62,7 @@ class ExtendNode(Node):
 
     def py(self):
         yield self.line(
-            'yield local.__kj__.extend(%r).__call__()' % (
+            'yield local.__kj__.extend(%r).__main__()' % (
                 self.tpl_name))
 
 class DefNode(Node):
@@ -187,6 +187,11 @@ class ExprNode(Node):
 
     def py(self):
         yield self.line('yield self.__kj__.escape(%s)' % self.text)
+
+class PassNode(Node):
+
+    def py(self):
+        yield self.line('pass')
 
 class AttrNode(Node):
 

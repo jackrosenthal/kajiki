@@ -143,7 +143,7 @@ class _Parser(object):
     def __init__(self, tokenizer):
         self.tokenizer = tokenizer
         self.functions = defaultdict(list)
-        self.functions['__call__()'] = []
+        self.functions['__main__()'] = []
         self.mod_py = [] # module-level python blocks
         self.iterator = iter(self.tokenizer)
         self._in_def = False
@@ -151,7 +151,7 @@ class _Parser(object):
 
     def parse(self):
         body = list(self._parse_body())
-        self.functions['__call__()'] = body[:-1]
+        self.functions['__main__()'] = body[:-1]
         defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
         return ir.TemplateNode(self.mod_py, defs)
 

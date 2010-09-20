@@ -1,0 +1,14 @@
+<py:extends href="base.html">
+  <py:block name="content">
+    <py:import href="lib.html" alias="lib"/>
+    <div>${lib.greeting(user)}</div>
+    <div>${lib.greeting('me')}</div>
+    <div>${lib.greeting('world')}</div>
+
+    <h2>Loop</h2>
+    <ul py:if="items">
+      <li py:for="idx, item in enumerate(items)" py:content="item"
+          class="${idx + 1 == len(items) and 'last' or None}" />
+    </ul>
+  </py:block>
+</py:extends>

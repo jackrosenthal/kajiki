@@ -65,17 +65,17 @@ class TestSimple(TestCase):
 
     def test_expr_name(self):
         tpl = XMLTemplate(source='<div>Hello, $name</div>')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_expr_braced(self):
         tpl = XMLTemplate(source='<div>Hello, ${name}</div>')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_expr_brace_complex(self):
         tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}</div>")
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '<div>Hello, Rick</div>', rsp
 
 class TestSwitch(TestCase):
@@ -86,7 +86,7 @@ $i is <py:switch test="i % 2">
 <py:case value="0">even</py:case>
 <py:else>odd</py:else>
 </py:switch></div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
 0 is even</div><div>
 1 is odd</div>''', rsp
@@ -99,7 +99,7 @@ class TestFunction(TestCase):
 <py:for each="i in range(2)">$i is ${evenness(i)}
 </py:for
 ></div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
 0 is <div>even</div>
 1 is <div>odd</div>
@@ -115,7 +115,7 @@ class TestCall(TestCase):
 </ul></py:def
 ><py:call args="n" function="quote(%caller, 'the raven')"
 >Nevermore $n</py:call></div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div><ul>
     <li>Quoth the raven, Nevermore 0</li><li>Quoth the raven, Nevermore 1</li>
 </ul></div>''', rsp
@@ -144,7 +144,7 @@ class TestImport(TestCase):
 </div>''')
             })
         tpl = loader.import_('tpl.html')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
 <ul>
     <li>
@@ -181,7 +181,7 @@ class TestImport(TestCase):
 </div>''')
             })
         tpl = loader.import_('tpl.html')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
 <ul>
     <li>
@@ -205,7 +205,7 @@ class TestImport(TestCase):
 </body></html>''')
                 })
         tpl = loader.import_('tpl.html')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<html><body>
 <h1>Header</h1>
 <p>This is the body</p>
@@ -238,7 +238,7 @@ ${footer()}
 ${parent.body()}
 </div></py:extends>''')})
         tpl = loader.import_('child.html')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp=='''<div>
 <h1>Header name=Rick</h1>
 <div>
@@ -264,9 +264,9 @@ child.id() = <span>mid</span>
 ''')
                 })
         tpl = loader.import_('child.html')
-        rsp = tpl(dict(p=0)).__kj__.render()
+        rsp = tpl(dict(p=0)).render()
         assert rsp == '<div><span>Parent 0</span></div>', rsp
-        rsp = tpl(dict(p=1)).__kj__.render()
+        rsp = tpl(dict(p=1)).render()
         assert rsp == '<div><span>Parent 1</span></div>', rsp
 
     def test_block(self):
@@ -292,7 +292,7 @@ ${sign(from_)}
 ></py:extends>
 ''')})
         parent = loader.import_('parent.html')
-        rsp = parent({'to':'Mark', 'from_':'Rick'}).__kj__.render()
+        rsp = parent({'to':'Mark', 'from_':'Rick'}).render()
         assert rsp == '''<div>Hello, Mark!
 
 <p>It was good seeing you last Friday.
@@ -301,7 +301,7 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
         child = loader.import_('child.html')
-        rsp = child({'to':'Mark', 'from_':'Rick'}).__kj__.render()
+        rsp = child({'to':'Mark', 'from_':'Rick'}).render()
         assert rsp=='''<div>Dear Mark:
 
 <p>It was good seeing you last Friday.
@@ -321,7 +321,7 @@ class TestClosure(TestCase):
         >${x+y}</py:def
     >${inner(x*2)}</py:def
 >${add(5)}</div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>15</div>', rsp
 
 class TestPython(TestCase):
@@ -331,7 +331,7 @@ class TestPython(TestCase):
 ><?py
 import os
 ?>${os.path.join('a', 'b', 'c')}</div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>a/b/c</div>'
 
     def test_indent(self):
@@ -340,14 +340,14 @@ import os
     import os
     import re
 ?>${os.path.join('a','b','c')}</div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>a/b/c</div>'
 
     def test_short(self):
         tpl = XMLTemplate('''<div
 ><?py import os
 ?>${os.path.join('a', 'b', 'c')}</div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>a/b/c</div>'
 
     def test_mod(self):
@@ -356,7 +356,7 @@ import os
 ?><py:def function="test()"
 >${os.path.join('a', 'b', 'c')}</py:def
 >${test()}</div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>a/b/c</div>'
 
 class TestComment(TestCase):
@@ -366,7 +366,7 @@ class TestComment(TestCase):
 <!-- This comment is preserved. -->
 <!--! This comment is stripped. -->
 </div>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
 <!--  This comment is preserved.  -->
 
@@ -376,51 +376,51 @@ class TestAttributes(TestCase):
 
     def test_basic(self):
         tpl = XMLTemplate('''<div id="foo"/>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div id="foo"/>', rsp
         
     def test_content(self):
         tpl = XMLTemplate('''<div py:content="'foo'"/>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>foo</div>', rsp
         
     def test_replace(self):
         tpl = XMLTemplate('''<div py:replace="'foo'"/>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'foo', rsp
 
     def test_attrs(self):
         tpl = XMLTemplate('''<div py:attrs="dict(a=5, b=6)"/>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div a="5" b="6"/>'
         tpl = XMLTemplate('''<div py:attrs="[('a', 5), ('b', 6)]"/>''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div a="5" b="6"/>'
 
     def test_strip(self):
         tpl = XMLTemplate('''<div><h1 py:strip="header">Header</h1></div>''')
-        rsp = tpl(dict(header=True)).__kj__.render()
+        rsp = tpl(dict(header=True)).render()
         assert rsp == '<div><h1>Header</h1></div>', rsp
-        rsp = tpl(dict(header=False)).__kj__.render()
+        rsp = tpl(dict(header=False)).render()
         assert rsp == '<div>Header</div>', rsp
 
     def test_html_attrs(self):
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='xml')
-        rsp = tpl(dict(checked=True)).__kj__.render()
+        rsp = tpl(dict(checked=True)).render()
         assert rsp == '<input type="checkbox" checked="True"/>', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='html')
-        rsp = tpl(dict(checked=True)).__kj__.render()
+        rsp = tpl(dict(checked=True)).render()
         assert rsp == '<input type="checkbox" CHECKED>', rsp
         tpl = XMLTemplate('''<!DOCTYPE html>\n<input type="checkbox" checked="$checked"/>''')
-        rsp = tpl(dict(checked=True)).__kj__.render()
+        rsp = tpl(dict(checked=True)).render()
         assert rsp == '<!DOCTYPE html><input type="checkbox" checked="True"/>', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
                           mode='html5')
-        rsp = tpl(dict(checked=True)).__kj__.render()
+        rsp = tpl(dict(checked=True)).render()
         assert rsp == '<!DOCTYPE html><input type="checkbox" CHECKED>', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
                           mode='html5', is_fragment=True)
-        rsp = tpl(dict(checked=True)).__kj__.render()
+        rsp = tpl(dict(checked=True)).render()
         assert rsp == '<input type="checkbox" CHECKED>', rsp
 
 class TestDebug(TestCase):
@@ -429,7 +429,7 @@ class TestDebug(TestCase):
         loader = FileLoader(base=os.path.join(os.path.dirname(__file__), 'data'))
         tpl = loader.import_('debug.html')
         try:
-            tpl().__kj__.render()
+            tpl().render()
             assert False, 'Should have raised ValueError'
         except ValueError:
             exc_info = sys.exc_info()

@@ -8,14 +8,14 @@ class TestBasic(TestCase):
         @kajiki.Template
         class tpl:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 yield 'Hello,'
                 yield name
                 yield '\n'
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert rsp == 'Hello,Rick\n', rsp
 
 class TestSwitch(TestCase):
@@ -24,7 +24,7 @@ class TestSwitch(TestCase):
         @kajiki.Template
         class tpl:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 for i in range(2):
                     yield i
                     yield ' is '
@@ -36,7 +36,7 @@ class TestSwitch(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl().__kj__.render()
+        rsp = self.tpl().render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestFunction(TestCase):
@@ -49,7 +49,7 @@ class TestFunction(TestCase):
                 if n % 2 == 0: yield 'even'
                 else: yield 'odd'
             @kajiki.expose
-            def __call__():
+            def __main__():
                 for i in range(2):
                     yield i
                     yield ' is '
@@ -58,7 +58,7 @@ class TestFunction(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestCall(TestCase):
@@ -75,7 +75,7 @@ class TestCall(TestCase):
                     yield caller(i)
                     yield '."\n'
             @kajiki.expose
-            def __call__():
+            def __main__():
                 @__kj__.flattener.decorate
                 def _kj_lambda(n):
                     yield 'Nevermore '
@@ -85,7 +85,7 @@ class TestCall(TestCase):
         self.tpl = tpl
 
     def test_basic(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
@@ -107,7 +107,7 @@ class TestImport(TestCase):
         @kajiki.Template
         class tpl:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 simple_function = lib(dict(globals()))
                 for i in range(4):
                     yield i
@@ -118,7 +118,7 @@ class TestImport(TestCase):
         self.tpl = tpl
 
     def test_import(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert (rsp=='0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
@@ -129,19 +129,19 @@ class TestInclude(TestCase):
         @kajiki.Template
         class hdr:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 yield '# header\n'
         @kajiki.Template
         class tpl:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 yield 'a\n'
-                yield hdr().__call__()
+                yield hdr().__main__()
                 yield 'b\n'
         self.tpl = tpl
 
     def test_include(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert rsp == 'a\n# header\nb\n', rsp
 
 class TestExtends(TestCase):
@@ -149,7 +149,7 @@ class TestExtends(TestCase):
         @kajiki.Template
         class parent_tpl:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 yield header()
                 yield body()
                 yield footer()
@@ -181,8 +181,8 @@ class TestExtends(TestCase):
         @kajiki.Template
         class mid_tpl:
             @kajiki.expose
-            def __call__():
-                yield local.__kj__.extend(parent_tpl).__call__()
+            def __main__():
+                yield local.__kj__.extend(parent_tpl).__main__()
             @kajiki.expose
             def id():
                 yield 'mid'
@@ -190,8 +190,8 @@ class TestExtends(TestCase):
         @kajiki.Template
         class child_tpl:
             @kajiki.expose
-            def __call__():
-                yield local.__kj__.extend(mid_tpl).__call__()
+            def __main__():
+                yield local.__kj__.extend(mid_tpl).__main__()
             @kajiki.expose
             def body():
                 yield '## Child Body\n'
@@ -203,7 +203,7 @@ class TestExtends(TestCase):
         _self.child_tpl = child_tpl
 
     def test_extends(self):
-        rsp = self.child_tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.child_tpl(dict(name='Rick')).render()
         assert (rsp == '# Header name=Rick\n'
                 '## Child Body\n'
                 '## Parent Body\n'
@@ -217,27 +217,27 @@ class TestDynamicExtends(TestCase):
         @kajiki.Template
         class parent_0:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 yield 'Parent 0'
         @kajiki.Template
         class parent_1:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 yield 'Parent 1'
         @kajiki.Template
         class child_tpl:
             @kajiki.expose
-            def __call__():
+            def __main__():
                 if p == 0:
-                    yield local.__kj__.extend(parent_0).__call__()
+                    yield local.__kj__.extend(parent_0).__main__()
                 else:
-                    yield local.__kj__.extend(parent_1).__call__()
+                    yield local.__kj__.extend(parent_1).__main__()
         _self.child_tpl = child_tpl
 
     def test_extends(self):
-        rsp = self.child_tpl(dict(p=0)).__kj__.render()
+        rsp = self.child_tpl(dict(p=0)).render()
         assert rsp == 'Parent 0', rsp
-        rsp = self.child_tpl(dict(p=1)).__kj__.render()
+        rsp = self.child_tpl(dict(p=1)).render()
         assert rsp == 'Parent 1', rsp
 
 if __name__ == '__main__':

@@ -38,7 +38,6 @@ class _Template(object):
             setattr(self, k, v)
             self.__globals__[k] = v
         self.__kj__ = _obj(
-            render=self._render,
             extend=self._extend,
             push_switch=self._push_switch,
             pop_switch=self._pop_switch,
@@ -50,10 +49,10 @@ class _Template(object):
         self.__globals__.update(context)
 
     def __iter__(self):
-        for chunk in self.__call__():
+        for chunk in self.__main__():
             yield unicode(chunk)
 
-    def _render(self):
+    def render(self):
         return u''.join(self)
 
     def _extend(self, parent):
@@ -63,12 +62,12 @@ class _Template(object):
         p_globals = p_inst.__globals__
         # Find overrides
         for k,v in self.__globals__.iteritems():
-            if k == '__call__': continue
+            if k == '__main__': continue
             if not isinstance(v, TplFunc): continue
             p_globals[k] = v
         # Find inherited funcs
         for k, v in p_inst.__globals__.iteritems():
-            if k == '__call__': continue
+            if k == '__main__': continue
             if not isinstance(v, TplFunc): continue
             if k not in self.__globals__: 
                 self.__globals__[k] = v
@@ -145,7 +144,7 @@ def from_ir(ir_node):
     dct = dict(kajiki=kajiki)
     try:
         exec py_text in dct
-    except SyntaxError: # pragma no cover
+    except (SyntaxError, IndentationError), err: # pragma no cover
         for i, line in enumerate(py_text.splitlines()):
             print '%3d %s' % (i+1, line)
         raise
@@ -216,7 +215,7 @@ class TplFunc(object):
             code.co_consts,
             code.co_names,
             code.co_varnames,
-            filename,
+            filename.encode('utf-8'),
             code.co_name,
             new_firstlineno,
             new_lnotab,

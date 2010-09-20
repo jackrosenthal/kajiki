@@ -8,14 +8,14 @@ class TestBasic(TestCase):
     def setUp(self):
         self.tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                '__call__()',
+                '__main__()',
                 ir.TextNode('Hello, '),
                 ir.ExprNode('name'),
                 ir.TextNode('\n'))])
 
     def test(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == 'Hello, Rick\n', rsp
 
 class TestSwitch(TestCase):
@@ -23,7 +23,7 @@ class TestSwitch(TestCase):
     def setUp(self):
         self.tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.ForNode(
                         'i in range(2)',
                         ir.ExprNode('i'),
@@ -38,7 +38,7 @@ class TestSwitch(TestCase):
             
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict()).__kj__.render() 
+        rsp = tpl(dict()).render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestFunction(TestCase):
@@ -53,7 +53,7 @@ class TestFunction(TestCase):
                     ir.ElseNode(
                         ir.TextNode('odd'))),
                   ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.ForNode(
                         'i in range(2)',
                         ir.ExprNode('i'),
@@ -63,7 +63,7 @@ class TestFunction(TestCase):
 
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestCall(TestCase):
@@ -80,7 +80,7 @@ class TestCall(TestCase):
                         ir.ExprNode('caller(i)'),
                         ir.TextNode('."\n'))),
                   ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.CallNode(
                         '$caller(n)',
                         "quote($caller, 'the raven')",
@@ -89,7 +89,7 @@ class TestCall(TestCase):
             
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
@@ -113,7 +113,7 @@ class TestImport(TestCase):
                     ir.ExprNode('evenness(n/2)'))])
         tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.ImportNode(
                         'lib.txt',
                         'simple_function'),
@@ -130,7 +130,7 @@ class TestImport(TestCase):
         self.tpl = loader.import_('tpl.txt')
 
     def test_import(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert (rsp=='0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
@@ -142,12 +142,12 @@ class TestInclude(TestCase):
         hdr = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.TextNode('# header\n'))])
         tpl = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.TextNode('a\n'),
                     ir.IncludeNode('hdr.txt'),
                     ir.TextNode('b\n'))])
@@ -157,7 +157,7 @@ class TestInclude(TestCase):
         self.tpl = loader.import_('tpl.txt')
 
     def test_include(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert rsp == 'a\n# header\nb\n', rsp
 
 class TestExtends(TestCase):
@@ -166,7 +166,7 @@ class TestExtends(TestCase):
         parent_tpl = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.ExprNode('header()'),
                     ir.ExprNode('body()'),
                     ir.ExprNode('footer()')),
@@ -196,7 +196,7 @@ class TestExtends(TestCase):
         mid_tpl = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.ExtendNode('parent.txt')),
                 ir.DefNode(
                     'id()',
@@ -204,7 +204,7 @@ class TestExtends(TestCase):
         child_tpl = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.ExtendNode('mid.txt')),
                 ir.DefNode(
                     'body()',
@@ -221,7 +221,7 @@ class TestExtends(TestCase):
         self.tpl = loader.import_('child.txt')
         
     def test_extends(self):
-        rsp = self.tpl(dict(name='Rick')).__kj__.render()
+        rsp = self.tpl(dict(name='Rick')).render()
         assert (rsp == '# Header name=Rick\n'
                 '## Child Body\n'
                 '## Parent Body\n'
@@ -235,17 +235,17 @@ class TestDynamicExtends(TestCase):
         p0 = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.TextNode('Parent 0'))])
         p1 = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.TextNode('Parent 1'))])
         child = ir.TemplateNode(
             defs=[
                 ir.DefNode(
-                    '__call__()',
+                    '__main__()',
                     ir.IfNode(
                         'p==0',
                         ir.ExtendNode('parent0.txt')),
@@ -259,9 +259,9 @@ class TestDynamicExtends(TestCase):
         self.tpl = loader.import_('child.txt')
 
     def test_extends(self):
-        rsp = self.tpl(dict(p=0)).__kj__.render()
+        rsp = self.tpl(dict(p=0)).render()
         assert rsp == 'Parent 0', rsp
-        rsp = self.tpl(dict(p=1)).__kj__.render()
+        rsp = self.tpl(dict(p=1)).render()
         assert rsp == 'Parent 1', rsp
 
 if __name__ == '__main__':

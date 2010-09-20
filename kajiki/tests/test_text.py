@@ -9,32 +9,32 @@ class TestBasic(TestCase):
 
     def test_auto_escape(self):
         tpl = TextTemplate(source="${'<h1>'}")
-        rsp = tpl().__kj__.render() 
+        rsp = tpl().render() 
         assert rsp == '&lt;h1&gt;', rsp
 
     def test_auto_escape_disable(self):
         tpl = TextTemplate(source="${literal('<h1>')}")
-        rsp = tpl().__kj__.render() 
+        rsp = tpl().render() 
         assert rsp == '<h1>', rsp
 
     def test_expr_brace(self):
         tpl = TextTemplate(source='Hello, ${name}\n')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == 'Hello, Rick\n', rsp
 
     def test_expr_brace_complex(self):
         tpl = TextTemplate(source="Hello, ${{'name':name}['name']}\n")
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == 'Hello, Rick\n', rsp
 
     def test_expr_name(self):
         tpl = TextTemplate(source='Hello, $name\n')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == 'Hello, Rick\n', rsp
         tpl = TextTemplate(source='Hello, $obj.name\n')
         class Empty: pass
         Empty.name = 'Rick'
-        rsp = tpl(dict(obj=Empty)).__kj__.render() 
+        rsp = tpl(dict(obj=Empty)).render() 
         assert rsp == 'Hello, Rick\n', rsp
 
 class TestSwitch(TestCase):
@@ -43,26 +43,26 @@ class TestSwitch(TestCase):
         tpl = TextTemplate('''%for i in range(2)
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 %end''')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
 
     def test_ljust(self):
         tpl = TextTemplate('''     %for i in range(2)
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 %end''')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
         tpl = TextTemplate('''     {%-for i in range(2)%}\\
 $i is {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}
     {%-end%}''')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
 
     def test_rstrip(self):
         tpl = TextTemplate('''     %for i in range(2)
 $i is {%switch i % 2 %}{%case 0-%}    even\n{%else%}odd\n{%end%}\\
 %end''')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestFunction(TestCase):
@@ -75,7 +75,7 @@ class TestFunction(TestCase):
 $i is ${evenness(i)}
 %end
 ''')
-        rsp = tpl(dict(name='Rick')).__kj__.render() 
+        rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestCall(TestCase):
@@ -89,7 +89,7 @@ Quoth $speaker, "${caller(i)}."
 %call(n) quote(%caller ,'the raven')
 Nevermore $n\\
 %end''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
@@ -115,7 +115,7 @@ $i is ${simple_function.evenness(i)}${simple_function.half_evenness(i)}
             'lib.txt':lib,
             'tpl.txt':tpl})
         tpl = loader.import_('tpl.txt')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert (rsp=='0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
@@ -140,7 +140,7 @@ $i is ${lib.evenness(i)}${lib.half_evenness(i)}
             'lib.txt':lib,
             'tpl.txt':tpl})
         tpl = loader.import_('tpl.txt')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert (rsp=='0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
@@ -154,7 +154,7 @@ $i is ${lib.evenness(i)}${lib.half_evenness(i)}
 b
 ''')})
         tpl = loader.import_('tpl.txt')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a\n# header\nb\n', rsp
 
 class TestExtends(TestCase):
@@ -197,7 +197,7 @@ ${parent.body()}\\
             'mid.txt':mid,
             'child.txt':child})
         tpl = loader.import_('child.txt')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert (rsp == '# Header name=Rick\n'
                 '## Child Body\n'
                 '## Parent Body\n'
@@ -219,9 +219,9 @@ ${parent.body()}\\
 ''')
                 })
         tpl = loader.import_('child.txt')
-        rsp = tpl(dict(p=0)).__kj__.render()
+        rsp = tpl(dict(p=0)).render()
         assert rsp == 'Parent 0', rsp
-        rsp = tpl(dict(p=1)).__kj__.render()
+        rsp = tpl(dict(p=1)).render()
         assert rsp == 'Parent 1', rsp
 
     def test_block(self):
@@ -252,7 +252,7 @@ And don't forget you owe me money!
 %end
 ''')})
         child = loader.import_('child.txt')
-        rsp = child({'to':'Mark', 'from_':'Rick'}).__kj__.render()
+        rsp = child({'to':'Mark', 'from_':'Rick'}).render()
         assert (rsp=='''Dear Mark:
 It was good seeing you last Friday.  Thanks for the gift!
 
@@ -274,7 +274,7 @@ ${inner(x*2)}\\
 %end
 ${add(5)}
 ''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '15\n', rsp
 
 class TestPython(TestCase):
@@ -284,7 +284,7 @@ class TestPython(TestCase):
 import os
 %end
 ${os.path.join('a','b','c')}''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a/b/c'
 
     def test_indent(self):
@@ -293,13 +293,13 @@ ${os.path.join('a','b','c')}''')
     import re
 %end
 ${os.path.join('a','b','c')}''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a/b/c'
 
     def test_short(self):
         tpl = TextTemplate('''%py import os
 ${os.path.join('a','b','c')}''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a/b/c'
 
     def test_mod(self):
@@ -308,7 +308,7 @@ ${os.path.join('a','b','c')}''')
 ${os.path.join('a','b','c')}\\
 %end
 ${test()}''')
-        rsp = tpl(dict(name='Rick')).__kj__.render()
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a/b/c'
 
 class TestDebug(TestCase):
@@ -317,7 +317,7 @@ class TestDebug(TestCase):
         loader = FileLoader(base=os.path.join(os.path.dirname(__file__), 'data'))
         tpl = loader.import_('debug.txt')
         try:
-            tpl().__kj__.render()
+            tpl().render()
             assert False, 'Should have raised ValueError'
         except ValueError:
             exc_info = sys.exc_info()

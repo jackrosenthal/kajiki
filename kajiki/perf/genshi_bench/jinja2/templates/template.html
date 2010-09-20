@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% macro greeting(name) %}Hello, {{name | escape}}{%- endmacro %}
+{% block content %}
+  <head>
+    <title>{{title|escape}}</title>
+  </head>
+
+  <body>
+    {% block header %}{% endblock %}
+
+    <div>{{ greeting(user) }}</div>
+    <div>{{ greeting("me") }}</div>
+    <div>{{ greeting("world") }}</div>
+
+    <h2>Loop</h2>
+    {% if items %}
+      <ul>
+        {% for item in items %}
+          <li{% if loop.last %} class="last"{% endif %}>{{ item|escape }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block footer %}{% endblock %}
+  </body>
+{% endblock %}
