@@ -1,15 +1,11 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
-  <head>
-    <title>${title}</title>
-  </head>
-
-  <body>
-    <div id="header">
-      <h1>${title}</h1>
+  <py:block name="content">
+    <div id="header" py:block="header">
+      <h1>$title</h1>
     </div>
-    <py:block name="content"/>
-    <div id="footer"/>
-  </body>
-
+    <div id="footer" py:block="footer"/>
+  </py:block>
 </html>
-

@@ -121,7 +121,7 @@ if MakoTemplate:
         mako_tmpl.render(table=table)
 
 def test_kajiki():
-    """FastPt Template"""
+    """Kajiki Template"""
     kajiki_tmpl(dict(table=table)).render()
 
 def test_genshi():
@@ -250,8 +250,8 @@ if __name__ == '__main__':
         stats = pstats.Stats(prof)
         stats.strip_dirs()
         stats.sort_stats('time', 'calls')
-        # stats.print_stats(25)
-        stats.print_stats()
+        stats.print_stats(25)
+        # stats.print_stats()
         if '-v' in sys.argv:
             stats.print_callees()
             stats.print_callers()

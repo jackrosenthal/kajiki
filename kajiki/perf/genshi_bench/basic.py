@@ -10,13 +10,12 @@ import sys
 import timeit
 
 __all__ = ['kajiki', 'mako', 'jinja2', 'genshi', 'genshi_text']
-__all__ = ['kajiki' ]
+# __all__ = ['kajiki' ]
 
 def kajiki(dirname, verbose=False):
     from kajiki import FileLoader
     loader = FileLoader(base=dirname)
     template = loader.load('template.html')
-    print template.py_text
     def render():
         data = dict(title='Just a test', user='joe',
                     items=['Number %d' % num for num in range(1, 15)])

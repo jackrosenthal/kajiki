@@ -413,7 +413,7 @@ class TestAttributes(TestCase):
         assert rsp == '<input type="checkbox" CHECKED>', rsp
         tpl = XMLTemplate('''<!DOCTYPE html>\n<input type="checkbox" checked="$checked"/>''')
         rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<!DOCTYPE html><input type="checkbox" checked="True"/>', rsp
+        assert rsp == '<!DOCTYPE html><input type="checkbox" CHECKED>', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
                           mode='html5')
         rsp = tpl(dict(checked=True)).render()

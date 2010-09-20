@@ -44,8 +44,16 @@ def annotate(gen):
     return inner
 
 class _Compiler(object):
+    mode_lookup = {
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd':'xml',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd':'xml',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd':'xml',
+        'http://www.w3.org/TR/html4/strict.dtd':'html',
+        'http://www.w3.org/TR/html4/loose.dtd':'html',
+        'http://www.w3.org/TR/html4/frameset.dtd':'html',
+        }
 
-    def __init__(self, filename, doc, mode='xml', is_fragment=False):
+    def __init__(self, filename, doc, mode='xml', is_fragment=False, force_mode=False):
         self.filename = filename
         self.doc = doc
         self.mode = mode
@@ -56,10 +64,18 @@ class _Compiler(object):
         self.in_def = False
         self.is_child = False
         self.is_fragment = is_fragment
+        if not force_mode and self.doc.doctype:
+            if self.doc.doctype.toxml().lower() == '<!doctype html>':
+                self.mode = 'html5'
+            elif self.doc.doctype.systemId is None:
+                self.mode = 'html'
+            else:
+                self.mode = self.mode_lookup.get(
+                    self.doc.doctype.systemId, 'xml')
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
-        if not self.is_fragment: # Never emit doctypes on fragments
+        if not self.is_fragment and not self.is_child: # Never emit doctypes on fragments
             if self.mode == 'xml' and self.doc.doctype:
                 dt = ir.TextNode(self.doc.doctype.toxml())
                 dt.filename = self.filename

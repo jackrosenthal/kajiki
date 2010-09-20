@@ -1,15 +1,20 @@
+import re
 import types
 from cStringIO import StringIO
 from cgi import escape
 from functools import update_wrapper
 from pprint import pprint
 
-from webhelpers.html import literal
-
 import kajiki
-from .util import flattener
+from .util import flattener, literal
 from .html_utils import HTML_EMPTY_ATTRS
 from . import lnotab
+
+re_escape = re.compile(r'&|<|>')
+escape_dict ={
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;'}
 
 class _obj(object):
     def __init__(self, **kw):
@@ -53,8 +58,7 @@ class _Template(object):
             yield unicode(chunk)
 
     def render(self):
-        # return self.__main__()
-        return self.__main__().accumulate_str()
+        return u''.join(self)
 
     def _extend(self, parent):
         if isinstance(parent, basestring):
@@ -106,10 +110,11 @@ class _Template(object):
     def _escape(self, value):
         if type(value) == flattener:
             return value
-        if hasattr(value, '__html__'):
-            return value.__html__()
+        uval = unicode(value)
+        if re_escape.search(uval):
+            return escape(uval)
         else:
-            return escape(unicode(value))
+            return uval
 
     def _render_attrs(self, attrs, mode):
         if hasattr(attrs, 'items'):

@@ -76,7 +76,7 @@ class DefNode(Node):
     def py(self):
         yield self.line(self.prefix)
         yield self.line('def %s:' % (self.decl))
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line.indent()
 
@@ -95,7 +95,7 @@ class CallNode(Node):
     def py(self):
         yield self.line('@__kj__.flattener.decorate')
         yield self.line('def %s:' % (self.decl))
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line.indent()
         yield self.line('yield ' + self.call)
@@ -109,7 +109,7 @@ class ForNode(Node):
 
     def py(self):
         yield self.line('for %s:' % (self.decl))
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line.indent()
 
@@ -122,7 +122,7 @@ class SwitchNode(Node):
 
     def py(self):
         yield self.line('local.__kj__.push_switch(%s)' % self.decl)
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line
         yield self.line('local.__kj__.pop_switch()')
@@ -136,7 +136,7 @@ class CaseNode(Node):
 
     def py(self):
         yield self.line('if local.__kj__.case(%s):' % self.decl)
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line.indent()
 
@@ -149,7 +149,7 @@ class IfNode(Node):
 
     def py(self):
         yield self.line('if %s:' % self.decl)
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line.indent()
 
@@ -161,7 +161,7 @@ class ElseNode(Node):
 
     def py(self):
         yield self.line('else:')
-        for child in self.body:
+        for child in optimize(self.body):
             for line in child.py():
                 yield line.indent()
 
@@ -271,6 +271,22 @@ class PythonNode(Node):
                 prefix = line[:len(line)-len(rest)]
             assert line.startswith(prefix)
             yield line[len(prefix):]
+
+def optimize(iter_node):
+    last_node = None
+    for node in iter_node:
+        if type(node) == TextNode:
+            if (type(last_node) == TextNode
+                and last_node.guard == node.guard):
+                last_node.text += node.text
+            else:
+                if last_node is not None: yield last_node
+                last_node = node
+        else:
+            if last_node is not None: yield last_node
+            last_node = node
+    if last_node is not None:
+        yield last_node
 
 class PyLine(object):
 
