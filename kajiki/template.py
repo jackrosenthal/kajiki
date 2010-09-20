@@ -53,7 +53,8 @@ class _Template(object):
             yield unicode(chunk)
 
     def render(self):
-        return u''.join(self)
+        # return self.__main__()
+        return self.__main__().accumulate_str()
 
     def _extend(self, parent):
         if isinstance(parent, basestring):
@@ -103,8 +104,8 @@ class _Template(object):
         return r
 
     def _escape(self, value):
-        if isinstance(value, flattener):
-            return u''.join(value) # assume flattener results are already escaped
+        if type(value) == flattener:
+            return value
         if hasattr(value, '__html__'):
             return value.__html__()
         else:

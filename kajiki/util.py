@@ -43,9 +43,26 @@ class flattener(object):
             return cls(func(*args, **kwargs))
         return inner
 
+    def accumulate_str(self):
+        if type(self.iterator) == flattener:
+            return self.iterator.accumulate_str()
+        s = u''
+        iter_stack = [ self.iterator ]
+        while iter_stack:
+            try:
+                x = iter_stack[-1].next()
+            except StopIteration:
+                iter_stack.pop()
+                continue
+            if type(x) == flattener:
+                iter_stack.append(x.iterator)
+            else:
+                s += x
+        return s
+
     def __iter__(self):
         for x in self.iterator:
-            if isinstance(x, flattener):
+            if type(x) == flattener:
                 for xx in x:
                     yield xx
             else:

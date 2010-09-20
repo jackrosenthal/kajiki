@@ -26,7 +26,7 @@ class TestSwitch(TestCase):
             @kajiki.expose
             def __main__():
                 for i in range(2):
-                    yield i
+                    yield local.__kj__.escape(i)
                     yield ' is '
                     local.__kj__.push_switch(i % 2)
                     if local.__kj__.case(0):
@@ -51,7 +51,7 @@ class TestFunction(TestCase):
             @kajiki.expose
             def __main__():
                 for i in range(2):
-                    yield i
+                    yield local.__kj__.escape(i)
                     yield ' is '
                     yield evenness(i)
                     yield '\n'
@@ -79,7 +79,7 @@ class TestCall(TestCase):
                 @__kj__.flattener.decorate
                 def _kj_lambda(n):
                     yield 'Nevermore '
-                    yield n
+                    yield local.__kj__.escape(n)
                 yield quote(_kj_lambda, 'the raven')
                 del _kj_lambda
         self.tpl = tpl
@@ -101,7 +101,7 @@ class TestImport(TestCase):
             @kajiki.expose
             def half_evenness(n):
                 yield ' half of '
-                yield n
+                yield local.__kj__.escape(n)
                 yield ' is '
                 yield evenness(n/2)
         @kajiki.Template
@@ -110,7 +110,7 @@ class TestImport(TestCase):
             def __main__():
                 simple_function = lib(dict(globals()))
                 for i in range(4):
-                    yield i
+                    yield local.__kj__.escape(i)
                     yield ' is '
                     yield simple_function.evenness(i)
                     yield simple_function.half_evenness(i)
