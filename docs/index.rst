@@ -3,10 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: media/Logo.png
+
 Welcome to Kajiki's documentation!
 ==================================
 
-* Code Development / Issue Tracker / Forums on SourceForge_
+Code Development / Issue Tracker / Forums are hosted on SourceForge_
 
 Contents:
 

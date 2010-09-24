@@ -33,8 +33,8 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
-# upload: html
-# 	scp -r _build/html/* pythonisito.com:pythonisito.com/kajiki
+upload: html
+	rsync -cavz _build/html/* rick446,kajiki@web.sourceforge.net:htdocs
 
 clean:
 	-rm -rf $(BUILDDIR)/*
