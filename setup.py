@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.1'
+version = '0.2'
 
 setup(name='Kajiki',
       version=version,
@@ -14,7 +14,7 @@ setup(name='Kajiki',
       that renders with blazing-fast speed! Don't delay! Pick up your
       copy of Kajiki today!""",  
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
@@ -31,8 +31,6 @@ setup(name='Kajiki',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        'webhelpers',
-        'html5lib'
       ],
       entry_points="""
       # -*- Entry points: -*-
