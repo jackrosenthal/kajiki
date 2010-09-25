@@ -5,7 +5,7 @@ import xml.dom.minidom
 from unittest import TestCase, main
 
 import kajiki
-from kajiki import MockLoader, XMLTemplate, FileLoader
+from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 
 
 DATA = os.path.join(
@@ -439,6 +439,13 @@ class TestDebug(TestCase):
             if fn.endswith('debug.html'): break
         else:
             assert False, 'Stacktrace is all python'
+
+class TestPackageLoader(TestCase):
+
+    def test_pkg_loader(self):
+        loader = PackageLoader()
+        loader.import_('kajiki.tests.data.debug')
+        
 
 if __name__ == '__main__':
     main()
