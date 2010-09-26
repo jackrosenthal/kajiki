@@ -1,6 +1,9 @@
 Migrating from Genshi
 ======================================
 
+.. warning::
+   This document is mostly obsolete.  Use at your own risk!
+
 Kajiki uses syntax derived from the syntax of Genshi.  In particular, the
 following directives are supported, with semantics intended to be nearly identical to
 those of Genshi_.
@@ -51,7 +54,7 @@ steps should suffice:
    directive.
 
 Example Migration
-==========================
+---------------------------------
 
 Suppose you have a couple of Genshi templates, one of which called `master.html`
 and one of which is `index.html`.  (TurboGears developers may recognize these
@@ -89,7 +92,7 @@ instance, the "title" slot in `layout.html`:
 
 can be replaced by a similarly-named slot in the child document `index_kajiki.html`:
 
-.. literalinclude:: include/index_kajiki.html
+.. literalinclude:: include/index_fastpt.html
    :linenos:
    :language: html
    :lines: 1-6, 9-10
@@ -104,7 +107,7 @@ a child template's slot using `<py:super/>`.  The following slot in `layout.html
 
 can be replaced in `include/index_kajiki.html` with:
   
-.. literalinclude:: include/index_kajiki.html
+.. literalinclude:: include/index_fastpt.html
    :linenos:
    :language: html
    :lines: 12-15

@@ -2,6 +2,9 @@
 Kajiki XML Templates
 ==================================
 
+.. warning::
+    These documents are extremely rough and in-progress!  Use with caution!
+
 Tags
 ====
 
