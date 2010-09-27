@@ -8,3 +8,5 @@ syntax: glob
 *.swp
 .coverage
 docs/_build/*
+build/*
+dist/*
