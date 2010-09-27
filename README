@@ -10,6 +10,7 @@ copy of Kajiki today!
 
 ## QuickStart
 
+    :::python
     >>> import kajiki
     >>> Template = kajiki.XMLTemplate('''<html>
     ...     <head><title>$title</title></head>
