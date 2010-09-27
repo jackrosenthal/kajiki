@@ -69,6 +69,9 @@ class _Scanner(object):
             elif groups['expr_named'] is not None:
                 self.pos = mo.end()
                 yield self.expr(groups['expr_named'])
+            elif groups['expr_escaped'] is not None:
+                self.pos = mo.end()
+                yield self.text('$')
             elif groups['tag_bare'] is not None:
                 self.pos = mo.end()
                 yield self._get_tag_bare(groups['tag_bare'])

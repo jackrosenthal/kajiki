@@ -1,15 +1,12 @@
 ==================================
-Kajiki Text Templates
+Kajiki Runtime Transformations 
 ==================================
 
-Kajiki provides a full-featured text template engine in addition to the XML
-templating engine for cases where you don't want to necessarily generate markup.
-This document describes that language.  Templates are text files that include
-template directives that control how the template is rendered and expressions
-that are substituted into the generated text at render time.
-
-Please see :doc:`templating-basics` for general information on embedding Python
-code in templates.
+It's sometimes good to have a mental model of the Python code that Kajiki
+generates in order to generate your templates.  This document uses several
+examples taken from the text templating language to illustrate the semantics of
+Kajiki templates.  If in doubt, you can always view the Python text generated for
+a template by examining the py_text attribute of the generated Template class.
 
 Basic Expressions
 =========================

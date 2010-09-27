@@ -308,6 +308,9 @@ class _TextCompiler(object):
             elif groups['expr_named'] is not None:
                 self.pos = mo.end()
                 yield self.expr(groups['expr_named'])
+            elif groups['expr_escaped'] is not None:
+                self.pos = mo.end()
+                yield self.text('$')
             else:
                 msg = 'Syntax error %s:%s' % (self.filename, self.real_lineno)
                 for i, line in enumerate(self.source.splitlines()):
