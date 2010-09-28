@@ -36,7 +36,7 @@ as follows:
     >>> print Template().render()
     Hello, 2+2 is 4
 
-If you wish to include a literal $, simply double it::
+If you wish to include a literal $, simply double it:
 
 .. doctest::
 
@@ -112,13 +112,13 @@ Defines a function that can be used elsewhere in the template:
 
 .. doctest::
 
-   >>> Template = kajiki.TextTemplate('%def evenness(n)
-   ...     {%-if n % 2 %}even{%else%}odd{%end%}\
+   >>> Template = kajiki.TextTemplate('''%def evenness(n)
+   ...     {%-if n % 2 == 0 %}even{%else%}odd{%end%}\\
    ... %end
-   ... for i in range(2)
-   ... $i is %{evenness(i)}
+   ... %for i in range(2)
+   ... $i is ${evenness(i)}
    ... %end''')
-   >>> print Template().render()
+   >>> print Template().render(),
    0 is even
    1 is odd
    
@@ -133,13 +133,13 @@ expansion of a function call.  In normal circumstances, you would just use `${my
 
    >>> Template = kajiki.TextTemplate('''%def quote(caller, speaker)
    ...     %for i in range(2)
-   ... Quoth $speaker, ${caller(i)}
+   ... Quoth $speaker, "${caller(i)}."
    ...     %end
    ... %end
    ... %call(n) quote(%caller, 'the raven')
-   ... Nevermore $n\
+   ... Nevermore $n\\
    ... %end''')    
-   >>> print Template().render()
+   >>> print Template().render(),
    Quoth the raven, "Nevermore 0."
    Quoth the raven, "Nevermore 1."
 
