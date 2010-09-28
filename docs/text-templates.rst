@@ -1,3 +1,7 @@
+.. testsetup:: *
+
+   import kajiki
+
 ==================================
 Kajiki Text Templates
 ==================================
@@ -16,261 +20,154 @@ Basic Expressions
 
 Let's start with a hello world template:
 
-.. code-block:: none      
+.. doctest::
 
-    Hello, World!
-
-This converts to the equivalent Python::
-
-    @kajiki.expose
-    def __call__():
-        yield 'Hello, World!\n'
-
-Slightly more verbose "hello_name.txt":
-
-.. code-block:: none
-
-    Hello, $name!
-
-This converts to the equivalent Python::
-
-    @kajiki.expose
-    def __call__():
-         yield 'Hello, '
-         yield name
-         yield '!\n'
+    >>> Template = kajiki.TextTemplate('Hello, $name!')
+    >>> print Template(dict(name='world')).render()
+    Hello, world!
 
 By default, the $-syntax picks up any identifiers following it, as well as any
 periods.  If you want something more explicit, use the extended expression form
-as in "hello_arithmetic.txt":
+as follows:
 
-.. code-block:: none
-     
-    Hello, 2 + 2 is ${2+2}! 
+.. doctest::
 
-This converts to::
+    >>> Template = kajiki.TextTemplate('Hello, 2+2 is ${2+2}')
+    >>> print Template().render()
+    Hello, 2+2 is 4
 
-    @kajiki.expose
-    def __call__():
-        yield 'Hello, 2 + 2 is '
-        yield 2+2
-        yield '!'
+If you wish to include a literal $, simply double it::
 
-If you wish to include a literal $, simply prefix it with a backslash.
+.. doctest::
+
+    >>> Template = kajiki.TextTemplate('The price is $$${price}')
+    >>> print Template(dict(price='5.00')).render()
+    The price is $5.00
 
 Control Flow
 ============
 
-Kajiki provides several tags that affect the rendering of a template.  The
-following template "control_flow.txt" illustrates:
+Kajiki provides several directives that affect the rendering of a template.  This
+section describes the various directives.  Directives in text templates can
+either be enclosed by `{% ... %}` characters or they can exist on a line by
+themselves prefixed by a `%`.  Template directives must always be terminated by
+an 'end' directive (either `{%end%}` or `%end`.
+
+.. note::
+
+   Whitespace can sometimes be tricky in text templates.  Kajiki provides a bit
+   of help in managing it.  First, if you wish to break a line without having the
+   newline included in the generated text, simply end the line with a backslash
+   (\).  Kajiki will also remove any whitespace before a tag that begins with the
+   delimiter `{%-`.  Directives that appear on their own line via the `%` prefix
+   never appear in the output, and neither they do not generate any whitespace.
+
+%if, %else
+^^^^^^^^^^^^^^^
+
+Only render the enclosed content if the expression evaluates to a truthy value:
+
+.. doctest::
+
+   >>> Template = kajiki.TextTemplate('{%if foo %}bar{%else%}baz{%end%}')
+   >>> print Template(dict(foo=True)).render()
+   bar
+   >>> print Template(dict(foo=False)).render()
+   baz
+
+%switch, %case, %else
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Perform multiple tests to render one of several alternatives.  The first matching
+`case` is rendered, and if no `case` matches, the `else` branch is rendered:
+
+.. doctest::
+
+   >>> Template = kajiki.TextTemplate('''$i is \
+   ... {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}''')
+   >>> print Template(dict(i=4)).render()
+   4 is even
+   >>> print Template(dict(i=3)).render()
+   3 is odd
+
+%for
+^^^^^^^^^^^^^
+
+Repeatedly render the content for each item in an iterable:
+
+.. doctest::
+
+   >>> Template = kajiki.TextTemplate('''%for i in range(3)
+   ... $i
+   ... %end''')
+   >>> print Template().render(),
+   0
+   1
+   2
+
+%def
+^^^^^^^^^^^^^^
+
+Defines a function that can be used elsewhere in the template:
+
+.. doctest::
+
+   >>> Template = kajiki.TextTemplate('%def evenness(n)
+   ...     {%-if n % 2 %}even{%else%}odd{%end%}\
+   ... %end
+   ... for i in range(2)
+   ... $i is %{evenness(i)}
+   ... %end''')
+   >>> print Template().render()
+   0 is even
+   1 is odd
+   
+%call
+^^^^^^^^^^^^^^^^^^
+
+Call a function, passing a block of template code as a 'lambda' parameter.  Note
+that this is a special case of calling when you wish to insert some templated text in the
+expansion of a function call.  In normal circumstances, you would just use `${my_function(args)}`.
+
+.. doctest::
+
+   >>> Template = kajiki.TextTemplate('''%def quote(caller, speaker)
+   ...     %for i in range(2)
+   ... Quoth $speaker, ${caller(i)}
+   ...     %end
+   ... %end
+   ... %call(n) quote(%caller, 'the raven')
+   ... Nevermore $n\
+   ... %end''')    
+   >>> print Template().render()
+   Quoth the raven, "Nevermore 0."
+   Quoth the raven, "Nevermore 1."
+
+%include
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Includes the text of another template verbatim.  The precise semantics of this
+tag depend on the `TemplateLoader` being used, as the `TemplateLoader` is used to
+parse the name of the template being included and render its contents into the
+current template.  For instance, with the `FileLoader`, you might use the
+following:
 
 .. code-block:: none
 
-    A{%for i in range(5)%}
-        {%if i < 2%}Low{%elif i < 4%}Mid{%else%}High{%end%}$i
-        {%switch i % 2%}
-            {%case 0%}
-                even
-            {%default%}
-                odd    
-            {%end%}{%end%}{%end%}
+    %include "path/to/base.txt"
 
-This yields the following Python::
-
-    @kajiki.expose
-    def __call__():
-        yield 'A\n' # from the {%for... line
-        for i in range(10):
-            yield '\n        ' # from the newline and initial indent of next line
-            if i < 2:
-                yield 'Low'
-            elif i < 4:
-                yield 'Mid'
-            else:
-                yield 'High'
-            yield i
-            yield '\n        ' # from the {%if... newline and next indent
-            local.__kj__.push_switch(i%2)
-            # whitespace after {%switch is always stripped
-            if local.__kj__.case(0):
-                yield '\n            even\n        '
-            else:    
-                yield '\n            odd\n        '
-            local.__kj__.pop_switch()
-
-Which would in turn generate the following text:
+whereas in the `PackageLoader` you would use
 
 .. code-block:: none
 
-    A
-        Low0
-        
-            even
-        
-        Low1
+    %include package1.package2.base
 
-            odd
-        
-        Mid2
+%import
+^^^^^^^^^^^^^^^^^^^^^^
 
-            even
-
-        Mid3
-
-            odd
-
-        High4
-
-            even
-
-This can be quite inconvient, however.  If you want to strip whitespace before or
-after a tag, just replace {%with {%-(for stripping leading whitespace) or %}
-with -%} (for stripping trailing whitespace).  If you would like to remove
-newlines, just end a line with a backslash.  Here is the equivalent template with
-whitespace removed "control_flow_ws.txt":
-
-.. code-block:: none
-
-    A{%-for i in range(5) -%}\
-        {%-if i < 2%}Low{%elif i < 4%}Mid{%else%}High{%end%}$i
-        {%-switch i % 2%}\
-            {%-case 0%}\
-                even
-            {%-default%}\
-                odd    
-            {%-end%}\
-        {%-end%}\
-    {%-end%}\
-
-This would generate the following Python::
-
-    @kajiki.expose
-    def __call__():
-        yield 'A' 
-        for i in range(10):
-            if i < 2:
-                yield 'Low'
-            elif i < 4:
-                yield 'Mid'
-            else:
-                yield 'High'
-            yield i
-            yield '\n'
-            local.__kj__.push_switch(i%2)
-            if local.__kj__.case(0):
-                yield 'even\n'
-            else:    
-                yield 'odd\n'
-            local.__kj__.pop_switch()
-
-Which would generate the following text:
-
-.. code-block:: none
-
-    ALow0
-    even
-    Low1
-    odd
-    Mid2
-    even
-    Mid3
-    odd
-    High4
-    even
-
-which is probably closer to what you wanted.  There is also a shorthand syntax
-that allows for line-oriented control flow as seen in
-"control_flow_ws_short.txt":
-
-.. code-block:: none
-
-    A\
-    %for i in range(5)
-        %if i < 2 
-            Low\
-        %elif i < 4
-            Mid\
-        %else
-            High\
-        {%-end%}$i    
-        %switch i % 2
-            %case 0
-                even
-            %default
-                odd    
-            %end    
-        %end    
-    %end
-
-This syntax yields exactly the same results as "control_flow_ws.txt" above.
-
-Python Blocks
-==============
-
-You can insert literal Python code into your template using the following syntax
-in "simple_py_block.txt":
-
-.. code-block:: none
-
-    {%py%}\
-        yield 'Prefix'
-    {%end%}\
-    Body
-
-or alternatively:
-
-.. code-block:: none
-
-    %py
-        yield 'Prefix'
-    %end    
-    Body
-
-or even more succinctly:
-
-.. code-block:: none
-
-    %py yield 'Prefix'
-    Body
-
-all of which will generate the following Python::
-
-    def __call__():
-        yield 'Prefix'
-        yield 'Body'
-
-Note in particular that the Python block can have any indentation, as long as it
- is consistent (the amount of leading whitespace in the first non-empty line of
- the block is stripped from all lines within the block).  You can insert
- module-level Python (imports, etc.) by using the %py% directive (or {%py%%} as in
- "module_py_block.txt": 
-
-.. code-block:: none
-
-    %py%
-        import sys
-        import re
-    %end
-    Hello
-    %py% import os
-    %end
-
-This yields the following Python::
-
-    import sys
-    import re
-
-    import os
-
-    @kajiki.expose
-    def __call__():
-        yield 'Hello'
-
-Functions and Imports
-====================================
-
-Kajiki provides for code reuse via the %def and %import directives.  First, let's
-see %def in action in "simple_function.txt":
+With `%import`, you can make the functions defined in another template available
+without expanding the full template in-place.  Suppose that we saved the
+following template in a file `lib.txt`:
 
 .. code-block:: none
 
@@ -281,127 +178,16 @@ see %def in action in "simple_function.txt":
             odd\
         %end
     %end        
-    %for i in range(5)
-    $i is ${evenness(i)}
-    %end
 
-This compiles to the following Python::
-
-    @kajiki.expose
-    def evenness(n):
-        if n % 2:
-            yield 'even'
-        else:
-            yield 'odd'
-
-    @kajiki.expose
-    def __call__():    
-        for i in range(5):
-            yield i
-            yield ' is '
-            yield evenness(i)
-
-The %import directive allows you to package up your functions for reuse in
-another template file (or even in a Python package).  For instance, consider the
-following file "import_test.txt":
+Then (using the `FileLoader`) we could write a template using the `evenness`
+function as follows:
 
 .. code-block:: none
 
-    %import "simple_function.txt" as simple_function
-    %for i in range(5)
-    $i is ${simple_function.evenness(i)}
-    %end
-
-This would then compile to the following Python::
-
-    @kajiki.expose
-    def __call__():
-        simple_function = local.__kj__.import_("simple_function.txt")
-        for i in range(5):
-            yield i
-            yield ' is '
-            yield simple_function.evenness(i)
-
-Note that when using the %import directive, any "body" in the imported template
-is ignored and only functions are imported.  If you actually wanted to insert the
-body of the imported template, you would simply call the imported template as a
-function itself (e.g. ${simple_function()}).
-
-Sometimes it is convenient to pass the contents of a tag to a function.  In this
-case, you can use the %call directive as shown in "call.txt":
-
-.. code-block:: none
-
-    %def quote(caller, speaker)
-        %for i in range(5)
-    Quoth $speaker, "${caller(i)}."
-        %end
-    %end
-    %call(n) quote('the raven')
-    Nevermore $n\
-    %end
-
-This results in the following Python::
-
-    @kajiki.expose
-    def quote(caller, speaker):
-        for i in range(5):
-            yield 'Quoth '
-            yield speaker
-            yield ', "'
-            yield caller(i)
-            yield '."'
-
-    @kajiki.expose
-    def __call__():    
-        @kajiki.expose
-        def _fpt_lambda(n):
-            yield 'Nevermore '
-            yield n
-        yield quote(_fpt_lambda, 'the raven')
-        del _fpt_lambda
-
-Which in turn yields the following output:
-
-.. code-block:: none
-
-       Quoth the raven, "Nevermore 0."
-       Quoth the raven, "Nevermore 1."
-       Quoth the raven, "Nevermore 2."
-       Quoth the raven, "Nevermore 3."
-       Quoth the raven, "Nevermore 4."
-
-Includes
-===============
-
-Sometimes you just want to pull the text of another template into your template
-verbatim.  For this, you use the %include directive as in "include_example.txt":
-
-.. code-block:: none
-
-    This is my story:
-    %include "call.txt"
-    Isn't it good?
-
-which yields the following Python::
-
-    @kajiki.expose
-    def __call__():
-        yield 'This is my story:\n'
-        yield _fpt.import("simple_function.txt")()
-        yield 'Isn't it good?\n'
-
-Which of course yields:
-        
-.. code-block:: none
-
-    This is my story:
-    Quoth the raven, "Nevermore 0."
-    Quoth the raven, "Nevermore 1."
-    Quoth the raven, "Nevermore 2."
-    Quoth the raven, "Nevermore 3."
-    Quoth the raven, "Nevermore 4."
-    Isn't it good?
+   %import "lib.txt" as lib
+   %for i in range(5)
+   %i is ${lib.evenness(i)}
+   %end
 
 Inheritance
 ==============
