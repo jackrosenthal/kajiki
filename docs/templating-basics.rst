@@ -109,21 +109,17 @@ text-based languages), the pattern is as follows:
 
 For instance:
 
-.. doctest::
-
-   >>> Template = kajiki.XMLTemplate('<h1>Hello, $name!</h1>')
-   >>> t = Template(dict(name='world'))
-   >>> t.render()
-   u'<h1>Hello, world!</h1>'
+>>> Template = kajiki.XMLTemplate('<h1>Hello, $name!</h1>')
+>>> t = Template(dict(name='world'))
+>>> t.render()
+u'<h1>Hello, world!</h1>'
 
 Using text templates is similar:
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('Hello, $name!')
-   >>> t = Template(dict(name='world'))
-   >>> t.render()
-   u'Hello, world!'
+>>> Template = kajiki.TextTemplate('Hello, $name!')
+>>> t = Template(dict(name='world'))
+>>> t.render()
+u'Hello, world!'
 
 You can also use a template loader to indirectly generate the template classes.
 Using a template loader give two main advantages over directly instantiating
@@ -150,15 +146,13 @@ starts with a letter and contains only letters, digits, dots, and underscores,
 then the curly braces may be omitted.  In all other cases, they are required.
 For example:
 
-.. doctest::
-
-   >>> Template = kajiki.XMLTemplate('<em>${items[0].capitalize()}</em>')
-   >>> Template(dict(items=['first', 'second'])).render()
-   u'<em>First</em>'
-   >>> import sys
-   >>> Template = kajiki.TextTemplate('Maxint is $sys.maxint')
-   >>> Template(dict(sys=sys)).render()
-   u'Maxint is 9223372036854775807'
+>>> Template = kajiki.XMLTemplate('<em>${items[0].capitalize()}</em>')
+>>> Template(dict(items=['first', 'second'])).render()
+u'<em>First</em>'
+>>> import sys
+>>> Template = kajiki.TextTemplate('Maxint is $sys.maxint')
+>>> Template(dict(sys=sys)).render()
+u'Maxint is 9223372036854775807'
 
 Escaping
 ^^^^^^^^^^^^^^
@@ -166,16 +160,14 @@ Escaping
 If you need a literal dollar sign where Kajiki would normally detect an
 expression, you can simply double the dollar sign:
 
-.. doctest::
-
-   >>> Template = kajiki.XMLTemplate('<em>$foo</em>')
-   >>> Template().render()
-   Traceback (most recent call last):
-      ...
-   NameError: global name 'foo' is not defined
-   >>> Template = kajiki.XMLTemplate('<em>$$foo</em>')
-   >>> Template().render()
-   u'<em>$foo</em>'
+>>> Template = kajiki.XMLTemplate('<em>$foo</em>')
+>>> Template().render()
+Traceback (most recent call last):
+   ...
+NameError: global name 'foo' is not defined
+>>> Template = kajiki.XMLTemplate('<em>$$foo</em>')
+>>> Template().render()
+u'<em>$foo</em>'
 
 Code Blocks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -217,27 +209,23 @@ accessible in functions or blocks defined elsewhere in the template.  To force
 the python block to run at 'module-level' in XML templates,  simply prefix the
 first line of the Python with a percent (%) sign:
 
-.. doctest::
-
-   >>> Template = kajiki.XMLTemplate('''<div
-   ... ><?py %import os
-   ... ?><py:def function="test()"
-   ... >${os.path.join('a', 'b', 'c')}</py:def
-   ... >${test()}</div>''')
-   >>> Template().render()
-   u'<div>a/b/c</div>'
+>>> Template = kajiki.XMLTemplate('''<div
+... ><?py %import os
+... ?><py:def function="test()"
+... >${os.path.join('a', 'b', 'c')}</py:def
+... >${test()}</div>''')
+>>> Template().render()
+u'<div>a/b/c</div>'
 
 In text templates, replace the %py directive with %py%:
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('''%py% import os
-   ... %def test()
-   ... ${os.path.join('a','b','c')}\\
-   ... %end
-   ... ${test()}''')
-   >>> Template().render()
-   u'a/b/c'
+>>> Template = kajiki.TextTemplate('''%py% import os
+... %def test()
+... ${os.path.join('a','b','c')}\\
+... %end
+... ${test()}''')
+>>> Template().render()
+u'a/b/c'
 
 Built-in Functions and Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

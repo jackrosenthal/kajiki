@@ -20,29 +20,23 @@ Basic Expressions
 
 Let's start with a hello world template:
 
-.. doctest::
-
-    >>> Template = kajiki.TextTemplate('Hello, $name!')
-    >>> print Template(dict(name='world')).render()
-    Hello, world!
+>>> Template = kajiki.TextTemplate('Hello, $name!')
+>>> print Template(dict(name='world')).render()
+Hello, world!
 
 By default, the $-syntax picks up any identifiers following it, as well as any
 periods.  If you want something more explicit, use the extended expression form
 as follows:
 
-.. doctest::
-
-    >>> Template = kajiki.TextTemplate('Hello, 2+2 is ${2+2}')
-    >>> print Template().render()
-    Hello, 2+2 is 4
+>>> Template = kajiki.TextTemplate('Hello, 2+2 is ${2+2}')
+>>> print Template().render()
+Hello, 2+2 is 4
 
 If you wish to include a literal $, simply double it:
 
-.. doctest::
-
-    >>> Template = kajiki.TextTemplate('The price is $$${price}')
-    >>> print Template(dict(price='5.00')).render()
-    The price is $5.00
+>>> Template = kajiki.TextTemplate('The price is $$${price}')
+>>> print Template(dict(price='5.00')).render()
+The price is $5.00
 
 Control Flow
 ============
@@ -67,13 +61,11 @@ an 'end' directive (either `{%end%}` or `%end`.
 
 Only render the enclosed content if the expression evaluates to a truthy value:
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('{%if foo %}bar{%else%}baz{%end%}')
-   >>> print Template(dict(foo=True)).render()
-   bar
-   >>> print Template(dict(foo=False)).render()
-   baz
+>>> Template = kajiki.TextTemplate('{%if foo %}bar{%else%}baz{%end%}')
+>>> print Template(dict(foo=True)).render()
+bar
+>>> print Template(dict(foo=False)).render()
+baz
 
 %switch, %case, %else
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -81,46 +73,40 @@ Only render the enclosed content if the expression evaluates to a truthy value:
 Perform multiple tests to render one of several alternatives.  The first matching
 `case` is rendered, and if no `case` matches, the `else` branch is rendered:
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('''$i is \
-   ... {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}''')
-   >>> print Template(dict(i=4)).render()
-   4 is even
-   >>> print Template(dict(i=3)).render()
-   3 is odd
+>>> Template = kajiki.TextTemplate('''$i is \
+... {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}''')
+>>> print Template(dict(i=4)).render()
+4 is even
+>>> print Template(dict(i=3)).render()
+3 is odd
 
 %for
 ^^^^^^^^^^^^^
 
 Repeatedly render the content for each item in an iterable:
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('''%for i in range(3)
-   ... $i
-   ... %end''')
-   >>> print Template().render(),
-   0
-   1
-   2
+>>> Template = kajiki.TextTemplate('''%for i in range(3)
+... $i
+... %end''')
+>>> print Template().render(),
+0
+1
+2
 
 %def
 ^^^^^^^^^^^^^^
 
 Defines a function that can be used elsewhere in the template:
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('''%def evenness(n)
-   ...     {%-if n % 2 == 0 %}even{%else%}odd{%end%}\\
-   ... %end
-   ... %for i in range(2)
-   ... $i is ${evenness(i)}
-   ... %end''')
-   >>> print Template().render(),
-   0 is even
-   1 is odd
+>>> Template = kajiki.TextTemplate('''%def evenness(n)
+...     {%-if n % 2 == 0 %}even{%else%}odd{%end%}\\
+... %end
+... %for i in range(2)
+... $i is ${evenness(i)}
+... %end''')
+>>> print Template().render(),
+0 is even
+1 is odd
    
 %call
 ^^^^^^^^^^^^^^^^^^
@@ -129,19 +115,17 @@ Call a function, passing a block of template code as a 'lambda' parameter.  Note
 that this is a special case of calling when you wish to insert some templated text in the
 expansion of a function call.  In normal circumstances, you would just use `${my_function(args)}`.
 
-.. doctest::
-
-   >>> Template = kajiki.TextTemplate('''%def quote(caller, speaker)
-   ...     %for i in range(2)
-   ... Quoth $speaker, "${caller(i)}."
-   ...     %end
-   ... %end
-   ... %call(n) quote(%caller, 'the raven')
-   ... Nevermore $n\\
-   ... %end''')    
-   >>> print Template().render(),
-   Quoth the raven, "Nevermore 0."
-   Quoth the raven, "Nevermore 1."
+>>> Template = kajiki.TextTemplate('''%def quote(caller, speaker)
+...     %for i in range(2)
+... Quoth $speaker, "${caller(i)}."
+...     %end
+... %end
+... %call(n) quote(%caller, 'the raven')
+... Nevermore $n\\
+... %end''')    
+>>> print Template().render(),
+Quoth the raven, "Nevermore 0."
+Quoth the raven, "Nevermore 1."
 
 %include
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -189,11 +173,11 @@ function as follows:
    %i is ${lib.evenness(i)}
    %end
 
-Inheritance
-==============
+Inheritance (%extends, %block)
+========================================
 
 Kajiki supports a concept of inheritance whereby child templates can extend
-parent templates, replacing their methods and "blocks" (to be defined below).
+parent templates, replacing their "methods" (functions) and "blocks" (to be defined below).
 For instance, consider the following template "parent.txt":
 
 .. code-block:: none
@@ -211,34 +195,21 @@ For instance, consider the following template "parent.txt":
     It was good seeing you last Friday.  Thanks for the gift!
     %end
 
-    ${sign(from)}
+    ${sign(from_)}
 
-This would generate the following Python::
+This would render to the following (assuming a context of 
+`dict(to=Mark, from_=Rick)`:
 
-    @kajiki.expose
-    def greet(name):
-        yield 'Hello, '
-        yield name
-        yield '!'
+.. code-block::none
 
-    @kajiki.expose
-    def sign(name):
-        yield 'Sincerely,\n'
-        yield name
+   Hello, Mark!
 
-    @kajiki.expose
-    def _fpt_block_body():
-        yield 'It was good seeing you last Friday! Thanks for the gift!\n'
+   It was good seeing you last friday.  Thanks for the gift!
 
-    @kajiki.expose
-    def __call__():
-        yield greet(to)
-        yield '\n\n'
-        yield self._fpt_block_body()
-        yield '\n\n'
-        yield sign(from)
+   Sincerely, 
+   Rick
 
-Here is the corresponding "child.txt":
+Now we can extend "parent.txt" with "child.txt":
 
 .. code-block:: none
 
@@ -247,30 +218,12 @@ Here is the corresponding "child.txt":
     Dear $name:\
     %end
     %block body
-    ${parent_block()}\\
+    ${parent_block()}\
     
     And don't forget you owe me money!
     %end
 
-This would then yield the following Python::
-
-    @kajiki.expose
-    def greet(name):
-        yield 'Dear '
-        yield name
-        yield ':'
-
-    @kajiki.expose
-    def _fpt_block_body():
-        yield parent._fpt_block_body()
-        yield '\n\n'
-        yield 'And don\'t forget you owe me money!\n'
-
-    @kajiki.expose
-    def __call__():
-        yield local.__kj__.extend(local.__kj__.import_('parent.txt')).__call__()
-
-The final text would be (assuming context had to='Mark' and from='Rick':
+Rendering this template would then give us:
 
 .. code-block:: none
 
@@ -282,4 +235,63 @@ The final text would be (assuming context had to='Mark' and from='Rick':
 
     Sincerely,
     Rick
+
+Notice how in the child block, we have overridden both the block "body" and teh
+function "greet."  When overriding a block, we always have access to the parent
+template's block of the same name via the `parent_block()` function.  
+
+If you ever need to access the parent template itself (perhaps to call another
+function), kajiki provides access to a special variable in child templates
+`parent`.  Likewise, if a template is being extended, the variable `child` is
+available.  Kajiki also provides the special variables `local` (the template
+currently being defined) and `self` (the child-most template of an inheritance
+chain).  The following example illustrates these variables in a 3-level
+inheritance hierarchy:
+
+>>> parent = kajiki.TextTemplate('''
+... %def header()
+... # Header name=$name
+... %end
+... %def footer()
+... # Footer
+... %end
+... %def body()
+... ## Parent Body
+... id() = ${id()}
+... local.id() = ${local.id()}
+... self.id() = ${self.id()}
+... child.id() = ${child.id()}
+... %end
+... %def id()
+... parent\\
+... %end
+... ${header()}${body()}${footer()}''')
+>>> mid = kajiki.TextTemplate('''%extends "parent.txt"
+... %def id()
+... mid\\
+... %end
+... ''')
+>>> child = kajiki.TextTemplate('''%extends "mid.txt"
+... %def id()
+... child\\
+... %end
+... %def body()
+... ## Child Body
+... ${parent.body()}\\
+... %end
+... ''')
+>>> loader = kajiki.MockLoader({
+... 'parent.txt':parent,
+... 'mid.txt':mid,
+... 'child.txt':child})
+>>> Template = loader.import_('child.txt')
+>>> print Template(dict(name='Rick')).render(),
+# Header name=Rick
+## Child Body
+## Parent Body
+id() = child
+local.id() = parent
+self.id() = child
+child.id() = mid
+# Footer
 

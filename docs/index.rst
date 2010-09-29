@@ -16,8 +16,8 @@ Contents:
    :maxdepth: 2
 
    templating-basics.rst
-   text-templates.rst
    xml-templates.rst
+   text-templates.rst
    migrating_from_genshi.rst
    runtime.rst
 
