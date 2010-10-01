@@ -16,9 +16,6 @@ class Node(object):
         self.filename = '<string>'
         self.lineno = 0
 
-    def py(self): # pragma no cover
-        return []
-
     def new_py(self): # pragma no cover
         return []
 
@@ -54,16 +51,6 @@ class TemplateNode(HierNode):
         if mod_py is None: mod_py = []
         if defs is None: defs = []
         self.mod_py = [ x for x in mod_py if x is not None ]
-
-    def py(self):
-        for block in self.mod_py:
-            for  line in block.py():
-                yield line
-        yield self.line('@kajiki.Template')
-        yield self.line('class template:')
-        for child in self.body:
-            for line in child.py():
-                yield line.indent()
 
     def new_py(self):
         yield self.line('@kajiki.Template')
@@ -116,13 +103,6 @@ class DefNode(HierNode):
         super(DefNode, self).__init__(body)
         self.decl = decl
 
-    def py(self):
-        yield self.line(self.prefix)
-        yield self.line('def %s:' % (self.decl))
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line.indent()
-
     def new_py(self):
         yield self.line(self.prefix)
         yield self.line('def %s:' % (self.decl))
@@ -145,14 +125,6 @@ class CallNode(HierNode):
         self.decl = caller.replace('$caller', fname)
         self.call = callee.replace('$caller', fname)
 
-    def py(self):
-        yield self.line('@__kj__.flattener.decorate')
-        yield self.line('def %s:' % (self.decl))
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line.indent()
-        yield self.line('yield ' + self.call)
-
     def new_py(self):
         yield self.line('@__kj__.flattener.decorate')
         yield self.line('def %s:' % (self.decl))
@@ -170,12 +142,6 @@ class ForNode(HierNode):
         super(ForNode, self).__init__(body)
         self.decl = decl
 
-    def py(self):
-        yield self.line('for %s:' % (self.decl))
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line.indent()
-
     def new_py(self):
         yield self.line('for %s:' % (self.decl))
 
@@ -188,13 +154,6 @@ class SwitchNode(HierNode):
     def __init__(self, decl, *body):
         super(SwitchNode, self).__init__(body)
         self.decl = decl
-
-    def py(self):
-        yield self.line('local.__kj__.push_switch(%s)' % self.decl)
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line
-        yield self.line('local.__kj__.pop_switch()')
 
     def new_py(self):
         yield self.line('local.__kj__.push_switch(%s)' % self.decl)
@@ -210,12 +169,6 @@ class CaseNode(HierNode):
         super(CaseNode, self).__init__(body)
         self.decl = decl
 
-    def py(self):
-        yield self.line('if local.__kj__.case(%s):' % self.decl)
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line.indent()
-
     def new_py(self):
         yield self.line('if local.__kj__.case(%s):' % self.decl)
 
@@ -225,12 +178,6 @@ class IfNode(HierNode):
         super(IfNode, self).__init__(body)
         self.decl = decl
 
-    def py(self):
-        yield self.line('if %s:' % self.decl)
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line.indent()
-
     def new_py(self):
         yield self.line('if %s:' % self.decl)
 
@@ -238,12 +185,6 @@ class ElseNode(HierNode):
 
     def __init__(self,  *body):
         super(ElseNode, self).__init__(body)
-
-    def py(self):
-        yield self.line('else:')
-        for child in optimize(self.body):
-            for line in child.py():
-                yield line.indent()
 
     def new_py(self):
         yield self.line('else:')
