@@ -1,10 +1,11 @@
-from setuptools import setup, find_packages
 import sys, os
 
-version = '0.2.2'
+from setuptools import setup, find_packages
+
+from kajiki import version
 
 setup(name='Kajiki',
-      version=version,
+      version=version.__release__,
       description="Really fast well-formed xml templates",
       long_description="""Are you tired of the slow performance of Genshi? But
       you still long for the assurance that your output is well-formed that you
