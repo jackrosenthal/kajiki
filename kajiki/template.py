@@ -10,6 +10,7 @@ from .util import flattener, literal
 from .html_utils import HTML_EMPTY_ATTRS
 from .ir import generate_python
 from . import lnotab
+from . import i18n
 
 re_escape = re.compile(r'&|<|>')
 escape_dict ={
@@ -50,6 +51,7 @@ class _Template(object):
             case=self._case,
             import_=self._import,
             escape=self._escape,
+            gettext=i18n.gettext,
             render_attrs=self._render_attrs)
         self._switch_stack = []
         self.__globals__.update(context)
