@@ -117,7 +117,8 @@ class _Compiler(object):
             return self._compile_pi(node)
         elif node.tagName.startswith('py:'):
             # Handle directives
-            compiler = getattr(self, '_compile_%s' % node.tagName.split(':')[-1])
+            compiler = getattr(self, '_compile_%s' % node.tagName.split(':')[-1],
+                               self._compile_xml)
             return compiler(node)
         else:
             return self._compile_xml(node)
