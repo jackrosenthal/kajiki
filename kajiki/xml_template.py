@@ -130,7 +130,8 @@ class _Compiler(object):
             node.removeAttribute('py:strip')
         yield ir.TextNode(u'<%s' % node.tagName, guard)
         for k,v in node.attributes.items():
-            tc = _TextCompiler(self.filename, v, node.lineno)
+            tc = _TextCompiler(self.filename, v, node.lineno,
+                               ir.TextNode)
             v = list(tc)
             # v = u''.join(n.text for n in tc)
             if k == 'py:content':
@@ -277,15 +278,17 @@ class _Compiler(object):
 
 class _TextCompiler(object):
 
-    def __init__(self, filename, source, lineno):
+    def __init__(self, filename, source, lineno,
+                 node_type=ir.TranslatableTextNode):
         self.filename = filename
         self.source = source
         self.orig_lineno = lineno
         self.lineno = 0
         self.pos = 0
+        self.node_type = node_type
         
     def text(self, text):
-        node = ir.TextNode(text)
+        node = self.node_type(text)
         node.lineno = self.real_lineno
         self.lineno += text.count('\n')
         return node

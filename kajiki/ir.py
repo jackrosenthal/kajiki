@@ -203,6 +203,19 @@ class TextNode(Node):
         else:
             yield self.line(s)
 
+class TranslatableTextNode(TextNode):
+
+    def py(self):
+        text = self.text.strip()
+        if text:
+            s = 'yield local.__kj__.gettext(%r)' % self.text
+        else:
+            s = 'yield %r' % self.text
+        if self.guard:
+            yield self.line('if %s: %s' % (self.guard, s))
+        else:
+            yield self.line(s)
+
 class ExprNode(Node):
 
     def __init__(self, text):
