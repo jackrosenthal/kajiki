@@ -7,7 +7,7 @@ def generate_python(ir):
             cur_indent += 4
         elif isinstance(node, DedentNode):
             cur_indent -= 4
-        for line in node.new_py():
+        for line in node.py():
             yield line.indent(cur_indent)
 
 class Node(object):
@@ -16,7 +16,7 @@ class Node(object):
         self.filename = '<string>'
         self.lineno = 0
 
-    def new_py(self): # pragma no cover
+    def py(self): # pragma no cover
         return []
 
     def __iter__(self):
@@ -52,7 +52,7 @@ class TemplateNode(HierNode):
         if defs is None: defs = []
         self.mod_py = [ x for x in mod_py if x is not None ]
 
-    def new_py(self):
+    def py(self):
         yield self.line('@kajiki.Template')
         yield self.line('class template:')
 
@@ -69,7 +69,7 @@ class ImportNode(Node):
         self.tpl_name = tpl_name
         self.alias = alias
 
-    def new_py(self):
+    def py(self):
         yield self.line(
             'local.__kj__.import_(%r, %r, globals())' % (
                 self.tpl_name, self.alias))
@@ -80,7 +80,7 @@ class IncludeNode(Node):
         super(IncludeNode, self).__init__()
         self.tpl_name = tpl_name
 
-    def new_py(self):
+    def py(self):
         yield self.line(
             'yield local.__kj__.import_(%r, None, {}).__main__()' % (
                 self.tpl_name))
@@ -91,7 +91,7 @@ class ExtendNode(Node):
         super(ExtendNode, self).__init__()
         self.tpl_name = tpl_name
 
-    def new_py(self):
+    def py(self):
         yield self.line(
             'yield local.__kj__.extend(%r).__main__()' % (
                 self.tpl_name))
@@ -103,7 +103,7 @@ class DefNode(HierNode):
         super(DefNode, self).__init__(body)
         self.decl = decl
 
-    def new_py(self):
+    def py(self):
         yield self.line(self.prefix)
         yield self.line('def %s:' % (self.decl))
 
@@ -116,7 +116,7 @@ class CallNode(HierNode):
         def __init__(self, call):
             super(CallNode.CallTail, self).__init__()
             self.call = call
-        def new_py(self):
+        def py(self):
             yield self.line('yield ' + self.call) 
 
     def __init__(self, caller, callee, *body):
@@ -125,7 +125,7 @@ class CallNode(HierNode):
         self.decl = caller.replace('$caller', fname)
         self.call = callee.replace('$caller', fname)
 
-    def new_py(self):
+    def py(self):
         yield self.line('@__kj__.flattener.decorate')
         yield self.line('def %s:' % (self.decl))
 
@@ -142,20 +142,20 @@ class ForNode(HierNode):
         super(ForNode, self).__init__(body)
         self.decl = decl
 
-    def new_py(self):
+    def py(self):
         yield self.line('for %s:' % (self.decl))
 
 class SwitchNode(HierNode):
 
     class SwitchTail(Node):
-        def new_py(self):
+        def py(self):
             yield self.line('local.__kj__.pop_switch()')
 
     def __init__(self, decl, *body):
         super(SwitchNode, self).__init__(body)
         self.decl = decl
 
-    def new_py(self):
+    def py(self):
         yield self.line('local.__kj__.push_switch(%s)' % self.decl)
 
     def __iter__(self):
@@ -169,7 +169,7 @@ class CaseNode(HierNode):
         super(CaseNode, self).__init__(body)
         self.decl = decl
 
-    def new_py(self):
+    def py(self):
         yield self.line('if local.__kj__.case(%s):' % self.decl)
 
 class IfNode(HierNode):
@@ -178,7 +178,7 @@ class IfNode(HierNode):
         super(IfNode, self).__init__(body)
         self.decl = decl
 
-    def new_py(self):
+    def py(self):
         yield self.line('if %s:' % self.decl)
 
 class ElseNode(HierNode):
@@ -186,7 +186,7 @@ class ElseNode(HierNode):
     def __init__(self,  *body):
         super(ElseNode, self).__init__(body)
 
-    def new_py(self):
+    def py(self):
         yield self.line('else:')
 
 class TextNode(Node):
@@ -196,7 +196,7 @@ class TextNode(Node):
         self.text = text
         self.guard = guard
 
-    def new_py(self):
+    def py(self):
         s = 'yield %r' % self.text
         if self.guard:
             yield self.line('if %s: %s' % (self.guard, s))
@@ -209,12 +209,12 @@ class ExprNode(Node):
         super(ExprNode, self).__init__()
         self.text = text
 
-    def new_py(self):
+    def py(self):
         yield self.line('yield self.__kj__.escape(%s)' % self.text)
 
 class PassNode(Node):
 
-    def new_py(self):
+    def py(self):
         yield self.line('pass')
 
 class AttrNode(HierNode):
@@ -223,7 +223,7 @@ class AttrNode(HierNode):
         def __init__(self, parent):
             super(AttrNode.AttrTail, self).__init__()
             self.p = parent
-        def new_py(self):
+        def py(self):
             gen = self.p.genname
             x = gen_name()
             yield self.line("%s = ''.join(%s())" % (gen, gen))
@@ -240,7 +240,7 @@ class AttrNode(HierNode):
         self.mode = mode
         self.attrname, self.genname = gen_name(), gen_name()
 
-    def new_py(self):
+    def py(self):
         x,gen = gen_name(), gen_name()
         def _body():
             yield self.line('def %s():' % gen)
@@ -260,7 +260,7 @@ class AttrNode(HierNode):
         else:
             for l in _body(): yield l
 
-    def new_py(self):
+    def py(self):
         yield self.line('def %s():' % self.genname)
 
     def __iter__(self):
@@ -286,7 +286,7 @@ class AttrsNode(Node):
         self.guard = guard
         self.mode = mode
 
-    def new_py(self):
+    def py(self):
         x = gen_name()
         def _body():
             yield self.line(
@@ -314,7 +314,7 @@ class PythonNode(Node):
             text = text[1:]
         self.lines = list(self._normalize(text))
 
-    def new_py(self):
+    def py(self):
         for line in self.lines:
             yield self.line(line)
 
