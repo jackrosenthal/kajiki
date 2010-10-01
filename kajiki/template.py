@@ -8,6 +8,7 @@ from pprint import pprint
 import kajiki
 from .util import flattener, literal
 from .html_utils import HTML_EMPTY_ATTRS
+from .ir import generate_python
 from . import lnotab
 
 re_escape = re.compile(r'&|<|>')
@@ -139,7 +140,7 @@ def Template(ns):
     return type(ns.__name__,(_Template,), dct)
 
 def from_ir(ir_node):
-    py_lines = list(ir_node.py())
+    py_lines = list(generate_python(ir_node))
     py_text = '\n'.join(map(str, py_lines))
     py_linenos = [ ]
     last_lineno = 0

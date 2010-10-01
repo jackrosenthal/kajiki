@@ -35,5 +35,9 @@ setup(name='Kajiki',
       ],
       entry_points="""
       # -*- Entry points: -*-
+
+      [babel.extractors]
+      kajiki = kajiki.i18n:extract
+    
       """,
       )
