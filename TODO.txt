@@ -1,2 +1,2 @@
-* Template designer documentation for text templates
-* Template designer documentation for xml templates
+* i18n
+* Custom tags

@@ -236,7 +236,7 @@ Rendering this template would then give us:
     Sincerely,
     Rick
 
-Notice how in the child block, we have overridden both the block "body" and teh
+Notice how in the child block, we have overridden both the block "body" and the
 function "greet."  When overriding a block, we always have access to the parent
 template's block of the same name via the `parent_block()` function.  
 

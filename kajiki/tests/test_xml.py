@@ -400,9 +400,9 @@ class TestAttributes(TestCase):
     def test_strip(self):
         tpl = XMLTemplate('''<div><h1 py:strip="header">Header</h1></div>''')
         rsp = tpl(dict(header=True)).render()
-        assert rsp == '<div><h1>Header</h1></div>', rsp
-        rsp = tpl(dict(header=False)).render()
         assert rsp == '<div>Header</div>', rsp
+        rsp = tpl(dict(header=False)).render()
+        assert rsp == '<div><h1>Header</h1></div>', rsp
 
     def test_html_attrs(self):
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='xml')

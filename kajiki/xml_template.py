@@ -24,15 +24,21 @@ _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
 def XMLTemplate(
     source=None,
     filename=None,
-    mode='xml',
-    is_fragment=False):
+    **kw):
+    if 'mode' in kw:
+        mode = kw['mode']
+        force_mode = True
+    else:
+        mode = 'xml'
+        force_mode = False
+    is_fragment = kw.pop('is_fragment', False)
     if source is None:
         source = open(filename).read()
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    compiler = _Compiler(filename, doc, mode, is_fragment)
+    compiler = _Compiler(filename, doc, mode, is_fragment, force_mode)
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
@@ -120,7 +126,7 @@ class _Compiler(object):
     def _compile_xml(self, node):
         content = attrs = guard = None
         if node.hasAttribute('py:strip'):
-            guard = node.getAttribute('py:strip')
+            guard = 'not (%s)' % node.getAttribute('py:strip')
             node.removeAttribute('py:strip')
         yield ir.TextNode(u'<%s' % node.tagName, guard)
         for k,v in node.attributes.items():
