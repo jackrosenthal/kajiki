@@ -1,39 +1,32 @@
 Migrating from Genshi
 ======================================
 
-.. warning::
-   This document is mostly obsolete.  Use at your own risk!
-
 Kajiki uses syntax derived from the syntax of Genshi.  In particular, the
 following directives are supported, with semantics intended to be nearly identical to
 those of Genshi_.
 
  * `py:def`
- * `py:when`
- * `py:otherwise`
+ * `py:choose` -- renamed `py:with`
+ * `py:when` -- renamed `py:case`
+ * `py:otherwise` -- renamed `py:else`
  * `py:for`
  * `py:if`
- * `py:choose`
  * `py:with`
  * `py:replace`
  * `py:content`
  * `py:attrs`
  * `py:strip`
- * `xi:include`
+ * `xi:include` -- renamed `py:include`
 
 Note that, in particular, `py:match` is not supported.  In addition, Kajiki
 supports the following additional directives: 
 
- * `py:include` - same semantics as `xi:include`, use if you don't like lots of
-   namespaces in your xml
  * `py:extends` - indicates that this is an extension template.  The parent
-   template will be read in and used for layout, with any `py:slot` directives in
-   the child template overriding the `py:slot` directives defined in the parent.
- * `py:slot` - used to name a replaceable 'slot' in a parent template, or to
-   specify a slot override in a child template.  The `py:slot` semantics are
+   template will be read in and used for layout, with any `py:block` directives in
+   the child template overriding the `py:block` directives defined in the parent.
+ * `py:block` - used to name a replaceable 'slot' in a parent template, or to
+   specify a slot override in a child template.  The `py:block` semantics are
    modeled after the `{% block %}` semantics of Jinja2_.
- * `py:super` - used to insert the contents of a parent `py:slot`, modeled after
-   `{% super %}` in Jinja2_. 
 
 Generally, migration consists of a few steps that can be simple or quite
 difficult based on your fondness of the `py:match` directive in Genshi.  In
@@ -46,11 +39,11 @@ steps should suffice:
  * In a simple case where you have only a few `py:match` directives, all of which
    are in a `master.html` template that is being included from child templates,
    I recommend that you rewrite the `master.html` as `layout.html`, defining
-   named `py:slot` regions that will be overridden in child templates.
+   named `py:block` regions that will be overridden in child templates.
  * In your child templates, remove the `<xi:include href="master.html">` that
    probably lurks near the top.  Then add a `py:extends` directive to the
    top-level tag (usually `<html>`).  The tag the parts of the child template
-   that are intended to override parts of the parent template with the `py:slot`
+   that are intended to override parts of the parent template with the `py:block`
    directive.
 
 Example Migration
@@ -79,38 +72,39 @@ templates.  The first one will replace our `master.html`, and we will call it
    :linenos:
    :language: html
 
-Note the introduction of the `py:slot` directive, and the disappearance of the
-`py:match` directives from `master.html`.  `py:slot` mimics the behavior of
+Note the introduction of the `py:block` directive, and the disappearance of the
+`py:match` directives from `master.html`.  `py:block` mimics the behavior of
 Jinja2 "blocks", providing a name to a construct in a parent template which can be
-replaced by the contents of `py:slot` -named constructs in child templates.  For
+replaced by the contents of `py:block` -named constructs in child templates.  For
 instance, the "title" slot in `layout.html`:
 
 .. literalinclude:: include/layout.html
    :linenos:
    :language: html
-   :lines: 10
+   :lines: 8
 
 can be replaced by a similarly-named slot in the child document `index_kajiki.html`:
 
-.. literalinclude:: include/index_fastpt.html
+.. literalinclude:: include/index_kajiki.html
    :linenos:
    :language: html
-   :lines: 1-6, 9-10
+   :lines: 1-8
 
 We also provide a way of including the contents of the parent template's slot in
-a child template's slot using `<py:super/>`.  The following slot in `layout.html`:
+a child template's slot using `${parent_block()}`.  The following slot in
+`layout.html`: 
 
 .. literalinclude:: include/layout.html
    :linenos:
    :language: html
-   :lines:  18
+   :lines:  16
 
 can be replaced in `include/index_kajiki.html` with:
   
-.. literalinclude:: include/index_fastpt.html
+.. literalinclude:: include/index_kajiki.html
    :linenos:
    :language: html
-   :lines: 12-15
+   :lines: 9-12
 
 Yielding the following html once rendered:
 

@@ -1,20 +1,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:py="http://genshi.edgewall.org/"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
-      py:extends="layout">
-    <xi:include href="sidebars" />
+<html py:extends="layout">
+    <py:include href="sidebars" />
 
-    <title py:slot="title">Welcome to TurboGears 2.0, standing on the 
+    <title py:block="title">Welcome to TurboGears 2.0, standing on the 
       shoulders of giants, since 2007</title>
 
-    <py:slot name="body_header">
-      <py:super/>
+    <py:block name="body_header">
+      ${parent_block()}
       <h1>Some extra header data</h1>
-    </py:slot>
+    </py:block>
 
-    <py:slot name="body_text">
+    <py:block name="body_text">
       ${sidebar_top()}
       <div id="getting_started">
         <h2>Presentation</h2>
@@ -38,5 +35,5 @@
       <div class="clearingdiv" />
       <div class="notice"> Thank you for choosing TurboGears. 
       </div>
-    </py:slot>
+    </py:block>
 </html>
