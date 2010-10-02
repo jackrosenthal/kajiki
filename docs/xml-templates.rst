@@ -263,6 +263,24 @@ function as follows:
        </ul>
     </div>      
 
+py:with
+----------
+
+Using `py:with`, you can temporarily assign variables values for the extent of
+the block: 
+
+>>> Template = kajiki.XMLTemplate('''<div py:with="a='foo'">
+... <div>$a</div>
+... <div py:with="a=5">$a</div>
+... <div>$a</div>
+... </div>''')
+>>> print Template().render()
+<div>
+<div>foo</div>
+<div>5</div>
+<div>foo</div>
+</div>
+
 Content Generation
 =========================
 

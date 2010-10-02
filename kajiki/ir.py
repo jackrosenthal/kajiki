@@ -145,6 +145,37 @@ class ForNode(HierNode):
     def py(self):
         yield self.line('for %s:' % (self.decl))
 
+class WithNode(HierNode):
+
+    class WithTail(Node):
+        def __init__(self, vars):
+            super(WithNode.WithTail, self).__init__()
+            self.vars = vars
+        def py(self):
+            gen = gen_name()
+            yield self.line('%s = local.__kj__.pop_with()' % gen)
+            for v in self.vars:
+                yield self.line('%s = %s.get(%r)' % (v, gen, v))
+                # yield self.line('if %s == (): del %s' % (v, v))
+
+    def __init__(self, vars, *body):
+        super(WithNode, self).__init__(body)
+        self.vars_text = vars
+        self.vars = dict(var.split('=')
+                         for var in vars.split(';'))
+
+    def py(self):
+        yield self.line(
+            'local.__kj__.push_with(locals(), %s)' % self.vars_text)
+        for k,v in self.vars.iteritems():
+            yield self.line('%s = %s' % (k,v))
+        
+    def __iter__(self):
+        yield self
+        for x in self.body_iter(): yield x
+        yield self.WithTail(self.vars)
+    
+
 class SwitchNode(HierNode):
 
     class SwitchTail(Node):

@@ -252,6 +252,11 @@ class _Compiler(object):
                          *list(self._compile_nop(node)))
 
     @annotate
+    def _compile_with(self, node):
+        yield ir.WithNode(node.getAttribute('vars'),
+                          *list(self._compile_nop(node)))
+
+    @annotate
     def _compile_switch(self, node):
         # Filter out text nodes
         body = [ x for x in self._compile_nop(node)

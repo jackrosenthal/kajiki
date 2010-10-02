@@ -52,8 +52,11 @@ class _Template(object):
             import_=self._import,
             escape=self._escape,
             gettext=i18n.gettext,
-            render_attrs=self._render_attrs)
+            render_attrs=self._render_attrs,
+            push_with=self._push_with,
+            pop_with=self._pop_with)
         self._switch_stack = []
+        self._with_stack = []
         self.__globals__.update(context)
 
     def __iter__(self):
@@ -62,6 +65,14 @@ class _Template(object):
 
     def render(self):
         return u''.join(self)
+
+    def _push_with(self, lcls, **kw):
+        d = dict((k,lcls.get(k, ()))
+                 for k in kw)
+        self._with_stack.append(d)
+
+    def _pop_with(self):
+        return self._with_stack.pop()
 
     def _extend(self, parent):
         if isinstance(parent, basestring):

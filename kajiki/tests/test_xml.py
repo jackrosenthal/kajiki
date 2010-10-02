@@ -101,6 +101,21 @@ $i is <py:switch test="i % 2">
 0 is even</div><div>
 1 is odd</div>''', rsp
 
+class TestWith(TestCase):
+
+    def test_with(self):
+        tpl = XMLTemplate(source='''<div py:with="a='foo'">
+<div>$a</div>
+<div py:with="a=5">$a</div>
+<div>$a</div>
+</div>''')
+        rsp = tpl().render()
+        assert rsp == '''<div>
+<div>foo</div>
+<div>5</div>
+<div>foo</div>
+</div>''', rsp
+
 class TestFunction(TestCase):
 
     def test_function(self):
