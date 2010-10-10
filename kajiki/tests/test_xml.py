@@ -66,7 +66,7 @@ class TestSimple(TestCase):
     def test_script(self):
         tpl = XMLTemplate(source='<html><script src="public"/></html>', mode='html')
         rsp = tpl().render()
-        print rsp
+        assert rsp == '<html><script src="public"></script>', rsp
 
     def test_expr_name(self):
         tpl = XMLTemplate(source='<div>Hello, $name</div>')
