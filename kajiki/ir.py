@@ -254,26 +254,6 @@ class AttrNode(HierNode):
         self.attrname, self.genname = gen_name(), gen_name()
 
     def py(self):
-        x,gen = gen_name(), gen_name()
-        def _body():
-            yield self.line('def %s():' % gen)
-            for part in self.value:
-                import pdb; pdb.set_trace()
-                for line in part.py():
-                    yield line.indent()
-            yield self.line("%s = ''.join(%s())" % (gen,gen))
-            yield self.line(
-                'for %s in self.__kj__.render_attrs({%r:%s}, %r):'
-                % (x, self.attr, gen, self.mode))
-            yield self.line('    yield %s' % x)
-        if self.guard:
-            yield self.line('if %s:' % self.guard)
-            for l in _body():
-                yield l.indent()
-        else:
-            for l in _body(): yield l
-
-    def py(self):
         yield self.line('def %s():' % self.genname)
 
     def __iter__(self):
@@ -286,8 +266,11 @@ class AttrNode(HierNode):
         else:
             yield self
             yield IndentNode()
-            for part in self.body_iter():
-                yield part
+            if self.body:
+                for part in self.body_iter():
+                    yield part
+            else:
+                yield TextNode('')
             yield DedentNode()
             yield self.AttrTail(self)
 

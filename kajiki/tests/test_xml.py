@@ -63,6 +63,11 @@ class TestExpand(TestCase):
 
 class TestSimple(TestCase):
 
+    def test_empty_attr(self):
+        tpl = XMLTemplate(source='<img src="/foo/bar.baz.gif" alt="" />', mode='html')
+        rsp = tpl().render()
+        assert rsp == '<img src="/foo/bar.baz.gif" alt="">', rsp
+
     def test_script(self):
         tpl = XMLTemplate(source='<html><script src="public"/></html>', mode='html')
         rsp = tpl().render()
