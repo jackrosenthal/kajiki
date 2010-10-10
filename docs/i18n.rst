@@ -1,0 +1,52 @@
+====================
+Internationalization
+====================
+
+Kajiki provides supporting infrastructure for internationalizing and localizing
+templates.  This includes functionality for extracing localizable strings from
+templates, as well as translation of localizable strings.
+
+Basics
+=======
+
+The simplest way to internationalize and translate templates would be to wrap all
+localizable strings in a `gettext()` function call (usually aliased to `_()` for
+brevity.  In this case, you would write you templates similar to the following:
+
+.. code-block:: xml
+
+    <p>${_('Hello, world!')}</p>
+
+This approach, however, adds lots of noise to your templates.  Kajiki essentially
+does this automatically to all "translatable text" in XML templates (any text
+outside of an XML tag). 
+
+In order to actually use translation, you must replace the placeholder function
+in `kajiki.i18n.gettext` with the actual gettext function.  For instance, you
+might place the following in your top-level script to enable the Python gettext
+module::
+
+    from gettext import gettext
+    from kajiki import i18n
+    i18n.gettext = gettext
+
+Extraction
+=====================
+
+Kajiki also provides support for extracing all localizable strings found in a
+template.  This functionality is integrated with teh excellent message extraction
+framework provided by the Babel_ project.  Typically, you would notify Babel of
+the location of your templates before running the extraction routine:
+
+..  code-block:: none
+
+    # Python source
+    [python:**.py]
+    # Kajiki Templates
+    [kajiki:**/templates/**.html]
+
+Please consult the Babel documentation for further details.  If all goes well,
+the extraction process should create a POT file containing the strings from your
+Kajiki templates and your Python source files.
+
+.. _Babel: http://babel.edgewall.org/
