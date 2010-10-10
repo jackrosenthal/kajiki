@@ -63,6 +63,11 @@ class TestExpand(TestCase):
 
 class TestSimple(TestCase):
 
+    def test_script(self):
+        tpl = XMLTemplate(source='<html><script src="public"/></html>', mode='html')
+        rsp = tpl().render()
+        print rsp
+
     def test_expr_name(self):
         tpl = XMLTemplate(source='<div>Hello, $name</div>')
         rsp = tpl(dict(name='Rick')).render()

@@ -32,6 +32,7 @@ setup(name='Kajiki',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+        'babel'
       ],
       entry_points="""
       # -*- Entry points: -*-

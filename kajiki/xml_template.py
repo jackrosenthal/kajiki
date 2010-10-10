@@ -158,9 +158,11 @@ class _Compiler(object):
                         and node.tagName in HTML_OPTIONAL_END_TAGS):
                     yield ir.TextNode(u'</%s>' % node.tagName, guard)
             else:
-                if (self.mode.startswith('html')
-                    and node.tagName in HTML_OPTIONAL_END_TAGS):
-                    yield ir.TextNode(u'>', guard)
+                if self.mode.startswith('html'):
+                    if  node.tagName in HTML_OPTIONAL_END_TAGS:
+                        yield ir.TextNode(u'>', guard)
+                    else:
+                        yield ir.TextNode(u'></%s>' % node.tagName, guard)
                 else:
                     yield ir.TextNode(u'/>', guard)
 
