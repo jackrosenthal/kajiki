@@ -1,5 +1,3 @@
-from babel.messages.extract import extract_python
-
 from .ir import TranslatableTextNode
 
 def gettext(s):
