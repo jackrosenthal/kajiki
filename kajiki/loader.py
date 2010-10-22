@@ -36,8 +36,8 @@ class FileLoader(Loader):
         self.extension_map = dict(
             txt=TextTemplate,
             xml=XMLTemplate,
-            html=lambda *a,**kw:XMLTemplate(*a, mode='html', **kw),
-            html5=lambda *a,**kw:XMLTemplate(*a, mode='html5', **kw))
+            html=lambda *a,**kw:XMLTemplate(mode='html', *a, **kw),
+            html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
         self._timestamps = {}
         self._reload = reload
 
