@@ -46,6 +46,10 @@ class DedentNode(Node): pass
 
 class TemplateNode(HierNode):
 
+    class TemplateTail(Node):
+        def py(self):
+            yield self.line('template = kajiki.Template(template)')
+
     def __init__(self, mod_py=None, defs=None):
         super(TemplateNode, self).__init__(defs)
         if mod_py is None: mod_py = []
@@ -53,7 +57,6 @@ class TemplateNode(HierNode):
         self.mod_py = [ x for x in mod_py if x is not None ]
 
     def py(self):
-        yield self.line('@kajiki.Template')
         yield self.line('class template:')
 
     def __iter__(self):
@@ -61,6 +64,7 @@ class TemplateNode(HierNode):
             yield x
         for x in super(TemplateNode, self).__iter__():
             yield x
+        yield self.TemplateTail()
 
 class ImportNode(Node):
 
