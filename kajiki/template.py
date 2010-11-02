@@ -135,10 +135,11 @@ class _Template(object):
     def _render_attrs(self, attrs, mode):
         if hasattr(attrs, 'items'):
             attrs = attrs.items()
-        for k,v in attrs:
-            if v is None: continue
-            if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.upper()
-            else: yield ' %s="%s"' % (k,self._escape(v))
+        if attrs is not None:        
+            for k,v in attrs:
+                if v is None: continue
+                if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.upper()
+                else: yield ' %s="%s"' % (k,self._escape(v))
 
     def _collect(self, it):
         result = []

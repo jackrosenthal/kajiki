@@ -421,6 +421,9 @@ class TestAttributes(TestCase):
         tpl = XMLTemplate('''<div py:attrs="[('a', 5), ('b', 6)]"/>''')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div a="5" b="6"/>'
+        tpl = XMLTemplate('''<div py:attrs="None"/>''')
+        rsp = tpl(dict(name='Rick')).render()
+        assert rsp == '<div/>'
 
     def test_strip(self):
         tpl = XMLTemplate('''<div><h1 py:strip="header">Header</h1></div>''')
