@@ -29,7 +29,7 @@ class MockLoader(Loader):
             
 class FileLoader(Loader):
 
-    def __init__(self, base, reload=True):
+    def __init__(self, base, reload=True, force_mode=None):
         super(FileLoader, self).__init__()
         from kajiki import XMLTemplate, TextTemplate
         self.base = base
@@ -40,27 +40,39 @@ class FileLoader(Loader):
             html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
         self._timestamps = {}
         self._reload = reload
+        self._force_mode = force_mode
 
     def _filename(self, name):
         return os.path.join(self.base, name)
 
     def import_(self, name):
         filename = self._filename(name)
-        if self._reload and name in self.modules and os.stat(filename).st_mtime > self._timestamps.get(name, 0):
+        if (self._reload
+            and name in self.modules
+            and os.stat(filename).st_mtime > self._timestamps.get(name, 0)):
             del self.modules[name]
         return super(FileLoader, self).import_(name)
 
     def _load(self, name):
+        from kajiki import XMLTemplate, TextTemplate
         filename = self._filename(name)
-        ext = os.path.splitext(filename)[1][1:]
         self._timestamps[name] = os.stat(filename).st_mtime
         source = open(filename, 'rb').read()
-        return self.extension_map[ext](source=source, filename=filename)
+        if self._force_mode == 'text':
+            return TextTemplate(source=source, filename=filename)
+        elif self._force_mode:
+            return XMLTemplate(
+                source=source,
+                filename=filename,
+                mode=self._force_mode)
+        else:
+            ext = os.path.splitext(filename)[1][1:]
+            return self.extension_map[ext](source=source, filename=filename)
         
 class PackageLoader(FileLoader):
 
-    def __init__(self, reload=True):
-        super(PackageLoader, self).__init__(None, reload)
+    def __init__(self, reload=True, force_mode=None):
+        super(PackageLoader, self).__init__(None, reload, force_mode)
 
     def _filename(self, name):
         package, module = name.rsplit('.', 1)

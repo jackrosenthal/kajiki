@@ -274,7 +274,7 @@ class AttrNode(HierNode):
         def py(self):
             gen = self.p.genname
             x = gen_name()
-            yield self.line("%s = ''.join(%s())" % (gen, gen))
+            yield self.line("%s = self.__kj__.collect(%s())" % (gen, gen))
             yield self.line(
                 'for %s in self.__kj__.render_attrs({%r:%s}, %r):'
                 % (x, self.p.attr, gen, self.p.mode))

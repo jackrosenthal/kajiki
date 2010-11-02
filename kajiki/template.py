@@ -54,7 +54,8 @@ class _Template(object):
             gettext=i18n.gettext,
             render_attrs=self._render_attrs,
             push_with=self._push_with,
-            pop_with=self._pop_with)
+            pop_with=self._pop_with,
+            collect=self._collect)
         self._switch_stack = []
         self._with_stack = []
         self.__globals__.update(context)
@@ -122,6 +123,7 @@ class _Template(object):
         return r
 
     def _escape(self, value):
+        if value is None: return value
         if type(value) == flattener:
             return value
         uval = unicode(value)
@@ -137,6 +139,16 @@ class _Template(object):
             if v is None: continue
             if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.upper()
             else: yield ' %s="%s"' % (k,self._escape(v))
+
+    def _collect(self, it):
+        result = []
+        for part in it:
+            if part is None: continue
+            result.append(part)
+        if result:
+            return u''.join(result)
+        else:
+            return None
 
     @classmethod
     def annotate_lnotab(cls, py_to_tpl):

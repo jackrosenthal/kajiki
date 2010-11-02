@@ -447,6 +447,10 @@ class TestAttributes(TestCase):
                           mode='html5', is_fragment=True)
         rsp = tpl(dict(checked=True)).render()
         assert rsp == '<input type="checkbox" CHECKED>', rsp
+        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
+                          mode='html5', is_fragment=True)
+        rsp = tpl(dict(checked=None)).render()
+        assert rsp == '<input type="checkbox">', rsp
 
 class TestDebug(TestCase):
     
