@@ -56,6 +56,8 @@ class flattener(object):
                 continue
             if type(x) == flattener:
                 iter_stack.append(x.iterator)
+            elif x is None:
+                pass
             else:
                 s += x
         return s
@@ -64,8 +66,9 @@ class flattener(object):
         for x in self.iterator:
             if type(x) == flattener:
                 for xx in x:
-                    yield xx
-            else:
+                    if xx is not None:
+                        yield xx
+            elif x is not None:
                 yield x
 
 def literal(text):

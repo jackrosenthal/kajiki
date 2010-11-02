@@ -22,6 +22,11 @@ class TestBasic(TestCase):
         rsp = tpl(dict(name='Rick')).render() 
         assert rsp == 'Hello, Rick\n', rsp
 
+    def test_expr_None(self):
+        tpl = TextTemplate(source='Hello, ${name}\n')
+        rsp = tpl(dict(name=None)).render() 
+        assert rsp == 'Hello, \n', rsp
+
     def test_expr_brace_complex(self):
         tpl = TextTemplate(source="Hello, ${{'name':name}['name']}\n")
         rsp = tpl(dict(name='Rick')).render() 

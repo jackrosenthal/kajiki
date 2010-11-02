@@ -124,6 +124,8 @@ class _Template(object):
 
     def _escape(self, value):
         if value is None: return value
+        if hasattr(value, '__html__'):
+            return value.__html__()
         if type(value) == flattener:
             return value
         uval = unicode(value)
