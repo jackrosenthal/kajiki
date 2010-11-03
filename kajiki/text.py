@@ -37,13 +37,14 @@ _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
 
 def TextTemplate(
     source=None,
-    filename=None):
+    filename=None,
+    autoescape=False):
     if source is None:
         source = open(filename).read()
     if filename is None:
         filename = '<string>'
     scanner = _Scanner(filename, source)
-    tree = _Parser(scanner).parse()
+    tree = _Parser(scanner, autoescape).parse()
     tree.filename = filename
     return kajiki.template.from_ir(tree)
 
@@ -143,12 +144,13 @@ class _Scanner(object):
     
 class _Parser(object):
 
-    def __init__(self, tokenizer):
+    def __init__(self, tokenizer, autoescape=False):
         self.tokenizer = tokenizer
         self.functions = defaultdict(list)
         self.functions['__main__()'] = []
         self.mod_py = [] # module-level python blocks
         self.iterator = iter(self.tokenizer)
+        self.autoescape = autoescape
         self._in_def = False
         self._is_child = False
 
@@ -166,7 +168,7 @@ class _Parser(object):
         return node
 
     def expr(self, token):
-        node = ir.ExprNode(token.text)
+        node = ir.ExprNode(token.text, safe=not self.autoescape)
         node.filename = token.filename
         node.lineno = token.lineno
         return node

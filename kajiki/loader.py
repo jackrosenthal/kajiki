@@ -29,18 +29,20 @@ class MockLoader(Loader):
             
 class FileLoader(Loader):
 
-    def __init__(self, base, reload=True, force_mode=None):
+    def __init__(self, base, reload=True, force_mode=None,
+                 autoescape_text=False):
         super(FileLoader, self).__init__()
         from kajiki import XMLTemplate, TextTemplate
         self.base = base
-        self.extension_map = dict(
-            txt=TextTemplate,
-            xml=XMLTemplate,
-            html=lambda *a,**kw:XMLTemplate(mode='html', *a, **kw),
-            html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
         self._timestamps = {}
         self._reload = reload
         self._force_mode = force_mode
+        self._autoescape_text = autoescape_text
+        self.extension_map = dict(
+            txt=lambda *a, **kw: TextTemplate(*a, autoescape=self._autoescape_text, **kw),
+            xml=XMLTemplate,
+            html=lambda *a,**kw:XMLTemplate(mode='html', *a, **kw),
+            html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
 
     def _filename(self, name):
         return os.path.join(self.base, name)
@@ -59,7 +61,8 @@ class FileLoader(Loader):
         self._timestamps[name] = os.stat(filename).st_mtime
         source = open(filename, 'rb').read()
         if self._force_mode == 'text':
-            return TextTemplate(source=source, filename=filename)
+            return TextTemplate(source=source, filename=filename,
+                                autoescape=self._autoescape_text)
         elif self._force_mode:
             return XMLTemplate(
                 source=source,

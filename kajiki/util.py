@@ -88,7 +88,7 @@ class NameGen(object):
     def _gen(self, hint):
         r = hint
         while r in self.names:
-            r = '%s_%d' % (hint, randint(0, 999))
+            r = '%s_%d' % (hint, randint(0, len(self.names)*10))
         self.names.add(r)
         return r
 

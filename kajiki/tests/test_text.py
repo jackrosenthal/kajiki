@@ -8,12 +8,15 @@ from kajiki import MockLoader, FileLoader, TextTemplate
 class TestBasic(TestCase):
 
     def test_auto_escape(self):
-        tpl = TextTemplate(source="${'<h1>'}")
+        tpl = TextTemplate(source="${'<h1>'}", autoescape=True)
         rsp = tpl().render() 
         assert rsp == '&lt;h1&gt;', rsp
 
     def test_auto_escape_disable(self):
         tpl = TextTemplate(source="${literal('<h1>')}")
+        rsp = tpl().render() 
+        assert rsp == '<h1>', rsp
+        tpl = TextTemplate(source="${'<h1>'}", autoescape=False)
         rsp = tpl().render() 
         assert rsp == '<h1>', rsp
 

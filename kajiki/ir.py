@@ -253,12 +253,16 @@ class TranslatableTextNode(TextNode):
 
 class ExprNode(Node):
 
-    def __init__(self, text):
+    def __init__(self, text, safe=False):
         super(ExprNode, self).__init__()
         self.text = text
+        self.safe = safe
 
     def py(self):
-        yield self.line('yield self.__kj__.escape(%s)' % self.text)
+        if self.safe:
+            yield self.line('yield %s' % self.text)
+        else:
+            yield self.line('yield self.__kj__.escape(%s)' % self.text)
 
 class PassNode(Node):
 
