@@ -267,7 +267,7 @@ class ExprNode(Node):
 class PassNode(Node):
 
     def py(self):
-        yield self.line('pass')
+        yield self.line('yield ""')
 
 class AttrNode(HierNode):
 

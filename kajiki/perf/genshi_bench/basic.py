@@ -37,6 +37,20 @@ def genshi(dirname, verbose=False):
         print render()
     return render
 
+def chameleon_genshi(dirname, verbose=False):
+    from chameleon.genshi.loader import TemplateLoader
+    loader = TemplateLoader([dirname], auto_reload=False)
+    template = loader.load('template.html')
+    def render():
+        data = dict(title='Just a test', user='joe',
+                    items=['Number %d' % num for num in range(1, 15)])
+        import pdb; pdb.set_trace()
+        return template(**data)
+
+    if verbose:
+        print render()
+    return render
+
 def genshi_text(dirname, verbose=False):
     from genshi.core import escape
     from genshi.template import TemplateLoader, NewTextTemplate
