@@ -1,3 +1,12 @@
+0.3.1
+====
+
+* Add support for py:with
+* Remove unused babel import that was breaking pip/easy_install
+* Python 2.5 fixes
+* Correctly strip None attributes and expressions
+* Turn off autoescaping in text templates
+
 0.3
 ====
 
