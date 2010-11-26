@@ -39,7 +39,7 @@ class FileLoader(Loader):
         self._force_mode = force_mode
         self._autoescape_text = autoescape_text
         self.extension_map = dict(
-            txt=lambda *a, **kw: TextTemplate(*a, autoescape=self._autoescape_text, **kw),
+            txt=lambda *a, **kw: TextTemplate(autoescape=self._autoescape_text, *a, **kw),
             xml=XMLTemplate,
             html=lambda *a,**kw:XMLTemplate(mode='html', *a, **kw),
             html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
