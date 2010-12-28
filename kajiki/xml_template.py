@@ -130,7 +130,7 @@ class _Compiler(object):
             guard = 'not (%s)' % node.getAttribute('py:strip')
             node.removeAttribute('py:strip')
         yield ir.TextNode(u'<%s' % node.tagName, guard)
-        for k,v in node.attributes.items():
+        for k,v in sorted(node.attributes.items()):
             tc = _TextCompiler(self.filename, v, node.lineno,
                                ir.TextNode)
             v = list(tc)
