@@ -1,14 +1,15 @@
 import re
-from collections import defaultdict
+from ddict import defaultdict
 from cStringIO import StringIO
 from xml import sax
 from htmllib import HTMLParser
 from xml.dom import minidom as dom
 
-from . import ir
-from . import template
-from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
-from .html_utils import HTML_OPTIONAL_END_TAGS
+import kajiki
+from kajiki import ir
+from kajiki import template
+from markup_template import QDIRECTIVES, QDIRECTIVES_DICT
+from html_utils import HTML_OPTIONAL_END_TAGS
 
 impl = dom.getDOMImplementation(' ')
 

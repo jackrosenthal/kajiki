@@ -10,11 +10,11 @@ _Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node
 '''
 import re
 import shlex
-from collections import defaultdict
+from ddict import defaultdict
 from itertools import chain
 
 import kajiki
-from . import ir
+from kajiki import ir
 
 _pattern = r'''
 \$(?:

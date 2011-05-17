@@ -1,10 +1,10 @@
-from .ir import TranslatableTextNode
+from ir import TranslatableTextNode
 
 def gettext(s):
     return s
 
 def extract(fileobj, keywords, comment_tags, options):
-    from .xml_template import _Parser, _Compiler, expand
+    from xml_template import _Parser, _Compiler, expand
     text = fileobj.read()
     doc = _Parser('<string>', text).parse()
     expand(doc)

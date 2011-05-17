@@ -1,4 +1,4 @@
-from .util import gen_name, flattener
+from util import gen_name, flattener
 
 def generate_python(ir):
     cur_indent = 0

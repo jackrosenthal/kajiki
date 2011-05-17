@@ -2,15 +2,26 @@ import re
 import types
 from cStringIO import StringIO
 from cgi import escape
-from functools import update_wrapper
+try:
+    from functools import update_wrapper
+except:
+    def update_wrapper(wrapper, wrapped,
+                       assigned = ('__module__', '__name__', '__doc__'),
+                       updated = ('__dict__',)):
+        for attr in assigned:
+            setattr(wrapper, attr, getattr(wrapped, attr))
+        for attr in updated:
+            getattr(wrapper, attr).update(getattr(wrapped, attr))
+        return wrapper
+
 from pprint import pprint
 
 import kajiki
-from .util import flattener, literal
-from .html_utils import HTML_EMPTY_ATTRS
-from .ir import generate_python
-from . import lnotab
-from . import i18n
+from util import flattener, literal
+from html_utils import HTML_EMPTY_ATTRS
+from ir import generate_python
+from kajiki import lnotab
+from kajiki import i18n
 
 re_escape = re.compile(r'&|<|>')
 escape_dict ={
