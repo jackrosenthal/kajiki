@@ -8,7 +8,8 @@ class Loader(object):
 
     def import_(self, name):
         mod = self.modules.get(name)
-        if mod: return mod
+        if mod:
+            return mod
         mod = self._load(name)
         mod.loader = self
         self.modules[name] = mod
@@ -17,7 +18,9 @@ class Loader(object):
     def default_alias_for(self, name):
         return os.path.splitext(os.path.basename(name))[0]
 
-    load=import_
+    @property
+    def load(self):
+        return self.import_
 
 class MockLoader(Loader):
 
@@ -49,10 +52,10 @@ class FileLoader(Loader):
 
     def import_(self, name):
         filename = self._filename(name)
-        if (self._reload
-            and name in self.modules
-            and os.stat(filename).st_mtime > self._timestamps.get(name, 0)):
-            del self.modules[name]
+        if self._reload and name in self.modules:
+            mtime = os.stat(filename).st_mtime
+            if mtime > self._timestamps.get(name, 0):
+                del self.modules[name]
         return super(FileLoader, self).import_(name)
 
     def _load(self, name):
