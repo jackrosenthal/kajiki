@@ -151,7 +151,7 @@ class _Template(object):
         if attrs is not None:        
             for k,v in attrs:
                 if v is None: continue
-                if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.upper()
+                if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.lower()
                 else: yield ' %s="%s"' % (k,self._escape(v))
 
     def _collect(self, it):
