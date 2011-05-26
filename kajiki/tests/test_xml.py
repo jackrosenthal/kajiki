@@ -66,7 +66,7 @@ class TestSimple(TestCase):
     def test_empty_attr(self):
         tpl = XMLTemplate(source='<img src="/foo/bar.baz.gif" alt="" />', mode='html')
         rsp = tpl().render()
-        assert rsp == '<img src="/foo/bar.baz.gif" alt="">', rsp
+        assert rsp == '<img alt="" src="/foo/bar.baz.gif">', rsp
 
     def test_script(self):
         tpl = XMLTemplate(source='<html><script src="public"/></html>', mode='html')
@@ -435,21 +435,21 @@ class TestAttributes(TestCase):
     def test_html_attrs(self):
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='xml')
         rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<input type="checkbox" checked="True"/>', rsp
+        assert rsp == '<input checked="True" type="checkbox"/>', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='html')
         rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<input type="checkbox" CHECKED>', rsp
+        assert rsp == '<input checked type="checkbox">', rsp
         tpl = XMLTemplate('''<!DOCTYPE html>\n<input type="checkbox" checked="$checked"/>''')
         rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<!DOCTYPE html><input type="checkbox" CHECKED>', rsp
+        assert rsp == '<!DOCTYPE html><input checked type="checkbox">', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
                           mode='html5')
         rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<!DOCTYPE html><input type="checkbox" CHECKED>', rsp
+        assert rsp == '<!DOCTYPE html><input checked type="checkbox">', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
                           mode='html5', is_fragment=True)
         rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<input type="checkbox" CHECKED>', rsp
+        assert rsp == '<input checked type="checkbox">', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
                           mode='html5', is_fragment=True)
         rsp = tpl(dict(checked=None)).render()

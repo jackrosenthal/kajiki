@@ -5,14 +5,13 @@ import kajiki
 class TestBasic(TestCase):
 
     def setUp(self):
-        @kajiki.Template
         class tpl:
             @kajiki.expose
             def __main__():
                 yield 'Hello,'
                 yield name
                 yield '\n'
-        self.tpl = tpl
+        self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
         rsp = self.tpl(dict(name='Rick')).render()
@@ -21,7 +20,6 @@ class TestBasic(TestCase):
 class TestSwitch(TestCase):
 
     def setUp(self):
-        @kajiki.Template
         class tpl:
             @kajiki.expose
             def __main__():
@@ -33,7 +31,7 @@ class TestSwitch(TestCase):
                         yield 'even\n'
                     else:
                         yield 'odd\n'
-        self.tpl = tpl
+        self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
         rsp = self.tpl().render()
@@ -42,7 +40,6 @@ class TestSwitch(TestCase):
 class TestFunction(TestCase):
     
     def setUp(self):
-        @kajiki.Template
         class tpl:
             @kajiki.expose
             def evenness(n):
@@ -55,7 +52,7 @@ class TestFunction(TestCase):
                     yield ' is '
                     yield evenness(i)
                     yield '\n'
-        self.tpl = tpl
+        self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
         rsp = self.tpl(dict(name='Rick')).render()
@@ -64,7 +61,6 @@ class TestFunction(TestCase):
 class TestCall(TestCase):
     
     def setUp(self):
-        @kajiki.Template
         class tpl:
             @kajiki.expose
             def quote(caller, speaker):
@@ -82,7 +78,7 @@ class TestCall(TestCase):
                     yield local.__kj__.escape(n)
                 yield quote(_kj_lambda, 'the raven')
                 del _kj_lambda
-        self.tpl = tpl
+        self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
         rsp = self.tpl(dict(name='Rick')).render()
@@ -92,8 +88,7 @@ class TestCall(TestCase):
 
 class TestImport(TestCase):
     def setUp(self):
-        @kajiki.Template
-        class lib:
+        class lib_undec:
             @kajiki.expose
             def evenness(n):
                 if n % 2 == 0: yield 'even'
@@ -104,7 +99,7 @@ class TestImport(TestCase):
                 yield local.__kj__.escape(n)
                 yield ' is '
                 yield evenness(n/2)
-        @kajiki.Template
+        lib = kajiki.Template(lib_undec)
         class tpl:
             @kajiki.expose
             def __main__():
@@ -115,7 +110,7 @@ class TestImport(TestCase):
                     yield simple_function.evenness(i)
                     yield simple_function.half_evenness(i)
                     yield '\n'
-        self.tpl = tpl
+        self.tpl = kajiki.Template(tpl)
 
     def test_import(self):
         rsp = self.tpl(dict(name='Rick')).render()
@@ -126,18 +121,18 @@ class TestImport(TestCase):
 
 class TestInclude(TestCase):
     def setUp(self):
-        @kajiki.Template
-        class hdr:
+        class hdr_undec:
             @kajiki.expose
             def __main__():
                 yield '# header\n'
-        @kajiki.Template
-        class tpl:
+        hdr = kajiki.Template(hdr_undec)
+        class tpl_undec:
             @kajiki.expose
             def __main__():
                 yield 'a\n'
                 yield hdr().__main__()
                 yield 'b\n'
+        tpl = kajiki.Template(tpl_undec)
         self.tpl = tpl
 
     def test_include(self):
@@ -146,8 +141,7 @@ class TestInclude(TestCase):
 
 class TestExtends(TestCase):
     def setUp(_self):
-        @kajiki.Template
-        class parent_tpl:
+        class parent_tpl_undec:
             @kajiki.expose
             def __main__():
                 yield header()
@@ -177,18 +171,18 @@ class TestExtends(TestCase):
             @kajiki.expose
             def id():
                 yield 'parent'
-
-        @kajiki.Template
-        class mid_tpl:
+        parent_tpl = kajiki.Template(parent_tpl_undec)
+        
+        class mid_tpl_undec:
             @kajiki.expose
             def __main__():
                 yield local.__kj__.extend(parent_tpl).__main__()
             @kajiki.expose
             def id():
                 yield 'mid'
+        mid_tpl = kajiki.Template(mid_tpl_undec)
 
-        @kajiki.Template
-        class child_tpl:
+        class child_tpl_undec:
             @kajiki.expose
             def __main__():
                 yield local.__kj__.extend(mid_tpl).__main__()
@@ -199,6 +193,7 @@ class TestExtends(TestCase):
             @kajiki.expose
             def id():
                 yield 'child'
+        child_tpl = kajiki.Template(child_tpl_undec)
         _self.parent_tpl = parent_tpl
         _self.child_tpl = child_tpl
 
@@ -214,17 +209,16 @@ class TestExtends(TestCase):
 
 class TestDynamicExtends(TestCase):
     def setUp(_self):
-        @kajiki.Template
-        class parent_0:
+        class parent_0_undec:
             @kajiki.expose
             def __main__():
                 yield 'Parent 0'
-        @kajiki.Template
-        class parent_1:
+        parent_0 = kajiki.Template(parent_0_undec)
+        class parent_1_undec:
             @kajiki.expose
             def __main__():
                 yield 'Parent 1'
-        @kajiki.Template
+        parent_1 = kajiki.Template(parent_1_undec)
         class child_tpl:
             @kajiki.expose
             def __main__():
@@ -232,7 +226,7 @@ class TestDynamicExtends(TestCase):
                     yield local.__kj__.extend(parent_0).__main__()
                 else:
                     yield local.__kj__.extend(parent_1).__main__()
-        _self.child_tpl = child_tpl
+        _self.child_tpl = kajiki.Template(child_tpl)
 
     def test_extends(self):
         rsp = self.child_tpl(dict(p=0)).render()
