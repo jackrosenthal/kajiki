@@ -6,11 +6,11 @@ class Loader(object):
     def __init__(self):
         self.modules = {}
 
-    def import_(self, name):
+    def import_(self, name, *args, **kwargs):
         mod = self.modules.get(name)
         if mod:
             return mod
-        mod = self._load(name)
+        mod = self._load(name, *args, **kwargs)
         mod.loader = self
         self.modules[name] = mod
         return mod
@@ -50,30 +50,32 @@ class FileLoader(Loader):
     def _filename(self, name):
         return os.path.join(self.base, name)
 
-    def import_(self, name):
+    def import_(self, name, *args, **kwargs):
         filename = self._filename(name)
         if self._reload and name in self.modules:
             mtime = os.stat(filename).st_mtime
             if mtime > self._timestamps.get(name, 0):
                 del self.modules[name]
-        return super(FileLoader, self).import_(name)
+        return super(FileLoader, self).import_(name, *args, **kwargs)
 
-    def _load(self, name):
+    def _load(self, name, *args, **kwargs):
         from kajiki import XMLTemplate, TextTemplate
         filename = self._filename(name)
         self._timestamps[name] = os.stat(filename).st_mtime
         source = open(filename, 'rb').read()
         if self._force_mode == 'text':
             return TextTemplate(source=source, filename=filename,
-                                autoescape=self._autoescape_text)
+                                autoescape=self._autoescape_text, *args, **kwargs)
         elif self._force_mode:
             return XMLTemplate(
                 source=source,
                 filename=filename,
-                mode=self._force_mode)
+                mode=self._force_mode,
+                *args, **kwargs)
         else:
             ext = os.path.splitext(filename)[1][1:]
-            return self.extension_map[ext](source=source, filename=filename)
+            return self.extension_map[ext](
+                source=source, filename=filename, *args, **kwargs)
         
 class PackageLoader(FileLoader):
 
