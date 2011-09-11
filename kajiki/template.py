@@ -149,7 +149,7 @@ class _Template(object):
         if hasattr(attrs, 'items'):
             attrs = attrs.items()
         if attrs is not None:        
-            for k,v in attrs:
+            for k,v in sorted(attrs):
                 if v is None: continue
                 if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.lower()
                 else: yield ' %s="%s"' % (k,self._escape(v))
