@@ -165,7 +165,7 @@ class WithNode(HierNode):
     def __init__(self, vars, *body):
         super(WithNode, self).__init__(body)
         self.vars_text = vars
-        self.vars = dict(var.split('=')
+        self.vars = dict(var.split('=', 1)
                          for var in vars.split(';'))
 
     def py(self):
