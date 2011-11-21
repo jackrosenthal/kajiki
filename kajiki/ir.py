@@ -298,7 +298,7 @@ class AttrNode(HierNode):
     def __iter__(self):
         if self.guard:
             new_body = IfNode(
-                'if %s' % self.guard,
+                self.guard,
                 AttrNode(self.attr, value=self.body, mode=self.mode))
             for x in new_body:
                 yield x
