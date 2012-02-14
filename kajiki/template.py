@@ -169,6 +169,9 @@ class _Template(object):
         for name, meth in cls.__methods__:
             meth.annotate_lnotab(cls.filename, py_to_tpl, dict(py_to_tpl))
 
+    def defined(self, name):
+        return name in self._context
+
 def Template(ns):
     dct = {}
     methods = dct['__methods__'] = []
