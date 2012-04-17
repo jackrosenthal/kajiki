@@ -362,7 +362,10 @@ class _Parser(sax.ContentHandler):
         parser.setFeature(sax.handler.feature_namespaces, False)
         parser.setProperty(sax.handler.property_lexical_handler, self)
         parser.setContentHandler(self)
-        parser.parse(StringIO(self._source))
+        source = sax.xmlreader.InputSource()
+        source.setByteStream(StringIO(self._source))
+        source.setSystemId(self._filename)
+        parser.parse(source)
         return self._doc
 
     ## ContentHandler implementation
