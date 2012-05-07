@@ -386,6 +386,7 @@ class _Parser(sax.ContentHandler):
         assert name == popped.tagName
 
     def characters(self, content):
+        content = sax.saxutils.escape(content)
         node = self._doc.createTextNode(content)
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)

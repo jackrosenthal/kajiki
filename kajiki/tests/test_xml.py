@@ -88,6 +88,12 @@ class TestSimple(TestCase):
         rsp = tpl(dict(name='Rick')).render() 
         assert rsp == '<div>Hello, Rick</div>', rsp
 
+    def test_entity(self):
+        x = "<div>Cookies &amp; Cream</div>"
+        tpl = XMLTemplate(source=x)
+        rsp = tpl({}).render()
+        self.assertEqual(x, rsp)
+
 class TestSwitch(TestCase):
 
     def test_switch(self):
