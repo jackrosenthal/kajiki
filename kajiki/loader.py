@@ -29,14 +29,17 @@ class MockLoader(Loader):
         self.modules.update(modules)
         for v in self.modules.itervalues():
             v.loader = self
-            
+
 class FileLoader(Loader):
 
-    def __init__(self, base, reload=True, force_mode=None,
+    def __init__(self, path, reload=True, force_mode=None,
                  autoescape_text=False):
         super(FileLoader, self).__init__()
         from kajiki import XMLTemplate, TextTemplate
-        self.base = base
+        if isinstance(path, basestring):
+            self.path = path.split(';')
+        else:
+            self.path = path
         self._timestamps = {}
         self._reload = reload
         self._force_mode = force_mode
@@ -48,7 +51,11 @@ class FileLoader(Loader):
             html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
 
     def _filename(self, name):
-        return os.path.join(self.base, name)
+        for base in self.path:
+            fn = os.path.join(base, name)
+            if os.path.exists(fn):
+                return fn
+        return None
 
     def import_(self, name, *args, **kwargs):
         filename = self._filename(name)
@@ -76,7 +83,7 @@ class FileLoader(Loader):
             ext = os.path.splitext(filename)[1][1:]
             return self.extension_map[ext](
                 source=source, filename=filename, *args, **kwargs)
-        
+
 class PackageLoader(FileLoader):
 
     def __init__(self, reload=True, force_mode=None):
