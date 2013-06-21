@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import (absolute_import, print_function,
+from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import os
 import sys
@@ -188,7 +188,7 @@ class TestImport(TestCase):
     <li>
         0 is <span>even</span> half of 0 is <span>even</span>
     </li><li>
-        1 is <span>odd</span> half of 1 is <span>even</span>
+        1 is <span>odd</span> half of 1 is <span>odd</span>
     </li><li>
         2 is <span>even</span> half of 2 is <span>odd</span>
     </li><li>
@@ -225,7 +225,7 @@ class TestImport(TestCase):
     <li>
         0 is <span>even</span> half of 0 is <span>even</span>
     </li><li>
-        1 is <span>odd</span> half of 1 is <span>even</span>
+        1 is <span>odd</span> half of 1 is <span>odd</span>
     </li><li>
         2 is <span>even</span> half of 2 is <span>odd</span>
     </li><li>

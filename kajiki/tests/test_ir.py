@@ -137,7 +137,7 @@ class TestImport(TestCase):
     def test_import(self):
         rsp = self.tpl(dict(name='Rick')).render()
         assert (rsp == '0 is even half of 0 is even\n'
-                '1 is odd half of 1 is even\n'
+                '1 is odd half of 1 is odd\n'
                 '2 is even half of 2 is odd\n'
                 '3 is odd half of 3 is odd\n'), rsp
 
