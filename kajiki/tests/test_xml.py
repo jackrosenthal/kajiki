@@ -85,7 +85,7 @@ class TestSimple(TestCase):
 
     def test_expr_brace_complex(self):
         tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}</div>")
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
     def test_entity(self):
@@ -152,7 +152,7 @@ class TestCall(TestCase):
 </ul></div>''', rsp
 
 class TestImport(TestCase):
-    
+
     def test_import(self):
         loader = MockLoader({
             'lib.html':XMLTemplate(source='''<div>
@@ -344,7 +344,7 @@ Sincerely,<br/><em>Rick</em>
 </div>''', rsp
 
 class TestClosure(TestCase):
-    
+
     def test(self):
         tpl = XMLTemplate('''<div
 ><py:def function="add(x)"
@@ -409,12 +409,12 @@ class TestAttributes(TestCase):
         tpl = XMLTemplate('''<div id="foo"/>''')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div id="foo"/>', rsp
-        
+
     def test_content(self):
         tpl = XMLTemplate('''<div py:content="'foo'"/>''')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>foo</div>', rsp
-        
+
     def test_replace(self):
         tpl = XMLTemplate('''<div py:replace="'foo'"/>''')
         rsp = tpl(dict(name='Rick')).render()
@@ -462,9 +462,10 @@ class TestAttributes(TestCase):
         assert rsp == '<input type="checkbox">', rsp
 
 class TestDebug(TestCase):
-    
+
     def test_debug(self):
-        loader = FileLoader(base=os.path.join(os.path.dirname(__file__), 'data'))
+        loader = FileLoader(path=os.path.join(os.path.dirname(__file__),
+                            'data'))
         tpl = loader.import_('debug.html')
         try:
             tpl().render()
@@ -483,7 +484,7 @@ class TestPackageLoader(TestCase):
     def test_pkg_loader(self):
         loader = PackageLoader()
         loader.import_('kajiki.tests.data.debug')
-        
+
 
 if __name__ == '__main__':
     main()

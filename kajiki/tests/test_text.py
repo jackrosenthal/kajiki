@@ -9,40 +9,40 @@ class TestBasic(TestCase):
 
     def test_auto_escape(self):
         tpl = TextTemplate(source="${'<h1>'}", autoescape=True)
-        rsp = tpl().render() 
+        rsp = tpl().render()
         assert rsp == '&lt;h1&gt;', rsp
 
     def test_auto_escape_disable(self):
         tpl = TextTemplate(source="${literal('<h1>')}")
-        rsp = tpl().render() 
+        rsp = tpl().render()
         assert rsp == '<h1>', rsp
         tpl = TextTemplate(source="${'<h1>'}", autoescape=False)
-        rsp = tpl().render() 
+        rsp = tpl().render()
         assert rsp == '<h1>', rsp
 
     def test_expr_brace(self):
         tpl = TextTemplate(source='Hello, ${name}\n')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'Hello, Rick\n', rsp
 
     def test_expr_None(self):
         tpl = TextTemplate(source='Hello, ${name}\n')
-        rsp = tpl(dict(name=None)).render() 
+        rsp = tpl(dict(name=None)).render()
         assert rsp == 'Hello, \n', rsp
 
     def test_expr_brace_complex(self):
         tpl = TextTemplate(source="Hello, ${{'name':name}['name']}\n")
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'Hello, Rick\n', rsp
 
     def test_expr_name(self):
         tpl = TextTemplate(source='Hello, $name\n')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'Hello, Rick\n', rsp
         tpl = TextTemplate(source='Hello, $obj.name\n')
         class Empty: pass
         Empty.name = 'Rick'
-        rsp = tpl(dict(obj=Empty)).render() 
+        rsp = tpl(dict(obj=Empty)).render()
         assert rsp == 'Hello, Rick\n', rsp
 
 class TestSwitch(TestCase):
@@ -51,26 +51,26 @@ class TestSwitch(TestCase):
         tpl = TextTemplate('''%for i in range(2)
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 %end''')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
     def test_ljust(self):
         tpl = TextTemplate('''     %for i in range(2)
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 %end''')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
         tpl = TextTemplate('''     {%-for i in range(2)%}\\
 $i is {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}
     {%-end%}''')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
     def test_rstrip(self):
         tpl = TextTemplate('''     %for i in range(2)
 $i is {%switch i % 2 %}{%case 0-%}    even\n{%else%}odd\n{%end%}\\
 %end''')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestFunction(TestCase):
@@ -83,7 +83,7 @@ class TestFunction(TestCase):
 $i is ${evenness(i)}
 %end
 ''')
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
 class TestCall(TestCase):
@@ -269,10 +269,10 @@ And don't forget you owe me money!
 Sincerely,
 Rick
 '''), rsp
-        
+
 
 class TestClosure(TestCase):
-    
+
     def test(self):
         tpl = TextTemplate('''%def add(x)
 %def inner(y)
@@ -320,9 +320,10 @@ ${test()}''')
         assert rsp == 'a/b/c'
 
 class TestDebug(TestCase):
-    
+
     def test_debug(self):
-        loader = FileLoader(base=os.path.join(os.path.dirname(__file__), 'data'))
+        loader = FileLoader(path=os.path.join(os.path.dirname(__file__),
+                            'data'))
         tpl = loader.import_('debug.txt')
         try:
             tpl().render()
