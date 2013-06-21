@@ -1,21 +1,24 @@
-import sys
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 from collections import defaultdict
 import time
-
 from contextlib import contextmanager
 from kajiki import XMLTemplate
 from genshi.template import MarkupTemplate
 
-FN='kajiki/perf/tables.html'
+FN = 'kajiki/perf/tables.html'
 
 timings = defaultdict(float)
+
 
 @contextmanager
 def timing(s):
     start = time.time()
     yield
     elapsed = time.time() - start
-    print '%s: %s s' % (s, elapsed)
+    print('%s: %s s' % (s, elapsed))
     timings[s] += elapsed
 
 with timing('compile.kajiki'):
@@ -39,11 +42,9 @@ with timing('render.500.kajiki'):
     fpt(dict(size=500)).render()
 with timing('render.500.genshi'):
     gt.generate(size=500).render()
-print 'Compile kajiki speedup: %s' % (
-    timings['compile.genshi'] / timings['compile.kajiki'])
-print 'Render 100 kajiki speedup: %s' % (
-    timings['render.100.genshi'] / timings['render.100.kajiki'])
-print 'Render 500 kajiki speedup: %s' % (
-    timings['render.500.genshi'] / timings['render.500.kajiki'])
-
-
+print('Compile kajiki speedup: %s' % (
+    timings['compile.genshi'] / timings['compile.kajiki']))
+print('Render 100 kajiki speedup: %s' % (
+    timings['render.100.genshi'] / timings['render.100.kajiki']))
+print('Render 500 kajiki speedup: %s' % (
+    timings['render.500.genshi'] / timings['render.500.kajiki']))

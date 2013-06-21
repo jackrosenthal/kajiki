@@ -1,10 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 from unittest import TestCase, main
 
 import kajiki
 from kajiki import ir
 
-class TestBasic(TestCase):
 
+class TestBasic(TestCase):
     def setUp(self):
         self.tpl = ir.TemplateNode(
             defs=[ir.DefNode(
@@ -15,78 +20,78 @@ class TestBasic(TestCase):
 
     def test(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name='Rick')).render() 
+        rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'Hello, Rick\n', rsp
 
-class TestSwitch(TestCase):
 
+class TestSwitch(TestCase):
     def setUp(self):
         self.tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                    '__main__()',
-                    ir.ForNode(
-                        'i in range(2)',
-                        ir.ExprNode('i'),
-                        ir.TextNode(' is '),
-                        ir.SwitchNode(
-                            'i % 2',
-                            ir.CaseNode(
-                                '0',
-                                ir.TextNode('even\n')),
-                            ir.ElseNode(
-                                ir.TextNode('odd\n')))))])
-            
+                  '__main__()',
+                  ir.ForNode(
+                      'i in range(2)',
+                      ir.ExprNode('i'),
+                      ir.TextNode(' is '),
+                      ir.SwitchNode(
+                          'i % 2',
+                          ir.CaseNode(
+                              '0',
+                              ir.TextNode('even\n')),
+                          ir.ElseNode(
+                              ir.TextNode('odd\n')))))])
+
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict()).render() 
+        rsp = tpl(dict()).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
-class TestFunction(TestCase):
 
+class TestFunction(TestCase):
     def setUp(self):
         self.tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                    'evenness(n)',
-                    ir.IfNode(
-                        'n % 2 == 0',
-                        ir.TextNode('even')),
-                    ir.ElseNode(
-                        ir.TextNode('odd'))),
+                  'evenness(n)',
+                  ir.IfNode(
+                      'n % 2 == 0',
+                      ir.TextNode('even')),
+                  ir.ElseNode(
+                  ir.TextNode('odd'))),
                   ir.DefNode(
-                    '__main__()',
-                    ir.ForNode(
-                        'i in range(2)',
-                        ir.ExprNode('i'),
-                        ir.TextNode(' is '),
-                        ir.ExprNode('evenness(i)'),
-                        ir.TextNode('\n')))])
+                  '__main__()',
+                  ir.ForNode(
+                      'i in range(2)',
+                      ir.ExprNode('i'),
+                      ir.TextNode(' is '),
+                      ir.ExprNode('evenness(i)'),
+                      ir.TextNode('\n')))])
 
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
+
 class TestCall(TestCase):
-    
     def setUp(self):
         self.tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                    'quote(caller, speaker)',
-                    ir.ForNode(
-                        'i in range(2)',
-                        ir.TextNode('Quoth '),
-                        ir.ExprNode('speaker'),
-                        ir.TextNode(', "'),
-                        ir.ExprNode('caller(i)'),
-                        ir.TextNode('."\n'))),
+                  'quote(caller, speaker)',
+                  ir.ForNode(
+                      'i in range(2)',
+                      ir.TextNode('Quoth '),
+                      ir.ExprNode('speaker'),
+                      ir.TextNode(', "'),
+                      ir.ExprNode('caller(i)'),
+                      ir.TextNode('."\n'))),
                   ir.DefNode(
-                    '__main__()',
-                    ir.CallNode(
-                        '$caller(n)',
-                        "quote($caller, 'the raven')",
-                        ir.TextNode('Nevermore '),
-                        ir.ExprNode('n')))])
-            
+                  '__main__()',
+                  ir.CallNode(
+                      '$caller(n)',
+                      "quote($caller, 'the raven')",
+                      ir.TextNode('Nevermore '),
+                      ir.ExprNode('n')))])
+
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
         rsp = tpl(dict(name='Rick')).render()
@@ -94,50 +99,50 @@ class TestCall(TestCase):
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
 
+
 class TestImport(TestCase):
-    
     def setUp(self):
         lib = ir.TemplateNode(
             defs=[ir.DefNode(
-                    'evenness(n)',
-                    ir.IfNode(
-                        'n % 2 == 0',
-                        ir.TextNode('even')),
-                    ir.ElseNode(
-                        ir.TextNode('odd'))),
+                  'evenness(n)',
+                  ir.IfNode(
+                      'n % 2 == 0',
+                      ir.TextNode('even')),
+                  ir.ElseNode(
+                  ir.TextNode('odd'))),
                   ir.DefNode(
-                    'half_evenness(n)',
-                    ir.TextNode(' half of '),
-                    ir.ExprNode('n'),
-                    ir.TextNode(' is '),
-                    ir.ExprNode('evenness(n/2)'))])
+                  'half_evenness(n)',
+                  ir.TextNode(' half of '),
+                  ir.ExprNode('n'),
+                  ir.TextNode(' is '),
+                  ir.ExprNode('evenness(n/2)'))])
         tpl = ir.TemplateNode(
             defs=[ir.DefNode(
-                    '__main__()',
-                    ir.ImportNode(
-                        'lib.txt',
-                        'simple_function'),
-                    ir.ForNode(
-                        'i in range(4)',
-                        ir.ExprNode('i'),
-                        ir.TextNode(' is '),
-                        ir.ExprNode('simple_function.evenness(i)'),
-                        ir.ExprNode('simple_function.half_evenness(i)'),
-                        ir.TextNode('\n')))])
+                  '__main__()',
+                  ir.ImportNode(
+                      'lib.txt',
+                      'simple_function'),
+                  ir.ForNode(
+                  'i in range(4)',
+                  ir.ExprNode('i'),
+                  ir.TextNode(' is '),
+                  ir.ExprNode('simple_function.evenness(i)'),
+                  ir.ExprNode('simple_function.half_evenness(i)'),
+                  ir.TextNode('\n')))])
         loader = kajiki.loader.MockLoader({
-            'lib.txt':kajiki.template.from_ir(lib),
-            'tpl.txt':kajiki.template.from_ir(tpl)})
+            'lib.txt': kajiki.template.from_ir(lib),
+            'tpl.txt': kajiki.template.from_ir(tpl)})
         self.tpl = loader.import_('tpl.txt')
 
     def test_import(self):
         rsp = self.tpl(dict(name='Rick')).render()
-        assert (rsp=='0 is even half of 0 is even\n'
+        assert (rsp == '0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
                 '3 is odd half of 3 is odd\n'), rsp
 
+
 class TestInclude(TestCase):
-    
     def setUp(self):
         hdr = ir.TemplateNode(
             defs=[
@@ -152,16 +157,16 @@ class TestInclude(TestCase):
                     ir.IncludeNode('hdr.txt'),
                     ir.TextNode('b\n'))])
         loader = kajiki.loader.MockLoader({
-            'hdr.txt':kajiki.template.from_ir(hdr),
-            'tpl.txt':kajiki.template.from_ir(tpl)})
+            'hdr.txt': kajiki.template.from_ir(hdr),
+            'tpl.txt': kajiki.template.from_ir(tpl)})
         self.tpl = loader.import_('tpl.txt')
 
     def test_include(self):
         rsp = self.tpl(dict(name='Rick')).render()
         assert rsp == 'a\n# header\nb\n', rsp
 
-class TestExtends(TestCase):
 
+class TestExtends(TestCase):
     def setUp(self):
         parent_tpl = ir.TemplateNode(
             defs=[
@@ -214,12 +219,12 @@ class TestExtends(TestCase):
                     'id()',
                     ir.TextNode('child'))])
         loader = kajiki.loader.MockLoader({
-            'parent.txt':kajiki.template.from_ir(parent_tpl),
-            'mid.txt':kajiki.template.from_ir(mid_tpl),
-            'child.txt':kajiki.template.from_ir(child_tpl)})
+            'parent.txt': kajiki.template.from_ir(parent_tpl),
+            'mid.txt': kajiki.template.from_ir(mid_tpl),
+            'child.txt': kajiki.template.from_ir(child_tpl)})
         self.loader = loader
         self.tpl = loader.import_('child.txt')
-        
+
     def test_extends(self):
         rsp = self.tpl(dict(name='Rick')).render()
         assert (rsp == '# Header name=Rick\n'
@@ -229,6 +234,7 @@ class TestExtends(TestCase):
                 'self.id() = child\n'
                 'child.id() = mid\n'
                 '# Footer\n'), rsp
+
 
 class TestDynamicExtends(TestCase):
     def setUp(self):
@@ -252,9 +258,9 @@ class TestDynamicExtends(TestCase):
                     ir.ElseNode(
                         ir.ExtendNode('parent1.txt')))])
         loader = kajiki.loader.MockLoader({
-            'parent0.txt':kajiki.template.from_ir(p0),
-            'parent1.txt':kajiki.template.from_ir(p1),
-            'child.txt':kajiki.template.from_ir(child)})
+            'parent0.txt': kajiki.template.from_ir(p0),
+            'parent1.txt': kajiki.template.from_ir(p1),
+            'child.txt': kajiki.template.from_ir(child)})
         self.loader = loader
         self.tpl = loader.import_('child.txt')
 

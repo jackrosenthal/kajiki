@@ -1,14 +1,20 @@
-# -*- encoding: utf-8 -*-
-# Template language benchmarks
-#
-# Objective: Generate a 1000x10 HTML table as fast as possible.
-#
-# Author: Jonas Borgström <jonas@edgewall.com>
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+'''
+Template language benchmarks
+============================
+
+Objective: Generate a 1000x10 HTML table as fast as possible.
+
+Author: Jonas Borgström <jonas@edgewall.com>
+'''
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import cgi
 import sys
 import timeit
-from StringIO import StringIO
 from genshi.builder import tag
 from genshi.template import MarkupTemplate, NewTextTemplate
 
@@ -26,7 +32,9 @@ except ImportError:
     cet = None
 
 try:
-    import neo_cgi, neo_cs, neo_util
+    import neo_cgi
+    import neo_cs
+    import neo_util
 except ImportError:
     neo_cgi = None
 
@@ -48,8 +56,8 @@ try:
 except ImportError:
     MakoTemplate = None
 
-table = [dict(a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10)
-          for x in range(1000)]
+table = [dict(a=1, b=2, c=3, d=4, e=5, f=6, g=7, h=8, i=9, j=10)
+         for x in range(1000)]
 
 kajiki_tmpl = kajiki.XMLTemplate(source="""
 <table>
@@ -100,6 +108,8 @@ jinja2_tmpl = jinja2.Template("""
     {% endfor %}
     </table>
 """)
+
+
 def test_jinja2():
     '''jinja2 Template'''
     jinja2_tmpl.render(table=table)
@@ -116,23 +126,28 @@ if MakoTemplate:
   % endfor
 </table>
 """)
+
     def test_mako():
         """Mako Template"""
         mako_tmpl.render(table=table)
 
+
 def test_kajiki():
     """Kajiki Template"""
     kajiki_tmpl(dict(table=table)).render()
+
 
 def test_genshi():
     """Genshi template"""
     stream = genshi_tmpl.generate(table=table)
     stream.render('html', strip_whitespace=False)
 
+
 def test_genshi_text():
     """Genshi text template"""
     stream = genshi_text_tmpl.generate(table=table)
     stream.render('text')
+
 
 def test_genshi_builder():
     """Genshi template + tag builder"""
@@ -142,6 +157,7 @@ def test_genshi_builder():
     ]).generate()
     stream = genshi_tmpl2.generate(table=stream)
     stream.render('html', strip_whitespace=False)
+
 
 def test_builder():
     """Genshi tag builder"""
@@ -178,7 +194,7 @@ if kid:
             for row in table:
                 td = cet.SubElement(_table, 'tr')
                 for c in row.values():
-                    cet.SubElement(td, 'td').text=str(c)
+                    cet.SubElement(td, 'td').text = str(c)
             kid_tmpl2.table = _table
             kid_tmpl2.serialize(output='html')
 
@@ -189,17 +205,17 @@ if et:
         for row in table:
             tr = et.SubElement(_table, 'tr')
             for c in row.values():
-                et.SubElement(tr, 'td').text=str(c)
+                et.SubElement(tr, 'td').text = str(c)
         et.tostring(_table)
 
 if cet:
-    def test_cet(): 
+    def test_cet():
         """cElementTree"""
         _table = cet.Element('table')
         for row in table:
             tr = cet.SubElement(_table, 'tr')
             for c in row.values():
-                cet.SubElement(tr, 'td').text=str(c)
+                cet.SubElement(tr, 'td').text = str(c)
         cet.tostring(_table)
 
 if neo_cgi:
@@ -220,10 +236,12 @@ if neo_cgi:
 </table>""")
         cs.render()
 
+
 def run(which=None, number=10):
     tests = ['test_builder', 'test_genshi', 'test_genshi_text',
              'test_genshi_builder', 'test_mako', 'test_kid', 'test_kid_et',
-             'test_et', 'test_cet', 'test_clearsilver', 'test_django', 'test_kajiki', 'test_jinja2']
+             'test_et', 'test_cet', 'test_clearsilver', 'test_django',
+             'test_kajiki', 'test_jinja2']
 
     if which:
         tests = filter(lambda n: n[5:] in which, tests)
@@ -237,14 +255,16 @@ def run(which=None, number=10):
             result = '   (not installed?)'
         else:
             result = '%16.2f ms' % (1000 * time)
-        print '%-35s %s' % (getattr(sys.modules[__name__], test).__doc__, result)
+        print('%-35s %s' % (
+            getattr(sys.modules[__name__], test).__doc__, result))
 
 
 if __name__ == '__main__':
     which = [arg for arg in sys.argv[1:] if arg[0] != '-']
 
     if '-p' in sys.argv:
-        import cProfile, pstats
+        import cProfile
+        import pstats
         prof = cProfile.Profile()
         prof.run('run(%r, number=1)' % which)
         stats = pstats.Stats(prof)

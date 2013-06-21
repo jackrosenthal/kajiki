@@ -1,19 +1,26 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import sys
 from random import randint
 from threading import local
 
-def debug():# pragma no cover
-    def pm(etype, value, tb): 
-        import pdb, traceback
+
+def debug():  # pragma no cover
+    def pm(etype, value, tb):
+        import pdb
+        import traceback
         try:
-            from IPython.ipapi import make_session; make_session()
+            from IPython.ipapi import make_session
+            make_session()
             from IPython.Debugger import Pdb
             sys.stderr.write('Entering post-mortem IPDB shell\n')
             p = Pdb(color_scheme='Linux')
             p.reset()
             p.setup(None, tb)
             p.print_stack_trace()
-            sys.stderr.write('%s: %s\n' % ( etype, value))
+            sys.stderr.write('%s: %s\n' % (etype, value))
             p.cmdloop()
             p.forget()
             # p.interaction(None, tb)
@@ -23,15 +30,18 @@ def debug():# pragma no cover
             pdb.post_mortem(tb)
     sys.excepthook = pm
 
+
 def expose(func):
     func.exposed = True
     return func
 
-class Undefined(object): pass
-UNDEFINED=Undefined()
+
+class Undefined(object):
+    pass
+UNDEFINED = Undefined()
+
 
 class flattener(object):
-
     def __init__(self, iterator):
         while type(iterator) == flattener:
             iterator = iterator.iterator
@@ -47,7 +57,7 @@ class flattener(object):
         if type(self.iterator) == flattener:
             return self.iterator.accumulate_str()
         s = u''
-        iter_stack = [ self.iterator ]
+        iter_stack = [self.iterator]
         while iter_stack:
             try:
                 x = iter_stack[-1].next()
@@ -71,11 +81,14 @@ class flattener(object):
             elif x is not None:
                 yield x
 
+
 def literal(text):
     return flattener(iter([text]))
 
+
 class NameGen(object):
     lcl = local()
+
     def __init__(self):
         self.names = set()
 
@@ -88,10 +101,10 @@ class NameGen(object):
     def _gen(self, hint):
         r = hint
         while r in self.names:
-            r = '%s_%d' % (hint, randint(0, len(self.names)*10))
+            r = '%s_%d' % (hint, randint(0, len(self.names) * 10))
         self.names.add(r)
         return r
 
+
 def gen_name(hint='_kj_'):
     return NameGen.gen(hint)
-    

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''Text template compiler
 
 Notable in this module are
@@ -8,13 +10,16 @@ _Scanner - scans text and generates a stream of tokens
 _Parser - parses a stream of tokens into the internal representation (IR) tree
 _Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node
 '''
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import re
 import shlex
-from ddict import defaultdict
+from .ddict import defaultdict
 from itertools import chain
 
 import kajiki
-from kajiki import ir
+from . import ir
 
 _pattern = r'''
 \$(?:
@@ -33,12 +38,13 @@ _pattern = r'''
     (?P<tag_begin_invalid>)
 )
 '''
-_re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
+_re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
+
 
 def TextTemplate(
     source=None,
     filename=None,
-    autoescape=False):
+        autoescape=False):
     if source is None:
         source = open(filename).read()
     if filename is None:
@@ -48,8 +54,8 @@ def TextTemplate(
     tree.filename = filename
     return kajiki.template.from_ir(tree)
 
-class _Scanner(object):
 
+class _Scanner(object):
     def __init__(self, filename, source):
         self.filename = filename
         self.source = source
@@ -87,14 +93,15 @@ class _Scanner(object):
             else:
                 msg = 'Syntax error %s:%s' % (self.filename, self.lineno)
                 for i, line in enumerate(self.source.splitlines()):
-                    print '%3d %s' % (i+1, line)
-                print msg
+                    print('%3d %s' % (i + 1, line))
+                print(msg)
                 assert False, groups
         if self.pos != len(source):
             yield self.text(source[self.pos:])
 
     def _get_pos(self):
         return self._pos
+
     def _set_pos(self, value):
         assert value >= getattr(self, '_pos', 0)
         self._pos = value
@@ -119,14 +126,14 @@ class _Scanner(object):
             end = len(self.source)
         body = self.source[self.pos:end]
         self.lineno += 1
-        self.pos = end+1
+        self.pos = end + 1
         return self.tag(tagname, body)
 
     def _get_tag(self, tagname):
         end = self.source.find('%}', self.pos)
         assert end > 0
         body = self.source[self.pos:end]
-        self.pos = end+2
+        self.pos = end + 2
         if body.endswith('-'):
             body = body[:-1]
             while self.source[self.pos] in ' \t':
@@ -136,19 +143,19 @@ class _Scanner(object):
     def _get_braced_expr(self):
         try:
             compile(self.source[self.pos:], '', 'eval')
-        except SyntaxError, se:
-            end = se.offset+self.pos
-            text = self.source[self.pos:end-1]
+        except SyntaxError as se:
+            end = se.offset + self.pos
+            text = self.source[self.pos:end - 1]
             self.pos = end
             return self.expr(text)
-    
-class _Parser(object):
 
+
+class _Parser(object):
     def __init__(self, tokenizer, autoescape=False):
         self.tokenizer = tokenizer
         self.functions = defaultdict(list)
         self.functions['__main__()'] = []
-        self.mod_py = [] # module-level python blocks
+        self.mod_py = []  # module-level python blocks
         self.iterator = iter(self.tokenizer)
         self.autoescape = autoescape
         self._in_def = False
@@ -157,7 +164,7 @@ class _Parser(object):
     def parse(self):
         body = list(self._parse_body())
         self.functions['__main__()'] = body[:-1]
-        defs = [ ir.DefNode(k, *v) for k,v in self.functions.iteritems() ]
+        defs = [ir.DefNode(k, *v) for k, v in self.functions.iteritems()]
         return ir.TemplateNode(self.mod_py, defs)
 
     def text(self, token):
@@ -211,8 +218,8 @@ class _Parser(object):
         b = token.body.find('(')
         e = token.body.find(')', b)
         assert e > b > -1
-        arglist = token.body[b:e+1]
-        call = token.body[e+1:].strip()
+        arglist = token.body[b:e + 1]
+        call = token.body[e + 1:].strip()
         body = list(self._parse_body('end'))
         return ir.CallNode(
             '$caller%s' % arglist,
@@ -269,7 +276,7 @@ class _Parser(object):
     def _parse_py(self, token):
         body = token.body.strip()
         if body:
-            body = [ ir.TextNode(body), None ]
+            body = [ir.TextNode(body), None]
         else:
             body = list(self._parse_body('end'))
         node = ir.PythonNode(*body[:-1])
@@ -286,10 +293,12 @@ class _Parser(object):
         self.functions[decl] = body
         if self._is_child:
             parent_block = 'parent.' + fname
-            body.insert(0, ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
+            body.insert(0,
+                ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
             return None
         else:
             return ir.ExprNode(decl)
+
 
 class _Token(object):
     def __init__(self, filename, lineno, text):
@@ -297,13 +306,20 @@ class _Token(object):
         self.lineno = lineno
         self.text = text
 
-    def __repr__(self): # pragma no cover
+    def __repr__(self):  # pragma no cover
         return '<%s %r>' % (
             self.__class__.__name__,
             self.text)
 
-class _Expr(_Token): pass
-class _Text(_Token): pass
+
+class _Expr(_Token):
+    pass
+
+
+class _Text(_Token):
+    pass
+
+
 class _Tag(_Token):
     def __init__(self, filename, lineno, tagname, body):
         self.tagname = tagname
@@ -311,16 +327,14 @@ class _Tag(_Token):
         text = tagname + ' ' + body
         super(_Tag, self).__init__(filename, lineno, text)
 
+
 def _unescape_newlines(text):
     i = 0
     while i < len(text):
         if text[i] == '\\':
-            if text[i+1] != '\n':
-                yield text[i+1]
+            if text[i + 1] != '\n':
+                yield text[i + 1]
             i += 2
         else:
             yield text[i]
             i += 1
-            
-            
-    

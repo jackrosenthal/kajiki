@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2006-2008 Edgewall Software
@@ -11,19 +12,22 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at http://genshi.edgewall.org/log/.
 
-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 try:
     from os import times
+
     def time_func():
         tup = times()
-        #just user time
-        return tup[0] # + tup[1]
+        # just user time
+        return tup[0]  # + tup[1]
 except ImportError:
     from time import time as time_func
 
 from genshi.core import START, END
 from genshi.path import Path
 from genshi.input import XML
+
 
 def benchmark(f, acurate_time=1):
     """Checks how much time does function f work. It runs it as
@@ -40,14 +44,15 @@ def benchmark(f, acurate_time=1):
         runs *= 2
     return dt / runs
 
+
 def spell(t):
     """Returns spelled representation of time"""
     units = [(0.000001, 'microsecond', 'microseconds'),
              (0.001, 'milisecond', 'miliseconds'),
              (1, 'second', 'seconds'),
              (60, 'minute', 'minutes'),
-             (60*60, 'hour', 'hours'),
-            ]
+             (60 * 60, 'hour', 'hours'),
+             ]
     i = 0
     at = abs(t)
     while i + 1 < len(units) and at >= units[i + 1][0]:
@@ -57,44 +62,47 @@ def spell(t):
         name = units[i][2]
     else:
         name = units[i][1]
-    return "%f %s"%(t, name)
+    return "%f %s" % (t, name)
+
 
 def test_paths_in_streams(exprs, streams, test_strategies=False):
     for expr in exprs:
-        print "Testing path %r" % expr
+        print("Testing path %r" % expr)
         for stream, sname in streams:
-            print '\tRunning on "%s" example:' % sname
+            print('\tRunning on "%s" example:' % sname)
 
             path = Path(expr)
+
             def f():
                 for e in path.select(stream):
                     pass
             t = spell(benchmark(f))
-            print "\t\tselect:\t\t%s" % t
+            print("\t\tselect:\t\t%s" % t)
 
             def f():
                 path = Path(expr)
                 for e in path.select(stream):
                     pass
             t = spell(benchmark(f))
-            print "\t\tinit + select:\t%s" % t
+            print("\t\tinit + select:\t%s" % t)
 
             if test_strategies and len(path.paths) == 1:
                 from genshi.path import GenericStrategy, SingleStepStrategy, \
-                                        SimplePathStrategy
+                    SimplePathStrategy
                 from genshi.tests.path import FakePath
                 strategies = (GenericStrategy, SingleStepStrategy,
                               SimplePathStrategy)
                 for strategy in strategies:
                     if not strategy.supports(path.paths[0]):
                         continue
-                    print "\t\t%s Strategy"%strategy.__name__
+                    print("\t\t%s Strategy" % strategy.__name__)
                     fp = FakePath(strategy(path.paths[0]))
+
                     def f():
                         for e in fp.select(stream):
                             pass
                     t = spell(benchmark(f))
-                    print "\t\t\tselect:\t\t%s"%t
+                    print("\t\t\tselect:\t\t%s" % t)
 
 
 def test_documents(test_strategies=False):

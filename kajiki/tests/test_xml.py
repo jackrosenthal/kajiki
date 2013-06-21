@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, print_function,
+                        unicode_literals)
 import os
 import sys
 import traceback
@@ -12,8 +17,8 @@ DATA = os.path.join(
     os.path.dirname(__file__),
     'data')
 
-class TestParser(TestCase):
 
+class TestParser(TestCase):
     def test_parser(self):
         doc = kajiki.xml_template._Parser('<string>', '''<?xml version="1.0"?>
 <!DOCTYPE div PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -29,8 +34,8 @@ class TestParser(TestCase):
 </div>''').parse()
         xml.dom.minidom.parseString(doc.toxml().encode('utf-8'))
 
-class TestExpand(TestCase):
 
+class TestExpand(TestCase):
     def test_expand(self):
         doc = kajiki.xml_template._Parser('<string>', '''<div
         py:def="def"
@@ -50,7 +55,7 @@ class TestExpand(TestCase):
             if node.tagName == 'div':
                 node = node.childNodes[0]
                 continue
-            assert node.tagName == tagname, '%s != %s' %(
+            assert node.tagName == tagname, '%s != %s' % (
                 node.tagName, tagname)
             if attr:
                 assert len(node.attributes) == 1
@@ -58,18 +63,20 @@ class TestExpand(TestCase):
                 assert node.getAttribute(attr) == tagname.split(':')[-1]
             else:
                 assert len(node.attributes) == 0
-            assert len(node.childNodes)==1
+            assert len(node.childNodes) == 1
             node = node.childNodes[0]
 
-class TestSimple(TestCase):
 
+class TestSimple(TestCase):
     def test_empty_attr(self):
-        tpl = XMLTemplate(source='<img src="/foo/bar.baz.gif" alt="" />', mode='html')
+        tpl = XMLTemplate(
+            source='<img src="/foo/bar.baz.gif" alt="" />', mode='html')
         rsp = tpl().render()
         assert rsp == '<img alt="" src="/foo/bar.baz.gif">', rsp
 
     def test_script(self):
-        tpl = XMLTemplate(source='<html><script src="public"/></html>', mode='html')
+        tpl = XMLTemplate(
+            source='<html><script src="public"/></html>', mode='html')
         rsp = tpl().render()
         assert rsp == '<html><script src="public"></script>', rsp
 
@@ -94,8 +101,8 @@ class TestSimple(TestCase):
         rsp = tpl({}).render()
         self.assertEqual(x, rsp)
 
-class TestSwitch(TestCase):
 
+class TestSwitch(TestCase):
     def test_switch(self):
         tpl = XMLTemplate(source='''<div py:for="i in range(2)">
 $i is <py:switch test="i % 2">
@@ -107,8 +114,8 @@ $i is <py:switch test="i % 2">
 0 is even</div><div>
 1 is odd</div>''', rsp
 
-class TestWith(TestCase):
 
+class TestWith(TestCase):
     def test_with(self):
         tpl = XMLTemplate(source='''<div py:with="a='foo'">
 <div>$a</div>
@@ -122,8 +129,8 @@ class TestWith(TestCase):
 <div>foo</div>
 </div>''', rsp
 
-class TestFunction(TestCase):
 
+class TestFunction(TestCase):
     def test_function(self):
         tpl = XMLTemplate(source='''<div
 ><div py:def="evenness(n)"><py:if test="n % 2 == 0">even</py:if><py:else>odd</py:else></div>
@@ -136,8 +143,8 @@ class TestFunction(TestCase):
 1 is <div>odd</div>
 </div>''', rsp
 
-class TestCall(TestCase):
 
+class TestCall(TestCase):
     def test_call(self):
         tpl = XMLTemplate(source='''<div
 ><py:def function="quote(caller, speaker)"
@@ -151,11 +158,11 @@ class TestCall(TestCase):
     <li>Quoth the raven, Nevermore 0</li><li>Quoth the raven, Nevermore 1</li>
 </ul></div>''', rsp
 
-class TestImport(TestCase):
 
+class TestImport(TestCase):
     def test_import(self):
         loader = MockLoader({
-            'lib.html':XMLTemplate(source='''<div>
+            'lib.html': XMLTemplate(source='''<div>
 <span py:def="evenness(n)"
     ><py:if test="n % 2 == 0"
         >even</py:if
@@ -165,7 +172,7 @@ class TestImport(TestCase):
 <py:def function="half_evenness(n)"
     >half of $n is ${evenness(n/2)}</py:def>
 </div>'''),
-            'tpl.html':XMLTemplate(source='''<div>
+            'tpl.html': XMLTemplate(source='''<div>
 <py:import href="lib.html" alias="simple_function"
 /><ul>
     <li py:for="i in range(4)">
@@ -173,7 +180,7 @@ class TestImport(TestCase):
     </li>
 </ul>
 </div>''')
-            })
+        })
         tpl = loader.import_('tpl.html')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
@@ -192,7 +199,7 @@ class TestImport(TestCase):
 
     def test_import_auto(self):
         loader = MockLoader({
-            'lib.html':XMLTemplate(source='''<div>
+            'lib.html': XMLTemplate(source='''<div>
 <span py:def="evenness(n)"
     ><py:if test="n % 2 == 0"
         >even</py:if
@@ -202,7 +209,7 @@ class TestImport(TestCase):
 <py:def function="half_evenness(n)"
     >half of $n is ${evenness(n/2)}</py:def>
 </div>'''),
-            'tpl.html':XMLTemplate(source='''<div>
+            'tpl.html': XMLTemplate(source='''<div>
 <py:import href="lib.html"
 /><ul>
     <li py:for="i in range(4)">
@@ -210,7 +217,7 @@ class TestImport(TestCase):
     </li>
 </ul>
 </div>''')
-            })
+        })
         tpl = loader.import_('tpl.html')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<div>
@@ -229,12 +236,12 @@ class TestImport(TestCase):
 
     def test_include(self):
         loader = MockLoader({
-                'hdr.html':XMLTemplate('<h1>Header</h1>\n'),
-                'tpl.html':XMLTemplate('''<html><body>
+            'hdr.html': XMLTemplate('<h1>Header</h1>\n'),
+            'tpl.html': XMLTemplate('''<html><body>
 <py:include href="hdr.html"/>
 <p>This is the body</p>
 </body></html>''')
-                })
+        })
         tpl = loader.import_('tpl.html')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<html><body>
@@ -242,11 +249,11 @@ class TestImport(TestCase):
 <p>This is the body</p>
 </body></html>''', rsp
 
-class TestExtends(TestCase):
 
+class TestExtends(TestCase):
     def test_basic(self):
         loader = MockLoader({
-                'parent.html':XMLTemplate('''<div
+            'parent.html': XMLTemplate('''<div
 ><h1 py:def="header()">Header name=$name</h1
 ><h6 py:def="footer()">Footer</h6
 ><div py:def="body()">
@@ -259,10 +266,10 @@ ${header()}
 ${body()}
 ${footer()}
 </div>'''),
-                'mid.html':XMLTemplate('''<py:extends href="parent.html"
+            'mid.html': XMLTemplate('''<py:extends href="parent.html"
 ><span py:def="id()">mid</span
 ></py:extends>'''),
-                'child.html':XMLTemplate('''<py:extends href="mid.html"
+            'child.html': XMLTemplate('''<py:extends href="mid.html"
 ><span py:def="id()">child</span
 ><div py:def="body()">
 <h2>Child Body</h2>
@@ -270,7 +277,7 @@ ${parent.body()}
 </div></py:extends>''')})
         tpl = loader.import_('child.html')
         rsp = tpl(dict(name='Rick')).render()
-        assert rsp=='''<div>
+        assert rsp == '''<div>
 <h1>Header name=Rick</h1>
 <div>
 <h2>Child Body</h2>
@@ -286,14 +293,14 @@ child.id() = <span>mid</span>
 
     def test_dynamic(self):
         loader = MockLoader({
-                'parent0.html':XMLTemplate('<span>Parent 0</span>'),
-                'parent1.html':XMLTemplate('<span>Parent 1</span>'),
-                'child.html':XMLTemplate('''<div
+            'parent0.html': XMLTemplate('<span>Parent 0</span>'),
+            'parent1.html': XMLTemplate('<span>Parent 1</span>'),
+            'child.html': XMLTemplate('''<div
 ><py:if test="p == 0"><py:extends href="parent0.html"/></py:if
 ><py:else><py:extends href="parent1.html"/></py:else
 ></div>
 ''')
-                })
+        })
         tpl = loader.import_('child.html')
         rsp = tpl(dict(p=0)).render()
         assert rsp == '<div><span>Parent 0</span></div>', rsp
@@ -302,7 +309,7 @@ child.id() = <span>mid</span>
 
     def test_block(self):
         loader = MockLoader({
-                'parent.html':XMLTemplate('''<div
+            'parent.html': XMLTemplate('''<div
 ><py:def function="greet(name)"
 >Hello, $name!</py:def
 ><py:def function="sign(name)"
@@ -314,7 +321,7 @@ Thanks for the gift!</p>
 
 ${sign(from_)}
 </div>'''),
-                'child.html':XMLTemplate('''<py:extends href="parent.html"
+            'child.html': XMLTemplate('''<py:extends href="parent.html"
 ><py:def function="greet(name)"
 >Dear $name:</py:def
 ><py:block name="body">${parent_block()}
@@ -323,7 +330,7 @@ ${sign(from_)}
 ></py:extends>
 ''')})
         parent = loader.import_('parent.html')
-        rsp = parent({'to':'Mark', 'from_':'Rick'}).render()
+        rsp = parent({'to': 'Mark', 'from_': 'Rick'}).render()
         assert rsp == '''<div>Hello, Mark!
 
 <p>It was good seeing you last Friday.
@@ -332,8 +339,8 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
         child = loader.import_('child.html')
-        rsp = child({'to':'Mark', 'from_':'Rick'}).render()
-        assert rsp=='''<div>Dear Mark:
+        rsp = child({'to': 'Mark', 'from_': 'Rick'}).render()
+        assert rsp == '''<div>Dear Mark:
 
 <p>It was good seeing you last Friday.
 Thanks for the gift!</p>
@@ -343,8 +350,8 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
 
-class TestClosure(TestCase):
 
+class TestClosure(TestCase):
     def test(self):
         tpl = XMLTemplate('''<div
 ><py:def function="add(x)"
@@ -355,8 +362,8 @@ class TestClosure(TestCase):
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>15</div>', rsp
 
-class TestPython(TestCase):
 
+class TestPython(TestCase):
     def test_basic(self):
         tpl = XMLTemplate('''<div
 ><?py
@@ -390,8 +397,8 @@ import os
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>a/b/c</div>'
 
-class TestComment(TestCase):
 
+class TestComment(TestCase):
     def test_basic(self):
         tpl = XMLTemplate('''<div>
 <!-- This comment is preserved. -->
@@ -403,8 +410,8 @@ class TestComment(TestCase):
 
 </div>''', rsp
 
-class TestAttributes(TestCase):
 
+class TestAttributes(TestCase):
     def test_basic(self):
         tpl = XMLTemplate('''<div id="foo"/>''')
         rsp = tpl(dict(name='Rick')).render()
@@ -439,13 +446,16 @@ class TestAttributes(TestCase):
         assert rsp == '<div><h1>Header</h1></div>', rsp
 
     def test_html_attrs(self):
-        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='xml')
+        tpl = XMLTemplate(
+            '''<input type="checkbox" checked="$checked"/>''', mode='xml')
         rsp = tpl(dict(checked=True)).render()
         assert rsp == '<input checked="True" type="checkbox"/>', rsp
-        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''', mode='html')
+        tpl = XMLTemplate(
+            '''<input type="checkbox" checked="$checked"/>''', mode='html')
         rsp = tpl(dict(checked=True)).render()
         assert rsp == '<input checked type="checkbox">', rsp
-        tpl = XMLTemplate('''<!DOCTYPE html>\n<input type="checkbox" checked="$checked"/>''')
+        tpl = XMLTemplate(
+            '''<!DOCTYPE html>\n<input type="checkbox" checked="$checked"/>''')
         rsp = tpl(dict(checked=True)).render()
         assert rsp == '<!DOCTYPE html><input checked type="checkbox">', rsp
         tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
@@ -461,8 +471,8 @@ class TestAttributes(TestCase):
         rsp = tpl(dict(checked=None)).render()
         assert rsp == '<input type="checkbox">', rsp
 
-class TestDebug(TestCase):
 
+class TestDebug(TestCase):
     def test_debug(self):
         loader = FileLoader(path=os.path.join(os.path.dirname(__file__),
                             'data'))
@@ -475,12 +485,13 @@ class TestDebug(TestCase):
             stack = traceback.extract_tb(exc_info[2])
         # Verify we have stack trace entries in the template
         for fn, lno, func, line in stack:
-            if fn.endswith('debug.html'): break
+            if fn.endswith('debug.html'):
+                break
         else:
             assert False, 'Stacktrace is all python'
 
-class TestPackageLoader(TestCase):
 
+class TestPackageLoader(TestCase):
     def test_pkg_loader(self):
         loader = PackageLoader()
         loader.import_('kajiki.tests.data.debug')

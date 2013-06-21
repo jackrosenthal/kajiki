@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import os
 import sys
 import traceback
@@ -5,8 +10,8 @@ from unittest import TestCase, main
 
 from kajiki import MockLoader, FileLoader, TextTemplate
 
-class TestBasic(TestCase):
 
+class TestBasic(TestCase):
     def test_auto_escape(self):
         tpl = TextTemplate(source="${'<h1>'}", autoescape=True)
         rsp = tpl().render()
@@ -40,13 +45,15 @@ class TestBasic(TestCase):
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'Hello, Rick\n', rsp
         tpl = TextTemplate(source='Hello, $obj.name\n')
-        class Empty: pass
+
+        class Empty:
+            pass
         Empty.name = 'Rick'
         rsp = tpl(dict(obj=Empty)).render()
         assert rsp == 'Hello, Rick\n', rsp
 
-class TestSwitch(TestCase):
 
+class TestSwitch(TestCase):
     def test_switch(self):
         tpl = TextTemplate('''%for i in range(2)
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
@@ -73,8 +80,8 @@ $i is {%switch i % 2 %}{%case 0-%}    even\n{%else%}odd\n{%end%}\\
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
-class TestFunction(TestCase):
 
+class TestFunction(TestCase):
     def test_function(self):
         tpl = TextTemplate('''%def evenness(n)
 {%if n % 2 == 0 %}even{%else%}odd{%end%}\\
@@ -86,8 +93,8 @@ $i is ${evenness(i)}
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '0 is even\n1 is odd\n', rsp
 
-class TestCall(TestCase):
 
+class TestCall(TestCase):
     def test_call(self):
         tpl = TextTemplate('''%def quote(caller, speaker)
     %for i in range(2)
@@ -102,8 +109,8 @@ Nevermore $n\\
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'), rsp
 
-class TestImport(TestCase):
 
+class TestImport(TestCase):
     def test_import(self):
         lib = TextTemplate('''%def evenness(n)
 %if n % 2 == 0
@@ -120,11 +127,11 @@ odd\\
 $i is ${simple_function.evenness(i)}${simple_function.half_evenness(i)}
 %end''')
         loader = MockLoader({
-            'lib.txt':lib,
-            'tpl.txt':tpl})
+            'lib.txt': lib,
+            'tpl.txt': tpl})
         tpl = loader.import_('tpl.txt')
         rsp = tpl(dict(name='Rick')).render()
-        assert (rsp=='0 is even half of 0 is even\n'
+        assert (rsp == '0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
                 '3 is odd half of 3 is odd\n'), rsp
@@ -145,19 +152,19 @@ odd\\
 $i is ${lib.evenness(i)}${lib.half_evenness(i)}
 %end''')
         loader = MockLoader({
-            'lib.txt':lib,
-            'tpl.txt':tpl})
+            'lib.txt': lib,
+            'tpl.txt': tpl})
         tpl = loader.import_('tpl.txt')
         rsp = tpl(dict(name='Rick')).render()
-        assert (rsp=='0 is even half of 0 is even\n'
+        assert (rsp == '0 is even half of 0 is even\n'
                 '1 is odd half of 1 is even\n'
                 '2 is even half of 2 is odd\n'
                 '3 is odd half of 3 is odd\n'), rsp
 
     def test_include(self):
         loader = MockLoader({
-                'hdr.txt': TextTemplate('# header\n'),
-                'tpl.txt': TextTemplate('''a
+            'hdr.txt': TextTemplate('# header\n'),
+            'tpl.txt': TextTemplate('''a
 %include "hdr.txt"
 b
 ''')})
@@ -165,8 +172,8 @@ b
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a\n# header\nb\n', rsp
 
-class TestExtends(TestCase):
 
+class TestExtends(TestCase):
     def test_basic(self):
         parent = TextTemplate('''
 %def header()
@@ -201,9 +208,9 @@ ${parent.body()}\\
 %end
 ''')
         loader = MockLoader({
-            'parent.txt':parent,
-            'mid.txt':mid,
-            'child.txt':child})
+            'parent.txt': parent,
+            'mid.txt': mid,
+            'child.txt': child})
         tpl = loader.import_('child.txt')
         rsp = tpl(dict(name='Rick')).render()
         assert (rsp == '# Header name=Rick\n'
@@ -217,15 +224,15 @@ ${parent.body()}\\
 
     def test_dynamic(self):
         loader = MockLoader({
-                'parent0.txt':TextTemplate('Parent 0'),
-                'parent1.txt':TextTemplate('Parent 1'),
-                'child.txt':TextTemplate('''%if p == 0
+            'parent0.txt': TextTemplate('Parent 0'),
+            'parent1.txt': TextTemplate('Parent 1'),
+            'child.txt': TextTemplate('''%if p == 0
 %extends "parent0.txt"
 %else
 %extends "parent1.txt"
 %end
 ''')
-                })
+        })
         tpl = loader.import_('child.txt')
         rsp = tpl(dict(p=0)).render()
         assert rsp == 'Parent 0', rsp
@@ -234,7 +241,7 @@ ${parent.body()}\\
 
     def test_block(self):
         loader = MockLoader({
-                'parent.txt':TextTemplate('''%def greet(name)
+            'parent.txt': TextTemplate('''%def greet(name)
 Hello, $name!\\
 %end
 %def sign(name)
@@ -249,7 +256,7 @@ It was good seeing you last Friday.  Thanks for the gift!
 
 ${sign(from_)}
 '''),
-                'child.txt':TextTemplate('''%extends "parent.txt"
+            'child.txt': TextTemplate('''%extends "parent.txt"
 %def greet(name)
 Dear $name:\\
 %end
@@ -260,8 +267,8 @@ And don't forget you owe me money!
 %end
 ''')})
         child = loader.import_('child.txt')
-        rsp = child({'to':'Mark', 'from_':'Rick'}).render()
-        assert (rsp=='''Dear Mark:
+        rsp = child({'to': 'Mark', 'from_': 'Rick'}).render()
+        assert (rsp == '''Dear Mark:
 It was good seeing you last Friday.  Thanks for the gift!
 
 And don't forget you owe me money!
@@ -272,7 +279,6 @@ Rick
 
 
 class TestClosure(TestCase):
-
     def test(self):
         tpl = TextTemplate('''%def add(x)
 %def inner(y)
@@ -285,8 +291,8 @@ ${add(5)}
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '15\n', rsp
 
-class TestPython(TestCase):
 
+class TestPython(TestCase):
     def test_basic(self):
         tpl = TextTemplate('''%py
 import os
@@ -319,8 +325,8 @@ ${test()}''')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == 'a/b/c'
 
-class TestDebug(TestCase):
 
+class TestDebug(TestCase):
     def test_debug(self):
         loader = FileLoader(path=os.path.join(os.path.dirname(__file__),
                             'data'))
@@ -333,7 +339,8 @@ class TestDebug(TestCase):
             stack = traceback.extract_tb(exc_info[2])
         # Verify we have stack trace entries in the template
         for fn, lno, func, line in stack:
-            if fn.endswith('debug.txt'): break
+            if fn.endswith('debug.txt'):
+                break
         else:
             assert False, 'Stacktrace is all python'
 

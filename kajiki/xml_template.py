@@ -1,15 +1,18 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import re
-from ddict import defaultdict
 from cStringIO import StringIO
 from xml import sax
 from htmllib import HTMLParser
 from xml.dom import minidom as dom
 
-import kajiki
-from kajiki import ir
-from kajiki import template
-from markup_template import QDIRECTIVES, QDIRECTIVES_DICT
-from html_utils import HTML_OPTIONAL_END_TAGS
+from . import ir
+from . import template
+from .ddict import defaultdict
+from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
+from .html_utils import HTML_OPTIONAL_END_TAGS
 
 impl = dom.getDOMImplementation(' ')
 
@@ -20,12 +23,13 @@ _pattern = r'''
     {(?P<expr_braced>) | # ${....
     (?P<expr_invalid>)
 )'''
-_re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE|re.MULTILINE)
+_re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
+
 
 def XMLTemplate(
     source=None,
     filename=None,
-    **kw):
+        **kw):
     if 'mode' in kw:
         mode = kw['mode']
         force_mode = True
@@ -43,6 +47,7 @@ def XMLTemplate(
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
+
 def annotate(gen):
     def inner(self, node, *args, **kwargs):
         for x in gen(self, node, *args, **kwargs):
@@ -50,17 +55,19 @@ def annotate(gen):
             yield x
     return inner
 
+
 class _Compiler(object):
     mode_lookup = {
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd':'xml',
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd':'xml',
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd':'xml',
-        'http://www.w3.org/TR/html4/strict.dtd':'html',
-        'http://www.w3.org/TR/html4/loose.dtd':'html',
-        'http://www.w3.org/TR/html4/frameset.dtd':'html',
-        }
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd': 'xml',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd': 'xml',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd': 'xml',
+        'http://www.w3.org/TR/html4/strict.dtd': 'html',
+        'http://www.w3.org/TR/html4/loose.dtd': 'html',
+        'http://www.w3.org/TR/html4/frameset.dtd': 'html',
+    }
 
-    def __init__(self, filename, doc, mode='xml', is_fragment=False, force_mode=False):
+    def __init__(self, filename, doc, mode='xml', is_fragment=False,
+                 force_mode=False):
         self.filename = filename
         self.doc = doc
         self.mode = mode
@@ -82,7 +89,8 @@ class _Compiler(object):
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
-        if not self.is_fragment and not self.is_child: # Never emit doctypes on fragments
+        # Never emit doctypes on fragments
+        if not self.is_fragment and not self.is_child:
             if self.mode == 'xml' and self.doc.doctype:
                 dt = ir.TextNode(self.doc.doctype.toxml())
                 dt.filename = self.filename
@@ -95,7 +103,7 @@ class _Compiler(object):
                 body.insert(0, dt)
         self.functions['__main__()'] = body
         defs = []
-        for k,v in self.functions.iteritems():
+        for k, v in self.functions.iteritems():
             node = ir.DefNode(k, *v)
             node.lineno = self.function_lnos.get(k)
             defs.append(node)
@@ -105,7 +113,8 @@ class _Compiler(object):
         return node
 
     def _anno(self, dom_node, ir_node):
-        if ir_node.lineno: return
+        if ir_node.lineno:
+            return
         ir_node.filename = self.filename
         ir_node.lineno = dom_node.lineno
 
@@ -118,8 +127,9 @@ class _Compiler(object):
             return self._compile_pi(node)
         elif node.tagName.startswith('py:'):
             # Handle directives
-            compiler = getattr(self, '_compile_%s' % node.tagName.split(':')[-1],
-                               self._compile_xml)
+            compiler = getattr(
+                self, '_compile_%s' % node.tagName.split(':')[-1],
+                self._compile_xml)
             return compiler(node)
         else:
             return self._compile_xml(node)
@@ -131,7 +141,7 @@ class _Compiler(object):
             guard = 'not (%s)' % node.getAttribute('py:strip')
             node.removeAttribute('py:strip')
         yield ir.TextNode(u'<%s' % node.tagName, guard)
-        for k,v in sorted(node.attributes.items()):
+        for k, v in sorted(node.attributes.items()):
             tc = _TextCompiler(self.filename, v, node.lineno,
                                ir.TextNode)
             v = list(tc)
@@ -160,7 +170,7 @@ class _Compiler(object):
                     yield ir.TextNode(u'</%s>' % node.tagName, guard)
             else:
                 if self.mode.startswith('html'):
-                    if  node.tagName in HTML_OPTIONAL_END_TAGS:
+                    if node.tagName in HTML_OPTIONAL_END_TAGS:
                         yield ir.TextNode(u'>', guard)
                     else:
                         yield ir.TextNode(u'></%s>' % node.tagName, guard)
@@ -207,11 +217,12 @@ class _Compiler(object):
         decl = fname + '()'
         body = list(self._compile_nop(node))
         if not body:
-            body = [ ir.PassNode() ]
+            body = [ir.PassNode()]
         self.functions[decl] = body
         if self.is_child:
             parent_block = 'parent.' + fname
-            body.insert(0, ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
+            body.insert(0,
+                ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
         else:
             yield ir.ExprNode(decl)
 
@@ -260,14 +271,14 @@ class _Compiler(object):
     @annotate
     def _compile_switch(self, node):
         # Filter out text nodes
-        body = [ x for x in self._compile_nop(node)
-                 if not isinstance(x, ir.TextNode) ]
+        body = [x for x in self._compile_nop(node)
+                if not isinstance(x, ir.TextNode)]
         yield ir.SwitchNode(node.getAttribute('test'), *body)
 
     @annotate
     def _compile_case(self, node):
         yield ir.CaseNode(node.getAttribute('value'),
-                         *list(self._compile_nop(node)))
+                          *list(self._compile_nop(node)))
 
     @annotate
     def _compile_if(self, node):
@@ -285,8 +296,8 @@ class _Compiler(object):
             for x in self._compile_node(c):
                 yield x
 
-class _TextCompiler(object):
 
+class _TextCompiler(object):
     def __init__(self, filename, source, lineno,
                  node_type=ir.TranslatableTextNode):
         self.filename = filename
@@ -295,7 +306,7 @@ class _TextCompiler(object):
         self.lineno = 0
         self.pos = 0
         self.node_type = node_type
-        
+
     def text(self, text):
         node = self.node_type(text)
         node.lineno = self.real_lineno
@@ -332,8 +343,8 @@ class _TextCompiler(object):
             else:
                 msg = 'Syntax error %s:%s' % (self.filename, self.real_lineno)
                 for i, line in enumerate(self.source.splitlines()):
-                    print '%3d %s' % (i+1, line)
-                print msg
+                    print('%3d %s' % (i + 1, line))
+                print(msg)
                 assert False, groups
         if self.pos != len(source):
             yield self.text(source[self.pos:])
@@ -341,14 +352,14 @@ class _TextCompiler(object):
     def _get_braced_expr(self):
         try:
             compile(self.source[self.pos:], '', 'eval')
-        except SyntaxError, se:
-            end = se.offset+self.pos
-            text = self.source[self.pos:end-1]
+        except SyntaxError as se:
+            end = se.offset + self.pos
+            text = self.source[self.pos:end - 1]
             self.pos = end
             return self.expr(text)
-    
-class _Parser(sax.ContentHandler):
 
+
+class _Parser(sax.ContentHandler):
     def __init__(self, filename, source):
         self._filename = filename
         self._source = source
@@ -368,7 +379,7 @@ class _Parser(sax.ContentHandler):
         parser.parse(source)
         return self._doc
 
-    ## ContentHandler implementation
+    # ContentHandler implementation
     def startDocument(self):
         self._doc = dom.Document()
         self._els.append(self._doc)
@@ -376,8 +387,8 @@ class _Parser(sax.ContentHandler):
     def startElement(self, name, attrs):
         el = self._doc.createElement(name)
         el.lineno = self._parser.getLineNumber()
-        for k,v in attrs.items():
-            el.setAttribute(k,v)
+        for k, v in attrs.items():
+            el.setAttribute(k, v)
         self._els[-1].appendChild(el)
         self._els.append(el)
 
@@ -400,17 +411,17 @@ class _Parser(sax.ContentHandler):
         content = unicode(HTMLParser.entitydefs[name], 'latin-1')
         return self.characters(content)
 
-    def startElementNS(self, name, qname, attrs): # pragma no cover
-        raise NotImplementedError, 'startElementNS'
+    def startElementNS(self, name, qname, attrs):  # pragma no cover
+        raise NotImplementedError('startElementNS')
 
-    def endElementNS(self, name, qname):# pragma no cover
-        raise NotImplementedError, 'startElementNS'
+    def endElementNS(self, name, qname):  # pragma no cover
+        raise NotImplementedError('startElementNS')
 
-    def startPrefixMapping(self, prefix, uri):# pragma no cover
-        raise NotImplemented, 'startPrefixMapping'
+    def startPrefixMapping(self, prefix, uri):  # pragma no cover
+        raise NotImplemented('startPrefixMapping')
 
-    def endPrefixMapping(self, prefix):# pragma no cover
-        raise NotImplemented, 'endPrefixMapping'
+    def endPrefixMapping(self, prefix):  # pragma no cover
+        raise NotImplemented('endPrefixMapping')
 
     # LexicalHandler implementation
     def comment(self, text):
@@ -418,11 +429,18 @@ class _Parser(sax.ContentHandler):
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
 
-    def startCDATA(self): pass
-    def endCDATA(self): pass
+    def startCDATA(self):
+        pass
+
+    def endCDATA(self):
+        pass
+
     def startDTD(self, name, pubid, sysid):
         self._doc.doctype = impl.createDocumentType(name, pubid, sysid)
-    def endDTD(self): pass
+
+    def endDTD(self):
+        pass
+
 
 def expand(tree, parent=None):
     if isinstance(tree, dom.Document):
@@ -443,7 +461,8 @@ def expand(tree, parent=None):
         tree.removeAttribute('py:extends')
         tree.childNodes.insert(0, el)
     for directive, attr in QDIRECTIVES:
-        if not tree.hasAttribute(directive): continue
+        if not tree.hasAttribute(directive):
+            continue
         value = tree.getAttribute(directive)
         tree.removeAttribute(directive)
         # nsmap = (parent is not None) and parent.nsmap or tree.nsmap
@@ -459,4 +478,3 @@ def expand(tree, parent=None):
     for child in tree.childNodes:
         expand(child, tree)
     return tree
-

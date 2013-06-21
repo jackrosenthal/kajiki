@@ -1,8 +1,13 @@
-# -*- encoding: utf-8 -*-
-# Template language benchmarks
-#
-# Objective: Test general templating features using a small template
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+'''Template language benchmarks
+
+Objective: Test general templating features using a small template
+'''
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 from cgi import escape
 import os
 from StringIO import StringIO
@@ -12,70 +17,82 @@ import timeit
 __all__ = ['kajiki', 'mako', 'jinja2', 'genshi', 'genshi_text']
 # __all__ = ['kajiki' ]
 
+
 def kajiki(dirname, verbose=False):
     from kajiki import FileLoader
     loader = FileLoader(base=dirname)
     template = loader.load('template.html')
+
     def render():
         data = dict(title='Just a test', user='joe',
                     items=['Number %d' % num for num in range(1, 15)])
         return template(data).render()
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def genshi(dirname, verbose=False):
     from genshi.template import TemplateLoader
     loader = TemplateLoader([dirname], auto_reload=False)
     template = loader.load('template.html')
+
     def render():
         data = dict(title='Just a test', user='joe',
                     items=['Number %d' % num for num in range(1, 15)])
         return template.generate(**data).render('xhtml')
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def chameleon_genshi(dirname, verbose=False):
     from chameleon.genshi.loader import TemplateLoader
     loader = TemplateLoader([dirname], auto_reload=False)
     template = loader.load('template.html')
+
     def render():
         data = dict(title='Just a test', user='joe',
                     items=['Number %d' % num for num in range(1, 15)])
-        import pdb; pdb.set_trace()
+        import pdb
+        pdb.set_trace()
         return template(**data)
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def genshi_text(dirname, verbose=False):
     from genshi.core import escape
     from genshi.template import TemplateLoader, NewTextTemplate
     loader = TemplateLoader([dirname], auto_reload=False)
     template = loader.load('template.txt', cls=NewTextTemplate)
+
     def render():
         data = dict(escape=escape, title='Just a test', user='joe',
                     items=['Number %d' % num for num in range(1, 15)])
         return template.generate(**data).render('text')
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def mako(dirname, verbose=False):
     from mako.lookup import TemplateLookup
     lookup = TemplateLookup(directories=[dirname], filesystem_checks=False)
     template = lookup.get_template('template.html')
+
     def render():
         data = dict(title='Just a test', user='joe',
                     items=['Number %d' % num for num in range(1, 15)])
         return template.render(**data)
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def cheetah(dirname, verbose=False):
     # FIXME: infinite recursion somewhere... WTF?
@@ -84,20 +101,25 @@ def cheetah(dirname, verbose=False):
     except ImportError:
         print>>sys.stderr, 'Cheetah not installed, skipping'
         return lambda: None
+
     class MyTemplate(Template):
-        def serverSidePath(self, path): return os.path.join(dirname, path)
+
+        def serverSidePath(self, path):
+            return os.path.join(dirname, path)
     filename = os.path.join(dirname, 'template.tmpl')
     template = MyTemplate(file=filename)
 
     def render():
         template = MyTemplate(file=filename,
-                              searchList=[{'title': 'Just a test', 'user': 'joe',
-                                           'items': [u'Number %d' % num for num in range(1, 15)]}])
+                              searchList=[
+                                  {'title': 'Just a test', 'user': 'joe',
+                                   'items': [u'Number %d' % num for num in range(1, 15)]}])
         return template.respond()
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def clearsilver(dirname, verbose=False):
     try:
@@ -108,6 +130,7 @@ def clearsilver(dirname, verbose=False):
     neo_cgi.update()
     import neo_util
     import neo_cs
+
     def render():
         hdf = neo_util.HDF()
         hdf.setValue('hdf.loadpaths.0', dirname)
@@ -120,12 +143,14 @@ def clearsilver(dirname, verbose=False):
         return cs.render()
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def jinja2(dirname, verbose=False):
     from jinja2 import Environment, FileSystemLoader
-    env = Environment(loader=FileSystemLoader([os.path.join(dirname, 'templates')]))
+    env = Environment(loader=FileSystemLoader(
+        [os.path.join(dirname, 'templates')]))
     tmpl = env.get_template('template.html')
 
     def render():
@@ -134,8 +159,9 @@ def jinja2(dirname, verbose=False):
         return tmpl.render(**data)
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def django(dirname, verbose=False):
     try:
@@ -155,8 +181,9 @@ def django(dirname, verbose=False):
         return tmpl.render(template.Context(data))
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def kid(dirname, verbose=False):
     try:
@@ -166,6 +193,7 @@ def kid(dirname, verbose=False):
         return lambda: None
     kid.path = kid.TemplatePath([dirname])
     template = kid.load_template('template.kid').Template
+
     def render():
         return template(
             title='Just a test', user='joe',
@@ -173,8 +201,9 @@ def kid(dirname, verbose=False):
         ).serialize(output='xhtml')
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def simpletal(dirname, verbose=False):
     try:
@@ -188,6 +217,7 @@ def simpletal(dirname, verbose=False):
     fileobj = open(os.path.join(dirname, 'template.html'))
     template = simpleTAL.compileHTMLTemplate(fileobj)
     fileobj.close()
+
     def render():
         ctxt = simpleTALES.Context(allowPythonPath=1)
         ctxt.addGlobal('base', base)
@@ -199,27 +229,29 @@ def simpletal(dirname, verbose=False):
         return buf.getvalue()
 
     if verbose:
-        print render()
+        print(render())
     return render
+
 
 def run(engines, number=2000, verbose=False):
     basepath = os.path.abspath(os.path.dirname(__file__))
     for engine in engines:
         dirname = os.path.join(basepath, engine)
         if verbose:
-            print '%s:' % engine.capitalize()
-            print '--------------------------------------------------------'
+            print('%s:' % engine.capitalize())
+            print('--------------------------------------------------------')
         else:
-            print '%s:' % engine.capitalize(),
-        t = timeit.Timer(setup='from __main__ import %s; render = %s(r"%s", %s)'
-                               % (engine, engine, dirname, verbose),
-                         stmt='render()')
+            print('%s:' % engine.capitalize(),)
+        t = timeit.Timer(
+            setup='from __main__ import %s; render = %s(r"%s", %s)'
+            % (engine, engine, dirname, verbose),
+            stmt='render()')
         time = t.timeit(number=number) / number
         if verbose:
-            print '--------------------------------------------------------'
-        print '%.2f ms' % (1000 * time)
+            print('--------------------------------------------------------')
+        print('%.2f ms' % (1000 * time))
         if verbose:
-            print '--------------------------------------------------------'
+            print('--------------------------------------------------------')
 
 
 if __name__ == '__main__':
@@ -230,7 +262,8 @@ if __name__ == '__main__':
     verbose = '-v' in sys.argv
 
     if '-p' in sys.argv:
-        import cProfile, pstats
+        import cProfile
+        import pstats
         prof = cProfile.Profile()
         prof.run('run(%r, number=200, verbose=%r)' % (engines, verbose))
         stats = pstats.Stats(prof)

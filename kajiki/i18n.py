@@ -1,7 +1,13 @@
-from ir import TranslatableTextNode
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from .ir import TranslatableTextNode
+
 
 def gettext(s):
     return s
+
 
 def extract(fileobj, keywords, comment_tags, options):
     from xml_template import _Parser, _Compiler, expand

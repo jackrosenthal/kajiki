@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import os
 import pkg_resources
 
-class Loader(object):
 
+class Loader(object):
     def __init__(self):
         self.modules = {}
 
@@ -22,16 +26,16 @@ class Loader(object):
     def load(self):
         return self.import_
 
-class MockLoader(Loader):
 
+class MockLoader(Loader):
     def __init__(self, modules):
         super(MockLoader, self).__init__()
         self.modules.update(modules)
         for v in self.modules.itervalues():
             v.loader = self
 
-class FileLoader(Loader):
 
+class FileLoader(Loader):
     def __init__(self, path, reload=True, force_mode=None,
                  autoescape_text=False):
         super(FileLoader, self).__init__()
@@ -45,10 +49,11 @@ class FileLoader(Loader):
         self._force_mode = force_mode
         self._autoescape_text = autoescape_text
         self.extension_map = dict(
-            txt=lambda *a, **kw: TextTemplate(autoescape=self._autoescape_text, *a, **kw),
+            txt=lambda *a, **kw: TextTemplate(
+                autoescape=self._autoescape_text, *a, **kw),
             xml=XMLTemplate,
-            html=lambda *a,**kw:XMLTemplate(mode='html', *a, **kw),
-            html5=lambda *a,**kw:XMLTemplate(mode='html5', *a, **kw))
+            html=lambda *a, **kw: XMLTemplate(mode='html', *a, **kw),
+            html5=lambda *a, **kw: XMLTemplate(mode='html5', *a, **kw))
 
     def _filename(self, name):
         for base in self.path:
@@ -72,7 +77,7 @@ class FileLoader(Loader):
         source = open(filename, 'rb').read()
         if self._force_mode == 'text':
             return TextTemplate(source=source, filename=filename,
-                                autoescape=self._autoescape_text, *args, **kwargs)
+                autoescape=self._autoescape_text, *args, **kwargs)
         elif self._force_mode:
             return XMLTemplate(
                 source=source,
@@ -84,8 +89,8 @@ class FileLoader(Loader):
             return self.extension_map[ext](
                 source=source, filename=filename, *args, **kwargs)
 
-class PackageLoader(FileLoader):
 
+class PackageLoader(FileLoader):
     def __init__(self, reload=True, force_mode=None):
         super(PackageLoader, self).__init__(None, reload, force_mode)
 
@@ -93,7 +98,8 @@ class PackageLoader(FileLoader):
         package, module = name.rsplit('.', 1)
         found = dict()
         for fn in pkg_resources.resource_listdir(package, '.'):
-            if fn == name: return pkg_resources.resource_filename(package, fn)
+            if fn == name:
+                return pkg_resources.resource_filename(package, fn)
             root, ext = os.path.splitext(fn)
             if root == module:
                 found[ext] = fn
@@ -101,5 +107,4 @@ class PackageLoader(FileLoader):
             if ext in found:
                 return pkg_resources.resource_filename(package, found[ext])
         else:
-            raise IOError, 'Unknown template %r' % name
-
+            raise IOError('Unknown template %r' % name)

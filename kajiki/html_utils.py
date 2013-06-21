@@ -1,15 +1,20 @@
-HTML_EMPTY_ATTRS=set([
-        'checked',
-        'disabled',
-        'readonly',
-        'multiple',
-        'selected',
-        'nohref',
-        'ismap',
-        'declare',
-        'defer',
-        ])
-HTML_OPTIONAL_END_TAGS=set([
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+HTML_EMPTY_ATTRS = set([
+    'checked',
+    'disabled',
+    'readonly',
+    'multiple',
+    'selected',
+    'nohref',
+    'ismap',
+    'declare',
+    'defer',
+])
+HTML_OPTIONAL_END_TAGS = set([
     'area',
     'base',
     'body',
@@ -35,4 +40,4 @@ HTML_OPTIONAL_END_TAGS=set([
     'th',
     'thead',
     'tr',
-    ])
+])

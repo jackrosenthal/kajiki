@@ -1,12 +1,16 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, print_function,
+                        unicode_literals)
 import re
 import types
-from cStringIO import StringIO
 from cgi import escape
+
 try:
     from functools import update_wrapper
 except:
     def update_wrapper(wrapper, wrapped,
-                       assigned = ('__module__', '__name__', '__doc__'),
+                       assigned=('__module__', '__name__', '__doc__'),
                        updated = ('__dict__',)):
         for attr in assigned:
             setattr(wrapper, attr, getattr(wrapped, attr))
@@ -14,34 +18,35 @@ except:
             getattr(wrapper, attr).update(getattr(wrapped, attr))
         return wrapper
 
-from pprint import pprint
-
 import kajiki
-from util import flattener, literal
-from html_utils import HTML_EMPTY_ATTRS
-from ir import generate_python
-from kajiki import lnotab
+from .util import flattener, literal
+from .html_utils import HTML_EMPTY_ATTRS
+from .ir import generate_python
+from . import lnotab
 from kajiki import i18n
 
 re_escape = re.compile(r'&|<|>')
-escape_dict ={
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;'}
+escape_dict = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'}
+
 
 class _obj(object):
     def __init__(self, **kw):
-        for k,v in kw.iteritems():
-            setattr(self,k,v)
+        for k, v in kw.iteritems():
+            setattr(self, k, v)
+
 
 class _Template(object):
-    __methods__=()
+    __methods__ = ()
     loader = None
     base_globals = None
     filename = None
 
     def __init__(self, context=None):
-        if context is None: context = {}
+        if context is None:
+            context = {}
         self._context = context
         base_globals = self.base_globals or {}
         self.__globals__ = dict(
@@ -51,7 +56,7 @@ class _Template(object):
             literal=literal,
             __builtins__=__builtins__,
             __kj__=kajiki)
-        for k,v in self.__methods__:
+        for k, v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)
             self.__globals__[k] = v
@@ -79,7 +84,7 @@ class _Template(object):
         return u''.join(self)
 
     def _push_with(self, lcls, **kw):
-        d = dict((k,lcls.get(k, ()))
+        d = dict((k, lcls.get(k, ()))
                  for k in kw)
         self._with_stack.append(d)
 
@@ -92,15 +97,19 @@ class _Template(object):
         p_inst = parent(self._context)
         p_globals = p_inst.__globals__
         # Find overrides
-        for k,v in self.__globals__.iteritems():
-            if k == '__main__': continue
-            if not isinstance(v, TplFunc): continue
+        for k, v in self.__globals__.iteritems():
+            if k == '__main__':
+                continue
+            if not isinstance(v, TplFunc):
+                continue
             p_globals[k] = v
         # Find inherited funcs
         for k, v in p_inst.__globals__.iteritems():
-            if k == '__main__': continue
-            if not isinstance(v, TplFunc): continue
-            if k not in self.__globals__: 
+            if k == '__main__':
+                continue
+            if not isinstance(v, TplFunc):
+                continue
+            if k not in self.__globals__:
                 self.__globals__[k] = v
             if not hasattr(self, k):
                 def _(k=k):
@@ -134,7 +143,8 @@ class _Template(object):
         return r
 
     def _escape(self, value):
-        if value is None: return value
+        if value is None:
+            return value
         if hasattr(value, '__html__'):
             return value.__html__()
         if type(value) == flattener:
@@ -148,16 +158,20 @@ class _Template(object):
     def _render_attrs(self, attrs, mode):
         if hasattr(attrs, 'items'):
             attrs = attrs.items()
-        if attrs is not None:        
-            for k,v in sorted(attrs):
-                if v is None: continue
-                if mode.startswith('html') and k in HTML_EMPTY_ATTRS: yield ' '+k.lower()
-                else: yield ' %s="%s"' % (k,self._escape(v))
+        if attrs is not None:
+            for k, v in sorted(attrs):
+                if v is None:
+                    continue
+                if mode.startswith('html') and k in HTML_EMPTY_ATTRS:
+                    yield ' ' + k.lower()
+                else:
+                    yield ' %s="%s"' % (k, self._escape(v))
 
     def _collect(self, it):
         result = []
         for part in it:
-            if part is None: continue
+            if part is None:
+                continue
             result.append(part)
         if result:
             return u''.join(result)
@@ -172,6 +186,7 @@ class _Template(object):
     def defined(self, name):
         return name in self._context
 
+
 def Template(ns):
     dct = {}
     methods = dct['__methods__'] = []
@@ -179,23 +194,24 @@ def Template(ns):
         value = getattr(ns, name)
         if getattr(value, 'exposed', False):
             methods.append((name, TplFunc(value.im_func)))
-    return type(ns.__name__,(_Template,), dct)
+    return type(ns.__name__, (_Template,), dct)
+
 
 def from_ir(ir_node):
     py_lines = list(generate_python(ir_node))
     py_text = '\n'.join(map(str, py_lines))
-    py_linenos = [ ]
+    py_linenos = []
     last_lineno = 0
-    for i,l in enumerate(py_lines):
-        lno =max(last_lineno, l._lineno or 0)
-        py_linenos.append((i+1, lno))
+    for i, l in enumerate(py_lines):
+        lno = max(last_lineno, l._lineno or 0)
+        py_linenos.append((i + 1, lno))
         last_lineno = lno
     dct = dict(kajiki=kajiki)
     try:
         exec py_text in dct
-    except (SyntaxError, IndentationError), err: # pragma no cover
+    except (SyntaxError, IndentationError):  # pragma no cover
         for i, line in enumerate(py_text.splitlines()):
-            print '%3d %s' % (i+1, line)
+            print('%3d %s' % (i + 1, line))
         raise
     tpl = dct['template']
     tpl.base_globals = dct
@@ -204,8 +220,8 @@ def from_ir(ir_node):
     tpl.annotate_lnotab(py_linenos)
     return tpl
 
-class TplFunc(object):
 
+class TplFunc(object):
     def __init__(self, func, inst=None):
         self._func = func
         self._inst = inst
@@ -214,7 +230,7 @@ class TplFunc(object):
     def bind_instance(self, inst):
         return TplFunc(self._func, inst)
 
-    def __repr__(self): # pragma no cover
+    def __repr__(self):  # pragma no cover
         if self._inst:
             return '<bound tpl_function %r of %r>' % (
                 self._func.func_name, self._inst)
@@ -228,8 +244,8 @@ class TplFunc(object):
         return self._bound_func(*args, **kwargs)
 
     def _bind_globals(self, globals):
-        '''Return a function which has the globals dict set to 'globals' and which
-        flattens the result of self._func'.
+        '''Return a function which has the globals dict set to 'globals'
+        and which flattens the result of self._func'.
         '''
         func = types.FunctionType(
             self._func.func_code,
@@ -237,22 +253,25 @@ class TplFunc(object):
             self._func.func_name,
             self._func.func_defaults,
             self._func.func_closure
-            )
+        )
         return update_wrapper(
-            lambda *a,**kw:flattener(func(*a,**kw)),
+            lambda *a, **kw: flattener(func(*a, **kw)),
             func)
 
     def annotate_lnotab(self, filename, py_to_tpl, py_to_tpl_dct):
-        if not py_to_tpl: return
+        if not py_to_tpl:
+            return
         code = self._func.func_code
         new_lnotab_numbers = []
-        for bc_off, py_lno in lnotab.lnotab_numbers(code.co_lnotab, code.co_firstlineno):
+        for bc_off, py_lno in lnotab.lnotab_numbers(
+                code.co_lnotab, code.co_firstlineno):
             tpl_lno = py_to_tpl_dct.get(py_lno, None)
             if tpl_lno is None:
-                print 'ERROR LOOKING UP LINE #%d' % py_lno
+                print('ERROR LOOKING UP LINE #%d' % py_lno)
                 continue
             new_lnotab_numbers.append((bc_off, tpl_lno))
-        if not new_lnotab_numbers: return
+        if not new_lnotab_numbers:
+            return
         new_firstlineno = py_to_tpl_dct.get(code.co_firstlineno, 0)
         new_lnotab = lnotab.lnotab_string(new_lnotab_numbers, new_firstlineno)
         new_code = types.CodeType(
@@ -272,4 +291,3 @@ class TplFunc(object):
             code.co_cellvars)
         self._func.func_code = new_code
         return
-

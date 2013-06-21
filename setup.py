@@ -1,5 +1,6 @@
-import sys, os
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (absolute_import, division, print_function)
 from setuptools import setup, find_packages
 
 # Get version info
@@ -16,16 +17,16 @@ setup(name='Kajiki',
       blocks with Genshi's syntax? Then look  no further, Kajiki is for you!
       Kajiki quickly compiles Genshi-like syntax to *real python bytecode*
       that renders with blazing-fast speed! Don't delay! Pick up your
-      copy of Kajiki today!""",  
+      copy of Kajiki today!""",
       classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Text Processing :: Markup :: HTML',
-        'Topic :: Text Processing :: Markup :: XML'
-        ], 
+          'Development Status :: 4 - Beta',
+          'Environment :: Web Environment',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: MIT License',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+          'Topic :: Text Processing :: Markup :: HTML',
+          'Topic :: Text Processing :: Markup :: XML',
+      ],
       keywords='template xml',
       author='Rick Copeland',
       author_email='rick446@usa.net',
@@ -34,14 +35,9 @@ setup(name='Kajiki',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=[
-        'babel'
-      ],
+      install_requires=['babel'],
       entry_points="""
-      # -*- Entry points: -*-
-
-      [babel.extractors]
-      kajiki = kajiki.i18n:extract
-    
+          [babel.extractors]
+          kajiki = kajiki.i18n:extract
       """,
-      )
+)
