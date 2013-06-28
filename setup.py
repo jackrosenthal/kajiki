@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 # Get version info
 __version__ = None
 __release__ = None
-exec open('kajiki/version.py')
+exec(open('kajiki/version.py').read())
 
 setup(name='Kajiki',
       version=__release__,
@@ -14,7 +14,7 @@ setup(name='Kajiki',
       long_description="""Are you tired of the slow performance of Genshi? But
       you still long for the assurance that your output is well-formed that you
       miss from all those other templating engines? Do you wish you had Jinja's
-      blocks with Genshi's syntax? Then look  no further, Kajiki is for you!
+      blocks with Genshi's syntax? Then look no further, Kajiki is for you!
       Kajiki quickly compiles Genshi-like syntax to *real python bytecode*
       that renders with blazing-fast speed! Don't delay! Pick up your
       copy of Kajiki today!""",
@@ -36,6 +36,7 @@ setup(name='Kajiki',
       include_package_data=True,
       zip_safe=False,
       install_requires=['babel'],
+      test_suite='kajiki.tests',
       entry_points="""
           [babel.extractors]
           kajiki = kajiki.i18n:extract
