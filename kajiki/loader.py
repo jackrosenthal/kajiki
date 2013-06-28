@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from nine import basestring, itervalues
+import codecs
 import os
 import pkg_resources
 
@@ -71,24 +72,28 @@ class FileLoader(Loader):
                 del self.modules[name]
         return super(FileLoader, self).import_(name, *args, **kwargs)
 
-    def _load(self, name, *args, **kwargs):
+    def _load(self, name, encoding='utf-8', *args, **kwargs):
+        '''Text templates are read in text mode and XML templates are read in
+        binary mode. Thus, the ``encoding`` argument is only used for reading
+        text template files.
+        '''
         from kajiki import XMLTemplate, TextTemplate
         filename = self._filename(name)
         self._timestamps[name] = os.stat(filename).st_mtime
-        source = open(filename, 'rb').read()
         if self._force_mode == 'text':
+            with codecs.open(filename, encoding=encoding) as f:
+                source = f.read()
             return TextTemplate(source=source, filename=filename,
                 autoescape=self._autoescape_text, *args, **kwargs)
         elif self._force_mode:
-            return XMLTemplate(
-                source=source,
-                filename=filename,
-                mode=self._force_mode,
-                *args, **kwargs)
+            with open(filename, 'rb') as f:
+                source = f.read()
+            return XMLTemplate(source=source, filename=filename,
+                mode=self._force_mode, *args, **kwargs)
         else:
             ext = os.path.splitext(filename)[1][1:]
             return self.extension_map[ext](
-                source=source, filename=filename, *args, **kwargs)
+                source=None, filename=filename, *args, **kwargs)
 
 
 class PackageLoader(FileLoader):

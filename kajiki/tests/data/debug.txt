@@ -5,6 +5,6 @@ ${two()}
 ${three()}
 %end
 %def three()
-%py raise ValueError, 'Test error'
+%py raise ValueError('Test error')
 %end
 ${one()}

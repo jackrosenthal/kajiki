@@ -377,7 +377,17 @@ class _Parser(sax.ContentHandler):
         parser.setProperty(sax.handler.property_lexical_handler, self)
         parser.setContentHandler(self)
         source = sax.xmlreader.InputSource()
-        source.setByteStream(BytesIO(self._source))
+        # Sweet XMLReader.parse() documentation says:
+        # "As a limitation, the current implementation only accepts byte
+        # streams; processing of character streams is for further study."
+        # So if source is unicode, we pre-encode it:
+        # TODO Is this dance really necessary? Can't I just call a function?
+        if isinstance(self._source, bytes):
+            byts = self._source
+        else:
+            byts = self._source.encode('utf-8')
+            source.setEncoding('utf-8')
+        source.setByteStream(BytesIO(byts))
         source.setSystemId(self._filename)
         parser.parse(source)
         return self._doc
@@ -411,6 +421,7 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
+        # TODO Locate the entitydefs in Python 3
         content = str(HTMLParser.entitydefs[name], 'latin-1')
         return self.characters(content)
 

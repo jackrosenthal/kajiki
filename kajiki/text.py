@@ -14,11 +14,12 @@ Notable in this module are:
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import codecs
 import re
 import shlex
 from .ddict import defaultdict
 from itertools import chain
-from nine import iteritems
+from nine import iteritems, str
 
 import kajiki
 from . import ir
@@ -43,14 +44,17 @@ _pattern = r'''
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
-def TextTemplate(
-    source=None,
-    filename=None,
-        autoescape=False):
+def TextTemplate(source=None, filename=None, autoescape=False,
+                 encoding='utf-8'):
+    assert source or filename, "You must either provide a *source* argument " \
+        "or a *filename* argument to TextTemplate()."
     if source is None:
-        source = open(filename).read()
+        with codecs.open(filename, encoding=encoding) as f:
+            source = f.read()
     if filename is None:
         filename = '<string>'
+    assert isinstance(source, str), \
+        "*source* must be a unicode string, not a {}".format(type(source))
     scanner = _Scanner(filename, source)
     tree = _Parser(scanner, autoescape).parse()
     tree.filename = filename

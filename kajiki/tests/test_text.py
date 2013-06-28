@@ -333,10 +333,11 @@ class TestDebug(TestCase):
         tpl = loader.import_('debug.txt')
         try:
             tpl().render()
-            assert False, 'Should have raised ValueError'
         except ValueError:
             exc_info = sys.exc_info()
             stack = traceback.extract_tb(exc_info[2])
+        else:
+            assert False, 'Should have raised ValueError'
         # Verify we have stack trace entries in the template
         for fn, lno, func, line in stack:
             if fn.endswith('debug.txt'):
