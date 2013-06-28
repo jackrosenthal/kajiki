@@ -82,7 +82,7 @@ class _Template(object):
             yield str(chunk)
 
     def render(self):
-        return u''.join(self)
+        return ''.join(self)
 
     def _push_with(self, lcls, **kw):
         d = dict((k, lcls.get(k, ()))
@@ -175,7 +175,7 @@ class _Template(object):
                 continue
             result.append(part)
         if result:
-            return u''.join(result)
+            return ''.join(result)
         else:
             return None
 

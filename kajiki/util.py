@@ -56,7 +56,7 @@ class flattener(object):
     def accumulate_str(self):
         if type(self.iterator) == flattener:
             return self.iterator.accumulate_str()
-        s = u''
+        s = ''
         iter_stack = [self.iterator]
         while iter_stack:
             try:

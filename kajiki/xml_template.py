@@ -144,12 +144,12 @@ class _Compiler(object):
         if node.hasAttribute('py:strip'):
             guard = 'not (%s)' % node.getAttribute('py:strip')
             node.removeAttribute('py:strip')
-        yield ir.TextNode(u'<%s' % node.tagName, guard)
+        yield ir.TextNode('<%s' % node.tagName, guard)
         for k, v in sorted(node.attributes.items()):
             tc = _TextCompiler(self.filename, v, node.lineno,
                                ir.TextNode)
             v = list(tc)
-            # v = u''.join(n.text for n in tc)
+            # v = ''.join(n.text for n in tc)
             if k == 'py:content':
                 content = node.getAttribute('py:content')
                 continue
@@ -160,26 +160,26 @@ class _Compiler(object):
         if attrs:
             yield ir.AttrsNode(attrs, guard, self.mode)
         if content:
-            yield ir.TextNode(u'>', guard)
+            yield ir.TextNode('>', guard)
             yield ir.ExprNode(content)
-            yield ir.TextNode(u'</%s>' % node.tagName, guard)
+            yield ir.TextNode('</%s>' % node.tagName, guard)
         else:
             if node.childNodes:
-                yield ir.TextNode(u'>', guard)
+                yield ir.TextNode('>', guard)
                 for cn in node.childNodes:
                     for x in self._compile_node(cn):
                         yield x
                 if not (self.mode.startswith('html')
                         and node.tagName in HTML_OPTIONAL_END_TAGS):
-                    yield ir.TextNode(u'</%s>' % node.tagName, guard)
+                    yield ir.TextNode('</%s>' % node.tagName, guard)
             else:
                 if self.mode.startswith('html'):
                     if node.tagName in HTML_OPTIONAL_END_TAGS:
-                        yield ir.TextNode(u'>', guard)
+                        yield ir.TextNode('>', guard)
                     else:
-                        yield ir.TextNode(u'></%s>' % node.tagName, guard)
+                        yield ir.TextNode('></%s>' % node.tagName, guard)
                 else:
-                    yield ir.TextNode(u'/>', guard)
+                    yield ir.TextNode('/>', guard)
 
     @annotate
     def _compile_replace(self, node):

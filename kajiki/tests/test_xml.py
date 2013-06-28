@@ -13,9 +13,7 @@ import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 
 
-DATA = os.path.join(
-    os.path.dirname(__file__),
-    'data')
+DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
 class TestParser(TestCase):
