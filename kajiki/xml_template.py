@@ -8,6 +8,7 @@ from xml.dom import minidom as dom
 
 from nine import IS_PYTHON2, basestring, str, iteritems, nimport
 HTMLParser = nimport('html.parser:HTMLParser')
+entitydefs = nimport('html.entities:entitydefs')
 
 if IS_PYTHON2:
     from cStringIO import StringIO as BytesIO
@@ -421,8 +422,12 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
-        # TODO Locate the entitydefs in Python 3
-        content = str(HTMLParser.entitydefs[name], 'latin-1')
+        '''Deals with an HTML entity such as &nbsp;'''
+        content = entitydefs[name]
+        # The value is bytes in Python 2 and str in Python 3, so:
+        if isinstance(content, bytes):
+            # Python docs specifically say this is in latin-1.
+            content = str(content, 'latin-1')  # get unicode
         return self.characters(content)
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover
