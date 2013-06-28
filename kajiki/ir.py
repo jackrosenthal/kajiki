@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from .util import gen_name, flattener
+from nine import iteritems, nine
 
 
 def generate_python(ir):
@@ -189,7 +190,7 @@ class WithNode(HierNode):
     def py(self):
         yield self.line(
             'local.__kj__.push_with(locals(), %s)' % self.vars_text)
-        for k, v in self.vars.iteritems():
+        for k, v in iteritems(self.vars):
             yield self.line('%s = %s' % (k, v))
 
     def __iter__(self):
@@ -407,6 +408,7 @@ def optimize(iter_node):
         yield last_node
 
 
+@nine
 class PyLine(object):
     def __init__(self, filename, lineno, text, indent=0):
         self._filename = filename

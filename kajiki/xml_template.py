@@ -3,10 +3,16 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import re
-from cStringIO import StringIO
 from xml import sax
-from htmllib import HTMLParser
 from xml.dom import minidom as dom
+
+from nine import IS_PYTHON2, basestring, str, iteritems, nimport
+HTMLParser = nimport('html.parser:HTMLParser')
+
+if IS_PYTHON2:
+    from cStringIO import StringIO as BytesIO
+else:
+    from io import BytesIO
 
 from . import ir
 from . import template
@@ -26,10 +32,7 @@ _pattern = r'''
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
-def XMLTemplate(
-    source=None,
-    filename=None,
-        **kw):
+def XMLTemplate(source=None, filename=None, **kw):
     if 'mode' in kw:
         mode = kw['mode']
         force_mode = True
@@ -38,7 +41,7 @@ def XMLTemplate(
         force_mode = False
     is_fragment = kw.pop('is_fragment', False)
     if source is None:
-        source = open(filename).read()
+        source = open(filename).read()  # source is a bytes instance
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
@@ -103,7 +106,7 @@ class _Compiler(object):
                 body.insert(0, dt)
         self.functions['__main__()'] = body
         defs = []
-        for k, v in self.functions.iteritems():
+        for k, v in iteritems(self.functions):
             node = ir.DefNode(k, *v)
             node.lineno = self.function_lnos.get(k)
             defs.append(node)
@@ -374,7 +377,7 @@ class _Parser(sax.ContentHandler):
         parser.setProperty(sax.handler.property_lexical_handler, self)
         parser.setContentHandler(self)
         source = sax.xmlreader.InputSource()
-        source.setByteStream(StringIO(self._source))
+        source.setByteStream(BytesIO(self._source))
         source.setSystemId(self._filename)
         parser.parse(source)
         return self._doc
@@ -408,7 +411,7 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
-        content = unicode(HTMLParser.entitydefs[name], 'latin-1')
+        content = str(HTMLParser.entitydefs[name], 'latin-1')
         return self.characters(content)
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover

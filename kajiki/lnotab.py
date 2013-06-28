@@ -49,6 +49,17 @@ expand 300, 300 to 255, 255, 45, 45,
 '''
 
 from __future__ import (absolute_import, division, print_function)
+from nine import IS_PYTHON2
+
+if IS_PYTHON2:
+    int2byte = chr
+    byte2int = ord
+else:
+    def int2byte(i):
+        return bytes([i])
+
+    def byte2int(b):
+        return b
 
 
 def lnotab(pairs, first_lineno=0):
@@ -74,13 +85,13 @@ def lnotab(pairs, first_lineno=0):
 
 
 def lnotab_string(pairs, first_lineno=0):
-    return "".join(chr(b) for b in lnotab(pairs, first_lineno))
+    return b"".join(int2byte(b) for b in lnotab(pairs, first_lineno))
 
 
 def byte_pairs(lnotab):
     """Yield pairs of integers from a string."""
     for i in range(0, len(lnotab), 2):
-        yield ord(lnotab[i]), ord(lnotab[i + 1])
+        yield byte2int(lnotab[i]), byte2int(lnotab[i + 1])
 
 
 def lnotab_numbers(lnotab, first_lineno=0):

@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-'''Text template compiler
+'''Text template compiler.
 
-Notable in this module are
+Notable in this module are:
 
-TextTemplate - function building a template from text string or filename
-_pattern - the regex used to find the beginnings of tags and expressions
-_Scanner - scans text and generates a stream of tokens
-_Parser - parses a stream of tokens into the internal representation (IR) tree
-_Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node
+* TextTemplate - function building a template from text string or filename.
+* _pattern - the regex used to find the beginnings of tags and expressions.
+* _Scanner - scans text and generates a stream of tokens.
+* _Parser - parses a stream of tokens into the internal representation (IR)
+  tree.
+* _Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node.
 '''
 
 from __future__ import (absolute_import, division, print_function,
@@ -17,6 +18,7 @@ import re
 import shlex
 from .ddict import defaultdict
 from itertools import chain
+from nine import iteritems
 
 import kajiki
 from . import ir
@@ -164,7 +166,7 @@ class _Parser(object):
     def parse(self):
         body = list(self._parse_body())
         self.functions['__main__()'] = body[:-1]
-        defs = [ir.DefNode(k, *v) for k, v in self.functions.iteritems()]
+        defs = [ir.DefNode(k, *v) for k, v in iteritems(self.functions)]
         return ir.TemplateNode(self.mod_py, defs)
 
     def text(self, token):
@@ -186,7 +188,7 @@ class _Parser(object):
     def _parse_body(self, *stoptags):
         while True:
             try:
-                token = self.iterator.next()
+                token = next(self.iterator)
                 if isinstance(token, _Text):
                     yield self.text(token)
                 elif isinstance(token, _Expr):

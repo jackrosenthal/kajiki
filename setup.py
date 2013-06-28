@@ -35,7 +35,7 @@ setup(name='Kajiki',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=['babel'],
+      install_requires=['nine', 'babel'],
       test_suite='kajiki.tests',
       entry_points="""
           [babel.extractors]

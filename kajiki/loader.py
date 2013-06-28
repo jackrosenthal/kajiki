@@ -2,6 +2,7 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+from nine import basestring, itervalues
 import os
 import pkg_resources
 
@@ -31,7 +32,7 @@ class MockLoader(Loader):
     def __init__(self, modules):
         super(MockLoader, self).__init__()
         self.modules.update(modules)
-        for v in self.modules.itervalues():
+        for v in itervalues(self.modules):
             v.loader = self
 
 

@@ -5,6 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 import re
 import types
 from cgi import escape
+from nine import IS_PYTHON2, basestring, str, iteritems
 
 try:
     from functools import update_wrapper
@@ -34,7 +35,7 @@ escape_dict = {
 
 class _obj(object):
     def __init__(self, **kw):
-        for k, v in kw.iteritems():
+        for k, v in iteritems(kw):
             setattr(self, k, v)
 
 
@@ -78,7 +79,7 @@ class _Template(object):
 
     def __iter__(self):
         for chunk in self.__main__():
-            yield unicode(chunk)
+            yield str(chunk)
 
     def render(self):
         return u''.join(self)
@@ -97,14 +98,14 @@ class _Template(object):
         p_inst = parent(self._context)
         p_globals = p_inst.__globals__
         # Find overrides
-        for k, v in self.__globals__.iteritems():
+        for k, v in iteritems(self.__globals__):
             if k == '__main__':
                 continue
             if not isinstance(v, TplFunc):
                 continue
             p_globals[k] = v
         # Find inherited funcs
-        for k, v in p_inst.__globals__.iteritems():
+        for k, v in iteritems(p_inst.__globals__):
             if k == '__main__':
                 continue
             if not isinstance(v, TplFunc):
@@ -149,7 +150,7 @@ class _Template(object):
             return value.__html__()
         if type(value) == flattener:
             return value
-        uval = unicode(value)
+        uval = str(value)
         if re_escape.search(uval):
             return escape(uval)
         else:
@@ -193,7 +194,7 @@ def Template(ns):
     for name in dir(ns):
         value = getattr(ns, name)
         if getattr(value, 'exposed', False):
-            methods.append((name, TplFunc(value.im_func)))
+            methods.append((name, TplFunc(getattr(value, '__func__', value))))
     return type(ns.__name__, (_Template,), dct)
 
 
@@ -208,7 +209,7 @@ def from_ir(ir_node):
         last_lineno = lno
     dct = dict(kajiki=kajiki)
     try:
-        exec py_text in dct
+        exec(py_text, dct)
     except (SyntaxError, IndentationError):  # pragma no cover
         for i, line in enumerate(py_text.splitlines()):
             print('%3d %s' % (i + 1, line))
@@ -233,9 +234,9 @@ class TplFunc(object):
     def __repr__(self):  # pragma no cover
         if self._inst:
             return '<bound tpl_function %r of %r>' % (
-                self._func.func_name, self._inst)
+                self._func.__name__, self._inst)
         else:
-            return '<unbound tpl_function %r>' % (self._func.func_name)
+            return '<unbound tpl_function %r>' % (self._func.__name__)
 
     def __call__(self, *args, **kwargs):
         if self._bound_func is None:
@@ -248,11 +249,11 @@ class TplFunc(object):
         and which flattens the result of self._func'.
         '''
         func = types.FunctionType(
-            self._func.func_code,
+            self._func.__code__,
             globals,
-            self._func.func_name,
-            self._func.func_defaults,
-            self._func.func_closure
+            self._func.__name__,
+            self._func.__defaults__,
+            self._func.__closure__
         )
         return update_wrapper(
             lambda *a, **kw: flattener(func(*a, **kw)),
@@ -261,7 +262,7 @@ class TplFunc(object):
     def annotate_lnotab(self, filename, py_to_tpl, py_to_tpl_dct):
         if not py_to_tpl:
             return
-        code = self._func.func_code
+        code = self._func.__code__
         new_lnotab_numbers = []
         for bc_off, py_lno in lnotab.lnotab_numbers(
                 code.co_lnotab, code.co_firstlineno):
@@ -274,20 +275,42 @@ class TplFunc(object):
             return
         new_firstlineno = py_to_tpl_dct.get(code.co_firstlineno, 0)
         new_lnotab = lnotab.lnotab_string(new_lnotab_numbers, new_firstlineno)
-        new_code = types.CodeType(
-            code.co_argcount,
-            code.co_nlocals,
-            code.co_stacksize,
-            code.co_flags,
-            code.co_code,
-            code.co_consts,
-            code.co_names,
-            code.co_varnames,
-            filename.encode('utf-8'),
-            code.co_name,
-            new_firstlineno,
-            new_lnotab,
-            code.co_freevars,
-            code.co_cellvars)
-        self._func.func_code = new_code
+        new_code = patch_code_file_lines(
+            code, filename, new_firstlineno, new_lnotab)
+        self._func.__code__ = new_code
         return
+
+
+if IS_PYTHON2:
+    def patch_code_file_lines(code, filename, firstlineno, lnotab):
+        return types.CodeType(code.co_argcount,
+                              code.co_nlocals,
+                              code.co_stacksize,
+                              code.co_flags,
+                              code.co_code,
+                              code.co_consts,
+                              code.co_names,
+                              code.co_varnames,
+                              filename.encode('utf-8'),
+                              code.co_name,
+                              firstlineno,
+                              lnotab,
+                              code.co_freevars,
+                              code.co_cellvars)
+else:
+    def patch_code_file_lines(code, filename, firstlineno, lnotab):
+        return types.CodeType(code.co_argcount,
+                            code.co_kwonlyargcount,
+                            code.co_nlocals,
+                            code.co_stacksize,
+                            code.co_flags,
+                            code.co_code,
+                            code.co_consts,
+                            code.co_names,
+                            code.co_varnames,
+                            filename,
+                            code.co_name,
+                            firstlineno,
+                            lnotab,
+                            code.co_freevars,
+                            code.co_cellvars)
