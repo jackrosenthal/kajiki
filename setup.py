@@ -18,11 +18,15 @@ setup(name='Kajiki',
       Kajiki quickly compiles Genshi-like syntax to *real python bytecode*
       that renders with blazing-fast speed! Don't delay! Pick up your
       copy of Kajiki today!""",
-      classifiers=[
+      classifiers=[  # http://pypi.python.org/pypi?:action=list_classifiers
           'Development Status :: 4 - Beta',
           'Environment :: Web Environment',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: MIT License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.2',
+          'Programming Language :: Python :: 3.3',
           'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Text Processing :: Markup :: HTML',
           'Topic :: Text Processing :: Markup :: XML',
