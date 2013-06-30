@@ -9,17 +9,18 @@ templates, as well as translation of localizable strings.
 Basics
 =======
 
-The simplest way to internationalize and translate templates would be to wrap all
-localizable strings in a `gettext()` function call (usually aliased to `_()` for
-brevity.  In this case, you would write you templates similar to the following:
+To internationalize and translate templates, other templating solutions require
+that you wrap all localizable strings in a `gettext()` function call
+(usually aliased to `_()` for brevity).  In this case, you would write your
+templates similar to the following:
 
 .. code-block:: xml
 
     <p>${_('Hello, world!')}</p>
 
-This approach, however, adds lots of noise to your templates.  Kajiki essentially
-does this automatically to all "translatable text" in XML templates (any text
-outside of an XML tag). 
+This approach, however, adds lots of noise to your templates.  Kajiki does not
+require that you wrap localizable strings since it automatically finds all
+"translatable text" in XML templates (any text outside of an XML tag).
 
 In order to actually use translation, you must replace the placeholder function
 in `kajiki.i18n.gettext` with the actual gettext function.  For instance, you
@@ -34,7 +35,7 @@ Extraction
 =====================
 
 Kajiki also provides support for extracing all localizable strings found in a
-template.  This functionality is integrated with teh excellent message extraction
+template.  This functionality is integrated with the excellent message extraction
 framework provided by the Babel_ project.  Typically, you would notify Babel of
 the location of your templates before running the extraction routine:
 

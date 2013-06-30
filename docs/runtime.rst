@@ -1,9 +1,9 @@
 ==================================
-Kajiki Runtime Transformations 
+Kajiki Runtime Transformations
 ==================================
 
 It's sometimes good to have a mental model of the Python code that Kajiki
-generates in order to generate your templates.  This document uses several
+creates in order to generate your templates.  This document uses several
 examples taken from the text templating language to illustrate the semantics of
 Kajiki templates.  If in doubt, you can always view the Python text generated for
 a template by examining the py_text attribute of the generated Template class.
@@ -13,7 +13,7 @@ Basic Expressions
 
 Let's start with a hello world template:
 
-.. code-block:: none      
+.. code-block:: none
 
     Hello, World!
 
@@ -42,8 +42,8 @@ periods.  If you want something more explicit, use the extended expression form
 as in "hello_arithmetic.txt":
 
 .. code-block:: none
-     
-    Hello, 2 + 2 is ${2+2}! 
+
+    Hello, 2 + 2 is ${2+2}!
 
 This converts to::
 
@@ -69,7 +69,7 @@ following template "control_flow.txt" illustrates:
             {%case 0%}
                 even
             {%default%}
-                odd    
+                odd
             {%end%}{%end%}{%end%}
 
 This yields the following Python::
@@ -91,7 +91,7 @@ This yields the following Python::
             # whitespace after {%switch is always stripped
             if local.__kj__.case(0):
                 yield '\n            even\n        '
-            else:    
+            else:
                 yield '\n            odd\n        '
             local.__kj__.pop_switch()
 
@@ -101,13 +101,13 @@ Which would in turn generate the following text:
 
     A
         Low0
-        
+
             even
-        
+
         Low1
 
             odd
-        
+
         Mid2
 
             even
@@ -120,11 +120,11 @@ Which would in turn generate the following text:
 
             even
 
-This can be quite inconvient, however.  If you want to strip whitespace before or
-after a tag, just replace {%with {%-(for stripping leading whitespace) or %}
-with -%} (for stripping trailing whitespace).  If you would like to remove
-newlines, just end a line with a backslash.  Here is the equivalent template with
-whitespace removed "control_flow_ws.txt":
+If you want to strip whitespace before or after a tag, just replace
+``{%`` with ``{%-`` (for stripping leading whitespace) or ``%}`` with
+``-%}`` (for stripping trailing whitespace).  If you would like to remove
+newlines, just end a line with a backslash.  Here is the equivalent template
+with whitespace removed, "control_flow_ws.txt":
 
 .. code-block:: none
 
@@ -134,7 +134,7 @@ whitespace removed "control_flow_ws.txt":
             {%-case 0%}\
                 even
             {%-default%}\
-                odd    
+                odd
             {%-end%}\
         {%-end%}\
     {%-end%}\
@@ -143,7 +143,7 @@ This would generate the following Python::
 
     @kajiki.expose
     def __call__():
-        yield 'A' 
+        yield 'A'
         for i in range(10):
             if i < 2:
                 yield 'Low'
@@ -153,10 +153,10 @@ This would generate the following Python::
                 yield 'High'
             yield i
             yield '\n'
-            local.__kj__.push_switch(i%2)
+            local.__kj__.push_switch(i % 2)
             if local.__kj__.case(0):
                 yield 'even\n'
-            else:    
+            else:
                 yield 'odd\n'
             local.__kj__.pop_switch()
 
@@ -183,20 +183,20 @@ that allows for line-oriented control flow as seen in
 
     A\
     %for i in range(5)
-        %if i < 2 
+        %if i < 2
             Low\
         %elif i < 4
             Mid\
         %else
             High\
-        {%-end%}$i    
+        {%-end%}$i
         %switch i % 2
             %case 0
                 even
             %default
-                odd    
-            %end    
-        %end    
+                odd
+            %end
+        %end
     %end
 
 This syntax yields exactly the same results as "control_flow_ws.txt" above.
@@ -220,7 +220,7 @@ or alternatively:
 
     %py
         yield 'Prefix'
-    %end    
+    %end
     Body
 
 or even more succinctly:
@@ -240,7 +240,7 @@ Note in particular that the Python block can have any indentation, as long as it
  is consistent (the amount of leading whitespace in the first non-empty line of
  the block is stripped from all lines within the block).  You can insert
  module-level Python (imports, etc.) by using the %py% directive (or {%py%%} as in
- "module_py_block.txt": 
+ "module_py_block.txt":
 
 .. code-block:: none
 
@@ -277,7 +277,7 @@ see %def in action in "simple_function.txt":
         %else
             odd\
         %end
-    %end        
+    %end
     %for i in range(5)
     $i is ${evenness(i)}
     %end
@@ -292,7 +292,7 @@ This compiles to the following Python::
             yield 'odd'
 
     @kajiki.expose
-    def __call__():    
+    def __call__():
         for i in range(5):
             yield i
             yield ' is '
@@ -350,7 +350,7 @@ This results in the following Python::
             yield '."'
 
     @kajiki.expose
-    def __call__():    
+    def __call__():
         @kajiki.expose
         def _fpt_lambda(n):
             yield 'Nevermore '
@@ -389,7 +389,7 @@ which yields the following Python::
         yield 'Isn't it good?\n'
 
 Which of course yields:
-        
+
 .. code-block:: none
 
     This is my story:
@@ -459,7 +459,7 @@ Here is the corresponding "child.txt":
     %end
     %block body
     ${parent_block()}\\
-    
+
     And don't forget you owe me money!
     %end
 

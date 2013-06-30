@@ -1,9 +1,9 @@
 Migrating from Genshi
 ======================================
 
-Kajiki uses syntax derived from the syntax of Genshi.  In particular, the
-following directives are supported, with semantics intended to be nearly identical to
-those of Genshi_.
+Kajiki uses syntax derived from the syntax of Genshi_.  In particular, the
+following directives are supported, with semantics intended to be nearly
+identical to those of Genshi_.
 
  * `py:def`
  * `py:choose` -- renamed `py:with`
@@ -19,7 +19,7 @@ those of Genshi_.
  * `xi:include` -- renamed `py:include`
 
 Note that, in particular, `py:match` is not supported.  In addition, Kajiki
-supports the following additional directives: 
+supports the following additional directives:
 
  * `py:extends` - indicates that this is an extension template.  The parent
    template will be read in and used for layout, with any `py:block` directives in
@@ -92,7 +92,7 @@ can be replaced by a similarly-named slot in the child document `index_kajiki.ht
 
 We also provide a way of including the contents of the parent template's slot in
 a child template's slot using `${parent_block()}`.  The following slot in
-`layout.html`: 
+`layout.html`:
 
 .. literalinclude:: include/layout.html
    :linenos:
@@ -100,7 +100,7 @@ a child template's slot using `${parent_block()}`.  The following slot in
    :lines:  16
 
 can be replaced in `include/index_kajiki.html` with:
-  
+
 .. literalinclude:: include/index_kajiki.html
    :linenos:
    :language: html

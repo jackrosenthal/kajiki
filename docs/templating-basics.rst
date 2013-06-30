@@ -5,10 +5,10 @@
 Kajiki Templating Basics
 =================================
 
-Kajiki provides a two templating engines, one which is useful for generating
-markup (HTML or XML most likely), and one of which is useful for generating plain
-text.  This document describes the aspects of the two engines that are similar
-and the basic API for using them.
+Kajiki provides two templating engines, one which is useful for generating
+markup (HTML or XML most likely), and one of which is useful for generating
+plain text.  This document describes the aspects of the two engines that are
+similar and the basic API for using them.
 
 Synopsis
 --------------
@@ -122,10 +122,10 @@ Using text templates is similar:
 u'Hello, world!'
 
 You can also use a template loader to indirectly generate the template classes.
-Using a template loader give two main advantages over directly instantiating
-templates: 
+Using a template loader gives two main advantages over directly instantiating
+templates:
 
- * Compiled templates are cached and only re-parsed when the template changes
+ * Compiled templates are cached and only re-parsed when the template changes.
  * Several template tags such as `extends`, `import`, and `include` that require knowlege of other templates become enabled.
 
 Using a template loader would look similar to the following::
@@ -202,7 +202,7 @@ This will produce:
 .. code-block:: none
 
     Maxint is 9223372036854775807
-    
+
 In both of the above cases, the Python code runs in the 'local scope' of the
 template's main rendering function, so any variables defined there will not be
 accessible in functions or blocks defined elsewhere in the template.  To force
@@ -260,5 +260,5 @@ Template Directives
 
 Template directives provide control flow and inheritance functionality for
 templates.  As their syntax depends on whether you're using XML or text
-templates, please refer to :doc:`xml-templates` or :doc:`text-templates` 
+templates, please refer to :doc:`xml-templates` or :doc:`text-templates`
 for more information.

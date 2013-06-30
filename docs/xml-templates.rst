@@ -10,7 +10,7 @@ Kajiki provides a full-featured XML-based template engine that guarantees
 well-formed output when generating HTML and XML.  This document describes that
 language.  Templates are XML files that include template directives that control
 how the template is rendered and expressions that are substituted into the
-generated text at render time. 
+generated text at render time.
 
 Please see :doc:`templating-basics` for general information on embedding Python
 code in templates.
@@ -90,12 +90,12 @@ template to determine how to render:
     document, you can begin the comment with the syntax `<!--!` instead of `<!--`:
 
     >>> Template = kajiki.XMLTemplate('''<div>
-    ... <!-- This comment is preserved. 
+    ... <!-- This comment is preserved.
     ... --><!--! This comment is stripped. -->
     ... </div>''')
     >>> print Template().render()
     <div>
-    <!--  This comment is preserved. 
+    <!--  This comment is preserved.
      -->
     </div>
 
@@ -204,7 +204,7 @@ py:call
 ^^^^^^^^^^^^^^^^^^
 
 Call a function, passing a block of template code as a 'lambda' parameter.  Note
-thnat this is a special case of calling when you wish to insert some templated text in the
+that this is a special case of calling when you wish to insert some templated text in the
 expansion of a function call.  In normal circumstances, you would just use `${my_function(args)}`.
 
 >>> Template = kajiki.XMLTemplate('''<div
@@ -261,13 +261,13 @@ function as follows:
        <ul>
           <li py:for="i in range(sz)">$i is ${lib.evenness(i)}</li>
        </ul>
-    </div>      
+    </div>
 
 py:with
 ----------
 
 Using `py:with`, you can temporarily assign variables values for the extent of
-the block: 
+the block:
 
 >>> Template = kajiki.XMLTemplate('''<div py:with="a='foo'">
 ... <div>$a</div>
@@ -356,7 +356,7 @@ For instance, consider the following template "parent.xml":
        ${sign(from_)}
     </div>
 
-This would render to something similar to the following (assuming a context of 
+This would render to something similar to the following (assuming a context of
 `dict(to=Mark, from_=Rick)`:
 
 .. code-block:: xml
@@ -364,7 +364,7 @@ This would render to something similar to the following (assuming a context of
    <div>
       Hello, Mark!
 
-      <p>It was good seeing you last friday.  
+      <p>It was good seeing you last friday.
       Thanks for the gift!</p>
 
       Sincerely, <br/>
@@ -390,7 +390,7 @@ Rendering this template would then give us:
    <div>
       Dear, Mark:
 
-      <p>It was good seeing you last friday.  
+      <p>It was good seeing you last friday.
       Thanks for the gift!</p>
       <p>And don't forget you owe me money!</p>
 
@@ -400,7 +400,7 @@ Rendering this template would then give us:
 
 Notice how in the child block, we have overridden both the block "body" and the
 function "greet."  When overriding a block, we always have access to the parent
-template's block of the same name via the `parent_block()` function.  
+template's block of the same name via the `parent_block()` function.
 
 If you ever need to access the parent template itself (perhaps to call another
 function), kajiki provides access to a special variable in child templates
@@ -451,5 +451,3 @@ child.id() = <span>mid</span>
 </div>
 <h6>Footer</h6>
 </div>
-
-
