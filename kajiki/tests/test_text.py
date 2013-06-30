@@ -111,7 +111,7 @@ Nevermore $n\\
 
 
 class TestImport(TestCase):
-    def test_import(self):
+    def test_import_simple(self):
         lib = TextTemplate('''%def evenness(n)
 %if n % 2 == 0
 even\\

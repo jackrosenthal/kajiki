@@ -50,13 +50,8 @@ class _Template(object):
             context = {}
         self._context = context
         base_globals = self.base_globals or {}
-        self.__globals__ = dict(
-            base_globals,
-            local=self,
-            self=self,
-            literal=literal,
-            __builtins__=__builtins__,
-            __kj__=kajiki)
+        self.__globals__ = dict(base_globals, local=self, self=self,
+            literal=literal, __builtins__=__builtins__, __kj__=kajiki)
         for k, v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)
@@ -72,12 +67,17 @@ class _Template(object):
             render_attrs=self._render_attrs,
             push_with=self._push_with,
             pop_with=self._pop_with,
-            collect=self._collect)
+            collect=self._collect,
+        )
         self._switch_stack = []
         self._with_stack = []
         self.__globals__.update(context)
 
     def __iter__(self):
+        '''We convert the chunk to string because it can be of any type
+        -- after all, the template supports expressions such as ${x+y}.
+        Here, ``chunk`` can be the computed expression result.
+        '''
         for chunk in self.__main__():
             yield str(chunk)
 

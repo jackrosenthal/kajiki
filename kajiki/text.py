@@ -16,10 +16,16 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import codecs
 import re
-import shlex
 from .ddict import defaultdict
 from itertools import chain
 from nine import iteritems, str
+
+from shlex import split as shlex_split  # Here we work around an issue that
+from sys import version_info            # appeared when we used unicode all
+if version_info < (2, 7):               # over the project. In Python 2.6,
+    _shlex_split = shlex_split          # shlex.split() requires bytestrings
+    shlex_split = lambda txt: _shlex_split(txt.encode('utf-8'))
+del version_info
 
 import kajiki
 from . import ir
@@ -258,14 +264,14 @@ class _Parser(object):
         return ir.ElseNode(*body[:-1])
 
     def _parse_extends(self, token):
-        parts = shlex.split(token.body)
+        parts = shlex_split(token.body)
         fn = parts[0]
         assert len(parts) == 1
         self._is_child = True
         return ir.ExtendNode(fn)
 
     def _parse_import(self, token):
-        parts = shlex.split(token.body)
+        parts = shlex_split(token.body)
         fn = parts[0]
         if len(parts) > 1:
             assert parts[1] == 'as'
@@ -274,7 +280,7 @@ class _Parser(object):
             return ir.ImportNode(fn)
 
     def _parse_include(self, token):
-        parts = shlex.split(token.body)
+        parts = shlex_split(token.body)
         fn = parts[0]
         assert len(parts) == 1
         return ir.IncludeNode(fn)
