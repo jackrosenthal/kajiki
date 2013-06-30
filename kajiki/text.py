@@ -20,10 +20,10 @@ from .ddict import defaultdict
 from itertools import chain
 from nine import iteritems, str
 
-from shlex import split as shlex_split  # Here we work around an issue that
-from sys import version_info            # appeared when we used unicode all
-if version_info < (2, 7):               # over the project. In Python 2.6,
-    _shlex_split = shlex_split          # shlex.split() requires bytestrings
+from shlex import split as shlex_split  # Prior to Python 2.7.3, the
+from sys import version_info            # *shlex* module did not support
+if version_info < (2, 7, 3):            # Unicode input. Work around:
+    _shlex_split = shlex_split
     shlex_split = lambda txt: _shlex_split(txt.encode('utf-8'))
 del version_info
 
