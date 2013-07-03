@@ -10,6 +10,7 @@ def gettext(s):
 
 
 def extract(fileobj, keywords, comment_tags, options):
+    '''Babel entry point that extracts translation strings from templates.'''
     from .xml_template import _Parser, _Compiler, expand
     text = fileobj.read()
     doc = _Parser('<string>', text).parse()
@@ -24,5 +25,4 @@ def extract(fileobj, keywords, comment_tags, options):
         if isinstance(node, TranslatableTextNode):
             if node.text.strip():
                 for line in node.text.split('\n'):
-                    x = node.lineno, '_',  line, []
-                    yield x
+                    yield (node.lineno, '_',  line, [])
