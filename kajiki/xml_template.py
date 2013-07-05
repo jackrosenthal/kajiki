@@ -42,7 +42,8 @@ def XMLTemplate(source=None, filename=None, **kw):
         force_mode = False
     is_fragment = kw.pop('is_fragment', False)
     if source is None:
-        source = open(filename).read()  # source is a bytes instance
+        with open(filename) as f:
+            source = f.read()  # source is a bytes instance
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
