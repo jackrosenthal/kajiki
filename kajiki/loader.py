@@ -13,6 +13,9 @@ class Loader(object):
         self.modules = {}
 
     def import_(self, name, *args, **kwargs):
+        '''Returns the template if it is already in the cache,
+        else loads the template, caches it and returns it.
+        '''
         mod = self.modules.get(name)
         if mod:
             return mod
