@@ -4,8 +4,8 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import re
 import types
-from cgi import escape
-from nine import IS_PYTHON2, basestring, str, iteritems
+from nine import IS_PYTHON2, basestring, str, iteritems, nimport
+escape = nimport('html:escape')
 
 try:
     from functools import update_wrapper
