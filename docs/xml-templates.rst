@@ -451,3 +451,61 @@ child.id() = <span>mid</span>
 </div>
 <h6>Footer</h6>
 </div>
+
+Built-in functions
+==================
+
+The following functions are available by default in template code,
+in addition to the standard built-ins that are available to all Python code.
+
+defined(name)
+^^^^^^^^^^^^^
+
+This function determines whether a variable of the specified name exists in the context data, and returns True if it does.
+
+When would you use it? Well, suppose you tried the following template snippet:
+
+    <h3 py:if='user'>$user.name</h3>
+
+If you don't pass, from your python code, a "user" variable to the template,
+the above code will fail with this exception:
+``NameError: global name 'user' is not defined``. This is undesired!
+
+Following Genshi, Kajiki offers the ``defined()`` function to make
+that condition possible, so you can write this:
+
+    <h3 py:if="defined('user')">$user.name</h3>
+
+literal(text)
+^^^^^^^^^^^^^
+
+All good templating languages escape text by default to avoid certain attacks.
+But sometimes you have an HTML snippet that you wish to include in a page,
+and you know the HTML is safe.
+
+The literal() function marks a given string as being safe for inclusion,
+meaning it will not be escaped in the serialization stage. Use this with care,
+as not escaping a user-provided string may allow malicious users to open
+your web site to cross-site scripting attacks. Example:
+
+    ${literal(name_of_the_variable_containing_the_html)}
+
+Kajiki is a reimplementation of most of Genshi and, since Genshi has a
+``Markup()`` function for the same purpose, we provide ``Markup()`` as a
+synonym, too.
+
+value_of(name, default=None)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function returns the value of the variable with the specified name
+if such a variable is defined, and returns the value of the default parameter
+if no such variable is defined.
+
+Genshi has this, too. Example::
+
+    <div py:if="value_of('explanation')">${explanation}</div>
+
+In the above example, the div will only appear in the output if the
+``explanation`` variable exists in the context and has a truish value.
+(Remember in Python, None and the empty string are not truish, they are
+evaluated as False.)

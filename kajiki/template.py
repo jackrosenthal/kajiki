@@ -51,7 +51,10 @@ class _Template(object):
         self._context = context
         base_globals = self.base_globals or {}
         self.__globals__ = dict(base_globals, local=self, self=self,
-            literal=literal, __builtins__=__builtins__, __kj__=kajiki)
+            defined=lambda x: x in self.__globals__,
+            literal=literal, Markup=literal,
+            __builtins__=__builtins__, __kj__=kajiki)
+        self.__globals__['value_of'] = self.__globals__.get
         for k, v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)

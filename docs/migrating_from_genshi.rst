@@ -43,8 +43,15 @@ steps should suffice:
  * In your child templates, remove the `<xi:include href="master.html">` that
    probably lurks near the top.  Then add a `py:extends` directive to the
    top-level tag (usually `<html>`).  The tag the parts of the child template
-   that are intended to override parts of the parent template with the `py:block`
-   directive.
+   that are intended to override parts of the parent template with the
+   `py:block` directive.
+
+Kajiki also provides some helper functions of Genshi:
+* ``defined('some_variable')`` (which returns True if 'some_variable' exists
+  in the template context),
+* ``value_of('name', default_value)``, and
+* ``Markup(some_string)`` (which marks a string so it won't be escaped in the
+output), though Kajiki prefers to call this ``literal(some_string)``.
 
 Example Migration
 ---------------------------------

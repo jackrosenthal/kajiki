@@ -495,5 +495,29 @@ class TestPackageLoader(TestCase):
         loader.import_('kajiki.tests.data.debug')
 
 
+class TestBuiltinFunctions(TestCase):
+    def test_defined(self):
+        tpl = XMLTemplate('''<div>\
+<div py:if="defined('albatross')">$albatross</div>\
+<p py:if="defined('parrot')">$parrot</p></div>''')
+        rsp = tpl(dict(parrot='Bereft of life, it rests in peace')).render()
+        assert rsp == \
+            '''<div><p>Bereft of life, it rests in peace</p></div>''', rsp
+
+    def test_value_of(self):
+        tpl = XMLTemplate("<p>${value_of('albatross', 'Albatross!!!')}</p>")
+        rsp = tpl(dict(albatross="It's")).render()
+        assert rsp == "<p>It's</p>", rsp
+        rsp = tpl(dict()).render()
+        assert rsp == "<p>Albatross!!!</p>", rsp
+
+    def test_literal(self):
+        tpl1 = XMLTemplate("<p>${literal(albatross)}</p>")
+        rsp1 = tpl1(dict(albatross="<em>Albatross!!!</em>")).render()
+        tpl2 = XMLTemplate("<p>${Markup(albatross)}</p>")
+        rsp2 = tpl2(dict(albatross="<em>Albatross!!!</em>")).render()
+        assert rsp1 == rsp2 == "<p><em>Albatross!!!</em></p>", rsp1
+
+
 if __name__ == '__main__':
     main()
