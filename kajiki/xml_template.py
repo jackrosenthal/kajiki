@@ -363,274 +363,7 @@ class _TextCompiler(object):
             self.pos = end
             return self.expr(text)
 
-
-def doctype_with_html_entities():
-    '''Returns a string containing lots of entity declarations
-    (such as nbsp, lt, gt etc.)
-    to be inserted into the input XML file.
-    '''
-    alist = ['<!DOCTYPE kajiki [']
-    for k, v in sorted(list(iteritems(entitydefs))):
-        if isinstance(v, bytes):
-            # Python docs specifically say this is in latin-1.
-            v = v.decode('latin-1')  # get unicode
-        alist.append('<!ENTITY {0} "{1}">'.format(k, v))
-    alist.append(']>')
-    return '\n'.join(alist)
-
-
-HTML_ENTITIES = '''<!DOCTYPE IGNORE [
-    <!ENTITY AElig "Æ">
-    <!ENTITY Aacute "Á">
-    <!ENTITY Acirc "Â">
-    <!ENTITY Agrave "À">
-    <!ENTITY Alpha "Α">
-    <!ENTITY Aring "Å">
-    <!ENTITY Atilde "Ã">
-    <!ENTITY Auml "Ä">
-    <!ENTITY Beta "Β">
-    <!ENTITY Ccedil "Ç">
-    <!ENTITY Chi "Χ">
-    <!ENTITY Dagger "‡">
-    <!ENTITY Delta "Δ">
-    <!ENTITY ETH "Ð">
-    <!ENTITY Eacute "É">
-    <!ENTITY Ecirc "Ê">
-    <!ENTITY Egrave "È">
-    <!ENTITY Epsilon "Ε">
-    <!ENTITY Eta "Η">
-    <!ENTITY Euml "Ë">
-    <!ENTITY Gamma "Γ">
-    <!ENTITY Iacute "Í">
-    <!ENTITY Icirc "Î">
-    <!ENTITY Igrave "Ì">
-    <!ENTITY Iota "Ι">
-    <!ENTITY Iuml "Ï">
-    <!ENTITY Kappa "Κ">
-    <!ENTITY Lambda "Λ">
-    <!ENTITY Mu "Μ">
-    <!ENTITY Ntilde "Ñ">
-    <!ENTITY Nu "Ν">
-    <!ENTITY OElig "Œ">
-    <!ENTITY Oacute "Ó">
-    <!ENTITY Ocirc "Ô">
-    <!ENTITY Ograve "Ò">
-    <!ENTITY Omega "Ω">
-    <!ENTITY Omicron "Ο">
-    <!ENTITY Oslash "Ø">
-    <!ENTITY Otilde "Õ">
-    <!ENTITY Ouml "Ö">
-    <!ENTITY Phi "Φ">
-    <!ENTITY Pi "Π">
-    <!ENTITY Prime "″">
-    <!ENTITY Psi "Ψ">
-    <!ENTITY Rho "Ρ">
-    <!ENTITY Scaron "Š">
-    <!ENTITY Sigma "Σ">
-    <!ENTITY THORN "Þ">
-    <!ENTITY Tau "Τ">
-    <!ENTITY Theta "Θ">
-    <!ENTITY Uacute "Ú">
-    <!ENTITY Ucirc "Û">
-    <!ENTITY Ugrave "Ù">
-    <!ENTITY Upsilon "Υ">
-    <!ENTITY Uuml "Ü">
-    <!ENTITY Xi "Ξ">
-    <!ENTITY Yacute "Ý">
-    <!ENTITY Yuml "Ÿ">
-    <!ENTITY Zeta "Ζ">
-    <!ENTITY aacute "á">
-    <!ENTITY acirc "â">
-    <!ENTITY acute "´">
-    <!ENTITY aelig "æ">
-    <!ENTITY agrave "à">
-    <!ENTITY alefsym "ℵ">
-    <!ENTITY alpha "α">
-    <!ENTITY and "∧">
-    <!ENTITY ang "∠">
-    <!ENTITY aring "å">
-    <!ENTITY asymp "≈">
-    <!ENTITY atilde "ã">
-    <!ENTITY auml "ä">
-    <!ENTITY bdquo "„">
-    <!ENTITY beta "β">
-    <!ENTITY brvbar "¦">
-    <!ENTITY bull "•">
-    <!ENTITY cap "∩">
-    <!ENTITY ccedil "ç">
-    <!ENTITY cedil "¸">
-    <!ENTITY cent "¢">
-    <!ENTITY chi "χ">
-    <!ENTITY circ "ˆ">
-    <!ENTITY clubs "♣">
-    <!ENTITY cong "≅">
-    <!ENTITY copy "©">
-    <!ENTITY crarr "↵">
-    <!ENTITY cup "∪">
-    <!ENTITY curren "¤">
-    <!ENTITY dArr "⇓">
-    <!ENTITY dagger "†">
-    <!ENTITY darr "↓">
-    <!ENTITY deg "°">
-    <!ENTITY delta "δ">
-    <!ENTITY diams "♦">
-    <!ENTITY divide "÷">
-    <!ENTITY eacute "é">
-    <!ENTITY ecirc "ê">
-    <!ENTITY egrave "è">
-    <!ENTITY empty "∅">
-    <!ENTITY emsp " ">
-    <!ENTITY ensp " ">
-    <!ENTITY epsilon "ε">
-    <!ENTITY equiv "≡">
-    <!ENTITY eta "η">
-    <!ENTITY eth "ð">
-    <!ENTITY euml "ë">
-    <!ENTITY euro "€">
-    <!ENTITY exist "∃">
-    <!ENTITY fnof "ƒ">
-    <!ENTITY forall "∀">
-    <!ENTITY frac12 "½">
-    <!ENTITY frac14 "¼">
-    <!ENTITY frac34 "¾">
-    <!ENTITY frasl "⁄">
-    <!ENTITY gamma "γ">
-    <!ENTITY ge "≥">
-    <!ENTITY gt ">">
-    <!ENTITY hArr "⇔">
-    <!ENTITY harr "↔">
-    <!ENTITY hearts "♥">
-    <!ENTITY hellip "…">
-    <!ENTITY iacute "í">
-    <!ENTITY icirc "î">
-    <!ENTITY iexcl "¡">
-    <!ENTITY igrave "ì">
-    <!ENTITY image "ℑ">
-    <!ENTITY infin "∞">
-    <!ENTITY int "∫">
-    <!ENTITY iota "ι">
-    <!ENTITY iquest "¿">
-    <!ENTITY isin "∈">
-    <!ENTITY iuml "ï">
-    <!ENTITY kappa "κ">
-    <!ENTITY lArr "⇐">
-    <!ENTITY lambda "λ">
-    <!ENTITY lang "〈">
-    <!ENTITY laquo "«">
-    <!ENTITY larr "←">
-    <!ENTITY lceil "⌈">
-    <!ENTITY ldquo "“">
-    <!ENTITY le "≤">
-    <!ENTITY lfloor "⌊">
-    <!ENTITY lowast "∗">
-    <!ENTITY loz "◊">
-    <!ENTITY lrm "‎">
-    <!ENTITY lsaquo "‹">
-    <!ENTITY lsquo "‘">
-    <!ENTITY lt "<">
-    <!ENTITY macr "¯">
-    <!ENTITY mdash "—">
-    <!ENTITY micro "µ">
-    <!ENTITY middot "·">
-    <!ENTITY minus "−">
-    <!ENTITY mu "μ">
-    <!ENTITY nabla "∇">
-    <!ENTITY nbsp " ">
-    <!ENTITY ndash "–">
-    <!ENTITY ne "≠">
-    <!ENTITY ni "∋">
-    <!ENTITY not "¬">
-    <!ENTITY notin "∉">
-    <!ENTITY nsub "⊄">
-    <!ENTITY ntilde "ñ">
-    <!ENTITY nu "ν">
-    <!ENTITY oacute "ó">
-    <!ENTITY ocirc "ô">
-    <!ENTITY oelig "œ">
-    <!ENTITY ograve "ò">
-    <!ENTITY oline "‾">
-    <!ENTITY omega "ω">
-    <!ENTITY omicron "ο">
-    <!ENTITY oplus "⊕">
-    <!ENTITY or "∨">
-    <!ENTITY ordf "ª">
-    <!ENTITY ordm "º">
-    <!ENTITY oslash "ø">
-    <!ENTITY otilde "õ">
-    <!ENTITY otimes "⊗">
-    <!ENTITY ouml "ö">
-    <!ENTITY para "¶">
-    <!ENTITY part "∂">
-    <!ENTITY permil "‰">
-    <!ENTITY perp "⊥">
-    <!ENTITY phi "φ">
-    <!ENTITY pi "π">
-    <!ENTITY piv "ϖ">
-    <!ENTITY plusmn "±">
-    <!ENTITY pound "£">
-    <!ENTITY prime "′">
-    <!ENTITY prod "∏">
-    <!ENTITY prop "∝">
-    <!ENTITY psi "ψ">
-    <!ENTITY rArr "⇒">
-    <!ENTITY radic "√">
-    <!ENTITY rang "〉">
-    <!ENTITY raquo "»">
-    <!ENTITY rarr "→">
-    <!ENTITY rceil "⌉">
-    <!ENTITY rdquo "”">
-    <!ENTITY real "ℜ">
-    <!ENTITY reg "®">
-    <!ENTITY rfloor "⌋">
-    <!ENTITY rho "ρ">
-    <!ENTITY rlm "‏">
-    <!ENTITY rsaquo "›">
-    <!ENTITY rsquo "’">
-    <!ENTITY sbquo "‚">
-    <!ENTITY scaron "š">
-    <!ENTITY sdot "⋅">
-    <!ENTITY sect "§">
-    <!ENTITY shy "­">
-    <!ENTITY sigma "σ">
-    <!ENTITY sigmaf "ς">
-    <!ENTITY sim "∼">
-    <!ENTITY spades "♠">
-    <!ENTITY sub "⊂">
-    <!ENTITY sube "⊆">
-    <!ENTITY sum "∑">
-    <!ENTITY sup "⊃">
-    <!ENTITY sup1 "¹">
-    <!ENTITY sup2 "²">
-    <!ENTITY sup3 "³">
-    <!ENTITY supe "⊇">
-    <!ENTITY szlig "ß">
-    <!ENTITY tau "τ">
-    <!ENTITY there4 "∴">
-    <!ENTITY theta "θ">
-    <!ENTITY thetasym "ϑ">
-    <!ENTITY thinsp " ">
-    <!ENTITY thorn "þ">
-    <!ENTITY tilde "˜">
-    <!ENTITY times "×">
-    <!ENTITY trade "™">
-    <!ENTITY uArr "⇑">
-    <!ENTITY uacute "ú">
-    <!ENTITY uarr "↑">
-    <!ENTITY ucirc "û">
-    <!ENTITY ugrave "ù">
-    <!ENTITY uml "¨">
-    <!ENTITY upsih "ϒ">
-    <!ENTITY upsilon "υ">
-    <!ENTITY uuml "ü">
-    <!ENTITY weierp "℘">
-    <!ENTITY xi "ξ">
-    <!ENTITY yacute "ý">
-    <!ENTITY yen "¥">
-    <!ENTITY yuml "ÿ">
-    <!ENTITY zeta "ζ">
-    <!ENTITY zwj "‍">
-    <!ENTITY zwnj "‌">
-]>'''.encode('utf-8')  # <!ENTITY amp "&"> <!ENTITY quot """>
+KAJIKI_DOCTYPE = b'<!DOCTYPE kajiki SYSTEM "kajiki.dtd">'
 
 
 class _Parser(sax.ContentHandler):
@@ -660,7 +393,7 @@ class _Parser(sax.ContentHandler):
             byts = self._source.encode('utf-8')
             source.setEncoding('utf-8')
         if self._accept_html_entities:
-            byts = HTML_ENTITIES + byts
+            byts = KAJIKI_DOCTYPE + byts
         source.setByteStream(BytesIO(byts))
         source.setSystemId(self._filename)
         parser.parse(source)
@@ -695,7 +428,13 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
-        '''Deals with an HTML entity such as &nbsp;'''
+        '''Deals with an HTML entity such as &nbsp;
+        (XML itself defines very few entities.)
+
+        The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
+        a valid entity, better pass it along to sax and find out!"
+        (Since expat is nonvalidating, it never reads the external doctypes.)
+        '''
         content = entitydefs[name]
         # The value is bytes in Python 2 and str in Python 3, so:
         if isinstance(content, bytes):
@@ -728,7 +467,7 @@ class _Parser(sax.ContentHandler):
         pass
 
     def startDTD(self, name, pubid, sysid):
-        if name == 'IGNORE':
+        if name == 'kajiki':  # TODO Never accept doctypes in input templates
             return
         self._doc.doctype = impl.createDocumentType(name, pubid, sysid)
 

@@ -18,9 +18,7 @@ DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 class TestParser(TestCase):
     def test_parser(self):
-        doc = kajiki.xml_template._Parser('<string>', '''<?xml version="1.0"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" \
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        doc = kajiki.xml_template._Parser('<string>', '''\
 <div xmlns="http://www.w3.org/1999/xhtml"
    xmlns:py="http://genshi.edgewall.org/"
    xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -93,20 +91,11 @@ class TestSimple(TestCase):
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
-    def test_xml_entity(self):
+    def test_entity(self):
         x = "<div>Cookies &amp; Cream</div>"
         tpl = XMLTemplate(source=x)
         rsp = tpl({}).render()
         self.assertEqual(x, rsp)
-
-    def test_html_entity(self):
-        '''We do NOT want this to result in
-        xml.sax._exceptions.SAXParseException: undefined entity
-        '''
-        x = """<div>Spanish&nbsp;Inquisition</div>"""
-        tpl = XMLTemplate(source=x)
-        rsp = tpl({}).render()
-        self.assertEqual(x.replace('&nbsp;', ' '), rsp)
 
 
 class TestSwitch(TestCase):
@@ -453,30 +442,29 @@ class TestAttributes(TestCase):
         assert rsp == '<div><h1>Header</h1></div>', rsp
 
     def test_html_attrs(self):
-        tpl = XMLTemplate(
-            '''<input type="checkbox" checked="$checked"/>''', mode='xml')
-        rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<input checked="True" type="checkbox"/>', rsp
-        tpl = XMLTemplate(
-            '''<input type="checkbox" checked="$checked"/>''', mode='html')
-        rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<input checked type="checkbox">', rsp
-        tpl = XMLTemplate(
-            '''<!DOCTYPE html>\n<input type="checkbox" checked="$checked"/>''')
-        rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<!DOCTYPE html><input checked type="checkbox">', rsp
-        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
-                          mode='html5')
-        rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<!DOCTYPE html><input checked type="checkbox">', rsp
-        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
-                          mode='html5', is_fragment=True)
-        rsp = tpl(dict(checked=True)).render()
-        assert rsp == '<input checked type="checkbox">', rsp
-        tpl = XMLTemplate('''<input type="checkbox" checked="$checked"/>''',
-                          mode='html5', is_fragment=True)
-        rsp = tpl(dict(checked=None)).render()
-        assert rsp == '<input type="checkbox">', rsp
+        def perform(template, mode, expected_output, is_fragment=False,
+                    checked=None):
+            tpl = XMLTemplate(template, mode=mode, is_fragment=is_fragment)
+            rsp = tpl(dict(checked=checked)).render()
+            assert rsp == expected_output, rsp
+        TPL = '<input type="checkbox" checked="$checked"/>'
+        perform(TPL, mode='xml', is_fragment=True,
+                expected_output='<input type="checkbox"/>')
+        perform(TPL, mode='xml', is_fragment=True, checked=True,
+                expected_output='<input checked="True" type="checkbox"/>')
+        perform(TPL, mode='html', is_fragment=True,
+                expected_output='<input type="checkbox">')
+        perform(TPL, mode='html', is_fragment=True, checked=True,
+                expected_output='<input checked type="checkbox">')
+        perform(TPL, mode='html5', is_fragment=True,
+                expected_output='<input type="checkbox">')
+        perform(TPL, mode='html5', is_fragment=True, checked=True,
+                expected_output='<input checked type="checkbox">')
+        # TODO: Need to write tests with is_fragment=False, and for that,
+        # We need to output doctypes ourselves, since input templates, from
+        # now on, will never contain doctypes.
+        # http://en.wikipedia.org/wiki/Document_Type_Declaration
+        assert False, 'Kajiki now needs to output doctypes'
 
 
 class TestDebug(TestCase):
