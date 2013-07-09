@@ -16,6 +16,12 @@ from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
+def perform(template, mode, context, expected_output, is_fragment=True):
+    tpl = XMLTemplate(template, mode=mode, is_fragment=is_fragment)
+    rsp = tpl(context).render()
+    assert rsp == expected_output, rsp
+
+
 class TestParser(TestCase):
     def test_parser(self):
         doc = kajiki.xml_template._Parser('<string>', '''\
@@ -442,24 +448,18 @@ class TestAttributes(TestCase):
         assert rsp == '<div><h1>Header</h1></div>', rsp
 
     def test_html_attrs(self):
-        def perform(template, mode, expected_output, is_fragment=False,
-                    checked=None):
-            tpl = XMLTemplate(template, mode=mode, is_fragment=is_fragment)
-            rsp = tpl(dict(checked=checked)).render()
-            assert rsp == expected_output, rsp
         TPL = '<input type="checkbox" checked="$checked"/>'
-        perform(TPL, mode='xml', is_fragment=True,
-                expected_output='<input type="checkbox"/>')
-        perform(TPL, mode='xml', is_fragment=True, checked=True,
+        context0 = dict(checked=None)
+        context1 = dict(checked=True)
+        perform(TPL, 'xml', context0, '<input type="checkbox"/>')
+        perform(TPL, 'xml', context1,
                 expected_output='<input checked="True" type="checkbox"/>')
-        perform(TPL, mode='html', is_fragment=True,
+        perform(TPL, 'html', context0,
                 expected_output='<input type="checkbox">')
-        perform(TPL, mode='html', is_fragment=True, checked=True,
+        perform(TPL, 'html', context1,
                 expected_output='<input checked type="checkbox">')
-        perform(TPL, mode='html5', is_fragment=True,
-                expected_output='<input type="checkbox">')
-        perform(TPL, mode='html5', is_fragment=True, checked=True,
-                expected_output='<input checked type="checkbox">')
+        perform(TPL, 'html5', context0, '<input type="checkbox">')
+        perform(TPL, 'html5', context1, '<input checked type="checkbox">')
         # TODO: Need to write tests with is_fragment=False, and for that,
         # We need to output doctypes ourselves, since input templates, from
         # now on, will never contain doctypes.
