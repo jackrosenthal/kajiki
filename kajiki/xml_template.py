@@ -18,6 +18,7 @@ else:
 from . import ir
 from . import template
 from .ddict import defaultdict
+from .doctypes import doctypes, rendering_mode
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 from .html_utils import HTML_OPTIONAL_END_TAGS
 
@@ -33,14 +34,8 @@ _pattern = r'''
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
-def XMLTemplate(source=None, filename=None, **kw):
-    if 'mode' in kw:
-        mode = kw['mode']
-        force_mode = True
-    else:
-        mode = 'xml'
-        force_mode = False
-    is_fragment = kw.pop('is_fragment', False)
+def XMLTemplate(source=None, filename=None,
+                doctype='xhtml5', is_fragment=False):
     if source is None:
         with open(filename) as f:
             source = f.read()  # source is a bytes instance
@@ -48,7 +43,7 @@ def XMLTemplate(source=None, filename=None, **kw):
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    compiler = _Compiler(filename, doc, mode, is_fragment, force_mode)
+    compiler = _Compiler(filename, doc, doctype, is_fragment)
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
@@ -62,50 +57,27 @@ def annotate(gen):
 
 
 class _Compiler(object):
-    mode_lookup = {
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd': 'xml',
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd': 'xml',
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd': 'xml',
-        'http://www.w3.org/TR/html4/strict.dtd': 'html',
-        'http://www.w3.org/TR/html4/loose.dtd': 'html',
-        'http://www.w3.org/TR/html4/frameset.dtd': 'html',
-    }
-
-    def __init__(self, filename, doc, mode='xml', is_fragment=False,
-                 force_mode=False):
+    def __init__(self, filename, doc, doctype, is_fragment):
         self.filename = filename
         self.doc = doc
-        self.mode = mode
+        self.doctype = doctypes[doctype]  # Get the actual doctype tag
+        self.mode = rendering_mode(doctype)
+        self.is_fragment = is_fragment
         self.functions = defaultdict(list)
         self.functions['__main__()'] = []
         self.function_lnos = {}
         self.mod_py = []
         self.in_def = False
         self.is_child = False
-        self.is_fragment = is_fragment
-        if not force_mode and self.doc.doctype:
-            if self.doc.doctype.toxml().lower() == '<!doctype html>':
-                self.mode = 'html5'
-            elif self.doc.doctype.systemId is None:
-                self.mode = 'html'
-            else:
-                self.mode = self.mode_lookup.get(
-                    self.doc.doctype.systemId, 'xml')
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
-            if self.mode == 'xml' and self.doc.doctype:
-                dt = ir.TextNode(self.doc.doctype.toxml())
-                dt.filename = self.filename
-                dt.lineno = 1
-                body.insert(0, dt)
-            elif self.mode == 'html5':
-                dt = ir.TextNode('<!DOCTYPE html>')
-                dt.filename = self.filename
-                dt.lineno = 1
-                body.insert(0, dt)
+            dt = ir.TextNode(self.doctype)
+            dt.filename = self.filename
+            dt.lineno = 1
+            body.insert(0, dt)
         self.functions['__main__()'] = body
         defs = []
         for k, v in iteritems(self.functions):

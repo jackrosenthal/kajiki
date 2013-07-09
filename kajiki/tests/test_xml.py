@@ -16,12 +16,6 @@ from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
 
-def perform(template, mode, context, expected_output, is_fragment=True):
-    tpl = XMLTemplate(template, mode=mode, is_fragment=is_fragment)
-    rsp = tpl(context).render()
-    assert rsp == expected_output, rsp
-
-
 class TestParser(TestCase):
     def test_parser(self):
         doc = kajiki.xml_template._Parser('<string>', '''\
@@ -69,96 +63,90 @@ class TestExpand(TestCase):
             node = node.childNodes[0]
 
 
+def perform(template, expected_output, context=dict(name='Rick'),
+            doctype='xhtml5', is_fragment=True):
+    tpl = XMLTemplate(template, doctype=doctype, is_fragment=is_fragment)
+    rsp = tpl(context).render()
+    assert rsp == expected_output, rsp
+
+
 class TestSimple(TestCase):
     def test_empty_attr(self):
-        tpl = XMLTemplate(
-            source='<img src="/foo/bar.baz.gif" alt="" />', mode='html')
-        rsp = tpl().render()
-        assert rsp == '<img alt="" src="/foo/bar.baz.gif">', rsp
+        perform('<img src="/foo/bar.baz.gif" alt="" />',
+                '<img alt="" src="/foo/bar.baz.gif">', doctype='html5')
 
     def test_script(self):
-        tpl = XMLTemplate(
-            source='<html><script src="public"/></html>', mode='html')
-        rsp = tpl().render()
-        assert rsp == '<html><script src="public"></script>', rsp
+        perform('<html><script src="public"/></html>',
+                '<html><script src="public"></script>', doctype='html5')
 
     def test_expr_name(self):
-        tpl = XMLTemplate(source='<div>Hello, $name</div>')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>Hello, Rick</div>', rsp
+        perform('<div>Hello, $name</div>',
+                '<div>Hello, Rick</div>')
 
     def test_expr_braced(self):
-        tpl = XMLTemplate(source='<div>Hello, ${name}</div>')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>Hello, Rick</div>', rsp
+        perform('<div>Hello, ${name}</div>',
+                '<div>Hello, Rick</div>')
 
     def test_expr_brace_complex(self):
-        tpl = XMLTemplate(source="<div>Hello, ${{'name':name}['name']}</div>")
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>Hello, Rick</div>', rsp
+        perform("<div>Hello, ${{'name':name}['name']}</div>",
+                '<div>Hello, Rick</div>')
 
     def test_entity(self):
-        x = "<div>Cookies &amp; Cream</div>"
-        tpl = XMLTemplate(source=x)
-        rsp = tpl({}).render()
-        self.assertEqual(x, rsp)
+        tpl = "<div>Cookies &amp; Cream</div>"
+        perform(tpl, tpl)
+
+    def test_doctype(self):
+        tpl = "<div>Spam&nbsp;Spam</div>"
+        assert False, 'TODO FINISH WRITING DOCTYPE TESTS'
 
 
 class TestSwitch(TestCase):
     def test_switch(self):
-        tpl = XMLTemplate(source='''<div py:for="i in range(2)">
+        perform('''<div py:for="i in range(2)">
 $i is <py:switch test="i % 2">
 <py:case value="0">even</py:case>
 <py:else>odd</py:else>
-</py:switch></div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '''<div>
+</py:switch></div>''',   '''<div>
 0 is even</div><div>
-1 is odd</div>''', rsp
+1 is odd</div>''')
 
 
 class TestWith(TestCase):
     def test_with(self):
-        tpl = XMLTemplate(source='''<div py:with="a='foo'">
+        perform('''<div py:with="a='foo'">
 <div>$a</div>
 <div py:with="a=5">$a</div>
 <div>$a</div>
-</div>''')
-        rsp = tpl().render()
-        assert rsp == '''<div>
+</div>''',   '''<div>
 <div>foo</div>
 <div>5</div>
 <div>foo</div>
-</div>''', rsp
+</div>''')
 
 
 class TestFunction(TestCase):
     def test_function(self):
-        tpl = XMLTemplate(source='''<div
+        perform('''<div
 ><div py:def="evenness(n)"><py:if test="n % 2 == 0">even</py:if><py:else>odd</py:else></div>
 <py:for each="i in range(2)">$i is ${evenness(i)}
 </py:for
-></div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '''<div>
+></div>''',   '''<div>
 0 is <div>even</div>
 1 is <div>odd</div>
-</div>''', rsp
+</div>''')
 
 
 class TestCall(TestCase):
     def test_call(self):
-        tpl = XMLTemplate(source='''<div
+        perform('''<div
 ><py:def function="quote(caller, speaker)"
 ><ul>
     <li py:for="i in range(2)">Quoth $speaker, ${caller(i)}</li>
 </ul></py:def
 ><py:call args="n" function="quote(%caller, 'the raven')"
->Nevermore $n</py:call></div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '''<div><ul>
+>Nevermore $n</py:call></div>''',   '''<div><ul>
     <li>Quoth the raven, Nevermore 0</li><li>Quoth the raven, Nevermore 1</li>
-</ul></div>''', rsp
+</ul></div>''')
 
 
 class TestImport(TestCase):
@@ -246,7 +234,7 @@ class TestImport(TestCase):
         })
         tpl = loader.import_('tpl.html')
         rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '''<html><body>
+        assert rsp == '''<!DOCTYPE HTML><html><body>
 <h1>Header</h1>
 <p>This is the body</p>
 </body></html>''', rsp
@@ -355,116 +343,84 @@ Sincerely,<br/><em>Rick</em>
 
 class TestClosure(TestCase):
     def test(self):
-        tpl = XMLTemplate('''<div
+        perform('''<div
 ><py:def function="add(x)"
     ><py:def function="inner(y)"
         >${x+y}</py:def
     >${inner(x*2)}</py:def
->${add(5)}</div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>15</div>', rsp
+>${add(5)}</div>''',   '<div>15</div>')
 
 
 class TestPython(TestCase):
     def test_basic(self):
-        tpl = XMLTemplate('''<div
+        perform('''<div
 ><?py
 import os
-?>${os.path.join('a', 'b', 'c')}</div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>a/b/c</div>'
+?>${os.path.join('a', 'b', 'c')}</div>''',   '<div>a/b/c</div>')
 
     def test_indent(self):
-        tpl = XMLTemplate('''<div
+        perform('''<div
 ><?py #
     import os
     import re
-?>${os.path.join('a','b','c')}</div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>a/b/c</div>'
+?>${os.path.join('a','b','c')}</div>''',   '<div>a/b/c</div>')
 
     def test_short(self):
-        tpl = XMLTemplate('''<div
+        perform('''<div
 ><?py import os
-?>${os.path.join('a', 'b', 'c')}</div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>a/b/c</div>'
+?>${os.path.join('a', 'b', 'c')}</div>''',   '<div>a/b/c</div>')
 
     def test_mod(self):
-        tpl = XMLTemplate('''<div
+        perform('''<div
 ><?py %import os
 ?><py:def function="test()"
 >${os.path.join('a', 'b', 'c')}</py:def
->${test()}</div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>a/b/c</div>'
+>${test()}</div>''',   '<div>a/b/c</div>')
 
 
 class TestComment(TestCase):
     def test_basic(self):
-        tpl = XMLTemplate('''<div>
+        perform('''<div>
 <!-- This comment is preserved. -->
 <!--! This comment is stripped. -->
-</div>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '''<div>
+</div>''',   '''<div>
 <!--  This comment is preserved.  -->
 
-</div>''', rsp
+</div>''')
 
 
 class TestAttributes(TestCase):
     def test_basic(self):
-        tpl = XMLTemplate('''<div id="foo"/>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div id="foo"/>', rsp
+        perform('''<div id="foo"/>''',   '<div id="foo"/>')
 
     def test_content(self):
-        tpl = XMLTemplate('''<div py:content="'foo'"/>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div>foo</div>', rsp
+        perform('''<div py:content="'foo'"/>''',   '<div>foo</div>')
 
     def test_replace(self):
-        tpl = XMLTemplate('''<div py:replace="'foo'"/>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == 'foo', rsp
+        perform('''<div py:replace="'foo'"/>''',   'foo')
 
     def test_attrs(self):
-        tpl = XMLTemplate('''<div py:attrs="dict(a=5, b=6)"/>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div a="5" b="6"/>'
-        tpl = XMLTemplate('''<div py:attrs="[('a', 5), ('b', 6)]"/>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div a="5" b="6"/>'
-        tpl = XMLTemplate('''<div py:attrs="None"/>''')
-        rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '<div/>'
+        perform('<div py:attrs="dict(a=5, b=6)"/>',   '<div a="5" b="6"/>')
+        perform('''<div py:attrs="[('a', 5), ('b', 6)]"/>''',
+                '''<div a="5" b="6"/>''')
+        perform('<div py:attrs="None"/>',   '<div/>')
 
     def test_strip(self):
-        tpl = XMLTemplate('''<div><h1 py:strip="header">Header</h1></div>''')
-        rsp = tpl(dict(header=True)).render()
-        assert rsp == '<div>Header</div>', rsp
-        rsp = tpl(dict(header=False)).render()
-        assert rsp == '<div><h1>Header</h1></div>', rsp
+        TPL = '<div><h1 py:strip="header">Header</h1></div>'
+        perform(TPL, '<div>Header</div>', context=dict(header=True))
+        perform(TPL, '<div><h1>Header</h1></div>', context=dict(header=False))
 
     def test_html_attrs(self):
         TPL = '<input type="checkbox" checked="$checked"/>'
         context0 = dict(checked=None)
         context1 = dict(checked=True)
-        perform(TPL, 'xml', context0, '<input type="checkbox"/>')
-        perform(TPL, 'xml', context1,
-                expected_output='<input checked="True" type="checkbox"/>')
-        perform(TPL, 'html', context0,
-                expected_output='<input type="checkbox">')
-        perform(TPL, 'html', context1,
-                expected_output='<input checked type="checkbox">')
-        perform(TPL, 'html5', context0, '<input type="checkbox">')
-        perform(TPL, 'html5', context1, '<input checked type="checkbox">')
-        # TODO: Need to write tests with is_fragment=False, and for that,
-        # We need to output doctypes ourselves, since input templates, from
-        # now on, will never contain doctypes.
-        # http://en.wikipedia.org/wiki/Document_Type_Declaration
-        assert False, 'Kajiki now needs to output doctypes'
+        perform(TPL, '<input type="checkbox"/>', context0, doctype='xml')
+        perform(TPL, '<input checked="True" type="checkbox"/>', context1,
+                doctype='xml')
+        perform(TPL, '<input type="checkbox">', context0, 'html5')
+        perform(TPL, '<input checked type="checkbox">', context1, 'html5')
+        perform(TPL, '<input type="checkbox">', context0, 'html5')
+        perform(TPL, '<input checked type="checkbox">', context1, 'html5')
 
 
 class TestDebug(TestCase):
@@ -494,26 +450,23 @@ class TestPackageLoader(TestCase):
 
 class TestBuiltinFunctions(TestCase):
     def test_defined(self):
-        tpl = XMLTemplate('''<div>\
+        perform('''<div>\
 <div py:if="defined('albatross')">$albatross</div>\
-<p py:if="defined('parrot')">$parrot</p></div>''')
-        rsp = tpl(dict(parrot='Bereft of life, it rests in peace')).render()
-        assert rsp == \
-            '''<div><p>Bereft of life, it rests in peace</p></div>''', rsp
+<p py:if="defined('parrot')">$parrot</p></div>''',
+expected_output='<div><p>Bereft of life, it rests in peace</p></div>',
+context=dict(parrot='Bereft of life, it rests in peace'))
 
     def test_value_of(self):
-        tpl = XMLTemplate("<p>${value_of('albatross', 'Albatross!!!')}</p>")
-        rsp = tpl(dict(albatross="It's")).render()
-        assert rsp == "<p>It's</p>", rsp
-        rsp = tpl(dict()).render()
-        assert rsp == "<p>Albatross!!!</p>", rsp
+        TPL = "<p>${value_of('albatross', 'Albatross!!!')}</p>"
+        perform(TPL,
+            expected_output="<p>It's</p>", context=dict(albatross="It's"))
+        perform(TPL, expected_output="<p>Albatross!!!</p>")
 
     def test_literal(self):
-        tpl1 = XMLTemplate("<p>${literal(albatross)}</p>")
-        rsp1 = tpl1(dict(albatross="<em>Albatross!!!</em>")).render()
-        tpl2 = XMLTemplate("<p>${Markup(albatross)}</p>")
-        rsp2 = tpl2(dict(albatross="<em>Albatross!!!</em>")).render()
-        assert rsp1 == rsp2 == "<p><em>Albatross!!!</em></p>", rsp1
+        context = dict(albatross="<em>Albatross!!!</em>")
+        expected_output = "<p><em>Albatross!!!</em></p>"
+        perform("<p>${literal(albatross)}</p>", expected_output, context)
+        perform("<p>${Markup(albatross)}</p>", expected_output, context)
 
 
 if __name__ == '__main__':

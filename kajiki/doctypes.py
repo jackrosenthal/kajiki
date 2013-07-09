@@ -37,9 +37,31 @@ doctypes[None] = doctypes['None'] = doctypes[''] = ''
 
 
 def rendering_mode(doctype_name):
-    if doctype_name.begins_with('x'):
+    if doctype_name.startswith('x'):
         return 'xml'
     elif doctype_name == 'html5':
         return 'html5'
     else:
         return 'html'
+
+'''Previously, the compiler determined the mode from the actual doctype text,
+like this deleted code::
+
+    mode_lookup = {
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd': 'xml',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd': 'xml',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd': 'xml',
+        'http://www.w3.org/TR/html4/strict.dtd': 'html',
+        'http://www.w3.org/TR/html4/loose.dtd': 'html',
+        'http://www.w3.org/TR/html4/frameset.dtd': 'html',
+    }
+
+    if not force_mode and self.doc.doctype:
+        if self.doc.doctype.toxml().lower() == '<!doctype html>':
+            self.mode = 'html5'
+        elif self.doc.doctype.systemId is None:
+            self.mode = 'html'
+        else:
+            self.mode = self.mode_lookup.get(
+                self.doc.doctype.systemId, 'xml')
+'''

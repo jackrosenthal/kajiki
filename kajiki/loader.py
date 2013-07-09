@@ -57,8 +57,9 @@ class FileLoader(Loader):
             txt=lambda *a, **kw: TextTemplate(
                 autoescape=self._autoescape_text, *a, **kw),
             xml=XMLTemplate,
-            html=lambda *a, **kw: XMLTemplate(mode='html', *a, **kw),
-            html5=lambda *a, **kw: XMLTemplate(mode='html5', *a, **kw))
+            html=lambda *a, **kw: XMLTemplate(
+                doctype='html4transitional', *a, **kw),
+            html5=lambda *a, **kw: XMLTemplate(doctype='html5', *a, **kw))
 
     def _filename(self, name):
         for base in self.path:
