@@ -93,11 +93,20 @@ class TestSimple(TestCase):
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '<div>Hello, Rick</div>', rsp
 
-    def test_entity(self):
+    def test_xml_entity(self):
         x = "<div>Cookies &amp; Cream</div>"
         tpl = XMLTemplate(source=x)
         rsp = tpl({}).render()
         self.assertEqual(x, rsp)
+
+    def test_html_entity(self):
+        '''We do NOT want this to result in
+        xml.sax._exceptions.SAXParseException: undefined entity
+        '''
+        x = """<div>Spanish&nbsp;Inquisition</div>"""
+        tpl = XMLTemplate(source=x)
+        rsp = tpl({}).render()
+        self.assertEqual(x.replace('&nbsp;', ' '), rsp)
 
 
 class TestSwitch(TestCase):
