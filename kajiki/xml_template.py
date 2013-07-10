@@ -33,14 +33,7 @@ _pattern = r'''
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
-def XMLTemplate(source=None, filename=None, **kw):
-    if 'mode' in kw:
-        mode = kw['mode']
-        force_mode = True
-    else:
-        mode = 'xml'
-        force_mode = False
-    is_fragment = kw.pop('is_fragment', False)
+def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False):
     if source is None:
         with open(filename) as f:
             source = f.read()  # source is a bytes instance
@@ -48,7 +41,7 @@ def XMLTemplate(source=None, filename=None, **kw):
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    compiler = _Compiler(filename, doc, mode, is_fragment, force_mode)
+    compiler = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment)
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
@@ -71,19 +64,18 @@ class _Compiler(object):
         'http://www.w3.org/TR/html4/frameset.dtd': 'html',
     }
 
-    def __init__(self, filename, doc, mode='xml', is_fragment=False,
-                 force_mode=False):
+    def __init__(self, filename, doc, mode=None, is_fragment=False):
         self.filename = filename
         self.doc = doc
-        self.mode = mode
+        self.is_fragment = is_fragment
         self.functions = defaultdict(list)
         self.functions['__main__()'] = []
         self.function_lnos = {}
         self.mod_py = []
         self.in_def = False
         self.is_child = False
-        self.is_fragment = is_fragment
-        if not force_mode and self.doc.doctype:
+        # When mode is None we choose mode based on doctype
+        if not mode and self.doc.doctype:
             if self.doc.doctype.toxml().lower() == '<!doctype html>':
                 self.mode = 'html5'
             elif self.doc.doctype.systemId is None:
@@ -91,6 +83,10 @@ class _Compiler(object):
             else:
                 self.mode = self.mode_lookup.get(
                     self.doc.doctype.systemId, 'xml')
+        elif mode:
+            self.mode = mode
+        else:
+            self.mode = 'xml'  # by default
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
