@@ -97,7 +97,12 @@ class TestSimple(TestCase):
 
     def test_doctype(self):
         tpl = "<div>Spam&nbsp;Spam</div>"
-        assert False, 'TODO FINISH WRITING DOCTYPE TESTS'
+        rendered = "<div>Spam Spam</div>"
+        from kajiki.doctypes import doctypes as d
+        perform(tpl, d['html5'] + rendered, doctype='html5', is_fragment=False)
+        perform(tpl, d['xhtml1transitional'] + rendered,
+                doctype='xhtml1transitional', is_fragment=False)
+        perform(tpl, rendered, doctype='silent', is_fragment=False)
 
 
 class TestSwitch(TestCase):
