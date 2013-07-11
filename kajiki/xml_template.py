@@ -419,7 +419,13 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
-        '''Deals with an HTML entity such as &nbsp;'''
+        '''Deals with an HTML entity such as &nbsp;
+        (XML itself defines very few entities.)
+
+        The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
+        a valid entity, better pass it along to sax and find out!"
+        (Since expat is nonvalidating, it never reads the external doctypes.)
+        '''
         content = entitydefs[name]
         # The value is bytes in Python 2 and str in Python 3, so:
         if isinstance(content, bytes):
