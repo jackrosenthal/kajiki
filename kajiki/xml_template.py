@@ -371,8 +371,8 @@ class _Parser(sax.ContentHandler):
         user's doctype back in. The XML parser is thus tricked and nobody
         needs to know this implementation detail of Kajiki.
         '''
-        assert isinstance(source, str), \
-            'The template source must be a unicode string.'
+        if not isinstance(source, str):
+            raise TypeError('The template source must be a unicode string.')
         self._els = []
         self._doc = dom.Document()
         self._filename = filename

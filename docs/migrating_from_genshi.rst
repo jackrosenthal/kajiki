@@ -34,8 +34,10 @@ simple cases where you have one ``master.html`` template with a few ``py:match``
 directives that is ``xi:included`` into all your page templates, the following
 steps should suffice:
 
- * You may need to rewrite some of our ``xi:include`` directives to use Kajiki's
-   module naming system and relative imports.
+ * Rename tags and attributes as indicated above;
+   e.g. ``xi:include`` becomes ``py:include``.
+ * Rewrite your *include* directives to use Kajiki's module naming system
+   and relative imports.
  * In a simple case where you have only a few ``py:match`` directives, all of which
    are in a ``master.html`` template that is being included from child templates,
    I recommend that you rewrite the ``master.html`` as ``layout.html``, defining
