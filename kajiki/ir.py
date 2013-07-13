@@ -126,6 +126,17 @@ class DefNode(HierNode):
         yield self.line(self.prefix)
         yield self.line('def %s:' % (self.decl))
 
+    def __iter__(self):
+        yield self
+        yield IndentNode()
+        is_empty = True
+        for x in self.body_iter():
+            yield x
+            is_empty = False
+        if is_empty:
+            yield PassNode()  # Prevent creation of a function without a body
+        yield DedentNode()
+
 
 class InnerDefNode(DefNode):
     prefix = '@__kj__.flattener.decorate'

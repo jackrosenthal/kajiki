@@ -70,6 +70,7 @@ def perform(source, expected_output, context=dict(name='Rick'),
     tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment)
     rsp = tpl(context).render()
     assert rsp == expected_output, rsp
+    return tpl
 
 
 class TestSimple(TestCase):
@@ -137,6 +138,11 @@ class TestFunction(TestCase):
 0 is <div>even</div>
 1 is <div>odd</div>
 </div>''')
+
+    def test_empty_function(self):
+        '''Do not crash if a function has no content.'''
+        perform('<div><py:def function="bruhaha()"></py:def></div>',
+                '<div></div>')
 
 
 class TestCall(TestCase):
