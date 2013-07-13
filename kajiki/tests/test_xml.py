@@ -234,18 +234,20 @@ class TestImport(TestCase):
 </div>''', rsp
 
     def test_include(self):
+        '''Must NOT result in: NameError: global name 'name' is not defined'''
         loader = MockLoader({
-            'hdr.html': XMLTemplate('<h1>Header</h1>\n'),
+            'included.html': XMLTemplate('<p>The included template must also '
+                'access the global template context: $name</p>\n'),
             'tpl.html': XMLTemplate('''<html><body>
-<py:include href="hdr.html"/>
 <p>This is the body</p>
+<py:include href="included.html"/>
 </body></html>''')
         })
         tpl = loader.import_('tpl.html')
         rsp = tpl(dict(name='Rick')).render()
         assert rsp == '''<html><body>
-<h1>Header</h1>
 <p>This is the body</p>
+<p>The included template must also access the global template context: Rick</p>
 </body></html>''', rsp
 
 
