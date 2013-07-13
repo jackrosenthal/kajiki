@@ -130,7 +130,11 @@ class _Compiler(object):
     def _compile_xml(self, node):
         content = attrs = guard = None
         if node.hasAttribute('py:strip'):
-            guard = 'not (%s)' % node.getAttribute('py:strip')
+            guard = node.getAttribute('py:strip')
+            if guard == '':  # py:strip="" means yes, do strip the tag
+                guard = 'False'
+            else:
+                guard = 'not (%s)' % guard
             node.removeAttribute('py:strip')
         yield ir.TextNode('<%s' % node.tagName, guard)
         for k, v in sorted(node.attributes.items()):

@@ -306,12 +306,15 @@ markup:
 py:strip
 ^^^^^^^^^^^^^^
 
-With `py:strip`, you can remove the tag to which the attribute is attached
+With ``py:strip``, you can remove the tag to which the attribute is attached
 without removing the content of the tag:
 
 >>> Template = kajiki.XMLTemplate('<div><div py:strip="True">Foo</div></div>')
 >>> print Template().render()
 <div>Foo</div>
+
+As a shorthand, if the value of the ``py:strip`` attribute is empty, that has
+the same effect as using a truth value (i.e. the element is stripped).
 
 py:content
 ^^^^^^^^^^^^^^

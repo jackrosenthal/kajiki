@@ -412,6 +412,8 @@ class TestAttributes(TestCase):
         TPL = '<div><h1 py:strip="header">Header</h1></div>'
         perform(TPL, '<div>Header</div>', context=dict(header=True))
         perform(TPL, '<div><h1>Header</h1></div>', context=dict(header=False))
+        TPL = '''<div><p py:strip="">It's...</p></div>'''
+        perform(TPL, "<div>It's...</div>")
 
     def test_html_attrs(self):
         TPL = '<input type="checkbox" checked="$checked"/>'
