@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import re
+from codecs import open
 from xml import sax
 from xml.dom import minidom as dom
 
@@ -18,6 +19,7 @@ else:
 from . import ir
 from . import template
 from .ddict import defaultdict
+from .doctype import DocumentTypeDeclaration, extract_dtd
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 from .html_utils import HTML_OPTIONAL_END_TAGS
 
@@ -33,10 +35,11 @@ _pattern = r'''
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
-def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False):
+def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
+                file_encoding='utf-8'):
     if source is None:
-        with open(filename) as f:
-            source = f.read()  # source is a bytes instance
+        with open(filename, encoding=file_encoding) as f:
+            source = f.read()  # source is a unicode string
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
@@ -55,15 +58,6 @@ def annotate(gen):
 
 
 class _Compiler(object):
-    mode_lookup = {
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd': 'xml',
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd': 'xml',
-        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd': 'xml',
-        'http://www.w3.org/TR/html4/strict.dtd': 'html',
-        'http://www.w3.org/TR/html4/loose.dtd': 'html',
-        'http://www.w3.org/TR/html4/frameset.dtd': 'html',
-    }
-
     def __init__(self, filename, doc, mode=None, is_fragment=False):
         self.filename = filename
         self.doc = doc
@@ -74,34 +68,31 @@ class _Compiler(object):
         self.mod_py = []
         self.in_def = False
         self.is_child = False
-        # When mode is None we choose mode based on doctype
-        if not mode and self.doc.doctype:
-            if self.doc.doctype.toxml().lower() == '<!doctype html>':
-                self.mode = 'html5'
-            elif self.doc.doctype.systemId is None:
-                self.mode = 'html'
-            else:
-                self.mode = self.mode_lookup.get(
-                    self.doc.doctype.systemId, 'xml')
-        elif mode:
+        # The rendering mode is either specified in the *mode* argument,
+        # or inferred from the DTD:
+        self._dtd = DocumentTypeDeclaration.matching(self.doc._dtd)
+        if mode:
             self.mode = mode
-        else:
+        elif self._dtd:
+            self.mode = self._dtd.rendering_mode
+        else:  # The template might contain an unknown DTD
             self.mode = 'xml'  # by default
 
     def compile(self):
         body = list(self._compile_node(self.doc.firstChild))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
-            if self.mode == 'xml' and self.doc.doctype:
-                dt = ir.TextNode(self.doc.doctype.toxml())
-                dt.filename = self.filename
-                dt.lineno = 1
-                body.insert(0, dt)
+            if self.doc._dtd:
+                dtd = self.doc._dtd
             elif self.mode == 'html5':
-                dt = ir.TextNode('<!DOCTYPE html>')
-                dt.filename = self.filename
-                dt.lineno = 1
-                body.insert(0, dt)
+                dtd = '<!DOCTYPE html>'
+            else:
+                dtd = None
+            if dtd:
+                dtd = ir.TextNode(dtd)
+                dtd.filename = self.filename
+                dtd.lineno = 1
+                body.insert(0, dtd)
         self.functions['__main__()'] = body
         defs = []
         for k, v in iteritems(self.functions):
@@ -361,11 +352,30 @@ class _TextCompiler(object):
 
 
 class _Parser(sax.ContentHandler):
+    DTD = '<!DOCTYPE kajiki SYSTEM "kajiki.dtd">'
+
     def __init__(self, filename, source):
-        self._filename = filename
-        self._source = source
-        self._doc = None
+        '''XML defines only a few entities; HTML defines many more.
+        The XML parser errors out when it finds HTML entities, unless the
+        template contains a reference to an external DTD (in which case
+        skippedEntity() gets called, this is what we want). In other words,
+        we want to trick expat into parsing XML + HTML entities for us.
+        We wouldn't force our users to declare everyday HTML entities!
+
+        So, for the parsing stage, we detect the doctype in the template and
+        replace it with our own; then in the compiling stage we put the
+        user's doctype back in. The XML parser is thus tricked and nobody
+        needs to know this implementation detail of Kajiki.
+        '''
+        assert isinstance(source, str), \
+            'The template source must be a unicode string.'
         self._els = []
+        self._doc = dom.Document()
+        self._filename = filename
+        # Store the original DTD in the document for the compiler to use later
+        self._doc._dtd, position, source = extract_dtd(source)
+        # Use our own DTD just for XML parsing
+        self._source = source[:position] + self.DTD + source[position:]
 
     def parse(self):
         self._parser = parser = sax.make_parser()
@@ -380,11 +390,8 @@ class _Parser(sax.ContentHandler):
         # streams; processing of character streams is for further study."
         # So if source is unicode, we pre-encode it:
         # TODO Is this dance really necessary? Can't I just call a function?
-        if isinstance(self._source, bytes):
-            byts = self._source
-        else:
-            byts = self._source.encode('utf-8')
-            source.setEncoding('utf-8')
+        byts = self._source.encode('utf-8')
+        source.setEncoding('utf-8')
         source.setByteStream(BytesIO(byts))
         source.setSystemId(self._filename)
         parser.parse(source)
@@ -392,7 +399,6 @@ class _Parser(sax.ContentHandler):
 
     # ContentHandler implementation
     def startDocument(self):
-        self._doc = dom.Document()
         self._els.append(self._doc)
 
     def startElement(self, name, attrs):

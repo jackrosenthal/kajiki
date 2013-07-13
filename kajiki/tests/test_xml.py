@@ -8,7 +8,7 @@ import sys
 import traceback
 import xml.dom.minidom
 from unittest import TestCase, main
-
+from nine import chr
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 
@@ -91,9 +91,16 @@ class TestSimple(TestCase):
         perform("<div>Hello, ${{'name':name}['name']}</div>",
                 '<div>Hello, Rick</div>')
 
-    def test_entity(self):
+    def test_xml_entities(self):
         source = "<div>Cookies &amp; Cream</div>"
         perform(source, source)
+
+    def test_html_entities(self):
+        source = "<div>Spam&nbsp;Spam &lt; Spam &gt; Spam</div>"
+        output = '<div>Spam Spam &lt; Spam &gt; Spam</div>'
+        assert chr(32) in output  # normal space
+        assert chr(160) in output  # non breaking space
+        perform(source, output)
 
 
 class TestSwitch(TestCase):
