@@ -21,7 +21,7 @@ from . import template
 from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
-from .html_utils import HTML_OPTIONAL_END_TAGS
+from .html_utils import HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS
 
 impl = dom.getDOMImplementation(' ')
 
@@ -36,9 +36,9 @@ _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
-                file_encoding='utf-8'):
+                encoding='utf-8'):
     if source is None:
-        with open(filename, encoding=file_encoding) as f:
+        with open(filename, encoding=encoding) as f:
             source = f.read()  # source is a unicode string
     if filename is None:
         filename = '<string>'
@@ -164,6 +164,8 @@ class _Compiler(object):
                 if not (self.mode.startswith('html')
                         and node.tagName in HTML_OPTIONAL_END_TAGS):
                     yield ir.TextNode('</%s>' % node.tagName, guard)
+            elif node.tagName in HTML_REQUIRED_END_TAGS:
+                yield ir.TextNode('></%s>' % node.tagName, guard)
             else:
                 if self.mode.startswith('html'):
                     if node.tagName in HTML_OPTIONAL_END_TAGS:

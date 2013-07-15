@@ -41,3 +41,4 @@ HTML_OPTIONAL_END_TAGS = set([
     'thead',
     'tr',
 ])
+HTML_REQUIRED_END_TAGS = set(['script'])

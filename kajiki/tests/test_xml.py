@@ -79,8 +79,11 @@ class TestSimple(TestCase):
             expected_output='<img alt="" src="/foo/bar.baz.gif">')
 
     def test_script(self):
-        perform(source='<html><script src="public"/></html>', mode='html',
-            expected_output='<html><script src="public"></script>')
+        'Always close script tags, even in xml mode.'
+        source = '<html><script src="public"/></html>'
+        output = '<html><script src="public"></script>'
+        perform(source, output, mode='html')
+        perform(source, output + '</html>', mode='xml')
 
     def test_expr_name(self):
         perform('<div>Hello, $name</div>', '<div>Hello, Rick</div>')
