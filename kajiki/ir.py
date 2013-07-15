@@ -89,7 +89,7 @@ class ImportNode(Node):
 
     def py(self):
         yield self.line(
-            'local.__kj__.import_(%r, %r, globals())' % (
+            'local.__kj__.import_(%r, %r, self.__globals__)' % (
                 self.tpl_name, self.alias))
 
 
@@ -100,7 +100,7 @@ class IncludeNode(Node):
 
     def py(self):
         yield self.line(
-            'yield local.__kj__.import_(%r, None, globals()).__main__()' % (
+            'yield local.__kj__.import_(%r, None, self.__globals__).__main__()' % (
                 self.tpl_name))
 
 
