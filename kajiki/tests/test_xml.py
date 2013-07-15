@@ -85,6 +85,18 @@ class TestSimple(TestCase):
         perform(source, output, mode='html')
         perform(source, output + '</html>', mode='xml')
 
+    def test_pre_whitespace(self):
+        src = '<pre name="foo">\nHey there.  \n\n    I am indented.\n' \
+              '</pre>'
+        perform(src, src, mode='html')
+        perform(src, src, mode='xml')
+
+    def test_textarea_whitespace(self):
+        src = '<textarea name="foo">\nHey there.  \n\n    I am indented.\n' \
+              '</textarea>'
+        perform(src, src, mode='html')
+        perform(src, src, mode='xml')
+
     def test_expr_name(self):
         perform('<div>Hello, $name</div>', '<div>Hello, Rick</div>')
 
@@ -240,18 +252,16 @@ class TestImport(TestCase):
         '''Must NOT result in: NameError: global name 'name' is not defined'''
         loader = MockLoader({
             'included.html': XMLTemplate('<p>The included template must also '
-                'access the global template context: $name</p>\n'),
-            'tpl.html': XMLTemplate('''<html><body>
-<p>This is the body</p>
-<py:include href="included.html"/>
-</body></html>''')
+                'access Kajiki globals and the template context: '
+                '${value_of("name")}</p>\n'),
+            'tpl.html': XMLTemplate('<html><body><p>This is the body</p>\n'
+                '<py:include href="included.html"/></body></html>')
         })
         tpl = loader.import_('tpl.html')
         rsp = tpl(dict(name='Rick')).render()
-        assert rsp == '''<html><body>
-<p>This is the body</p>
-<p>The included template must also access the global template context: Rick</p>
-</body></html>''', rsp
+        assert ('<html><body><p>This is the body</p>\n'
+            '<p>The included template must also access Kajiki globals and '
+            'the template context: Rick</p></body></html>' == rsp)
 
 
 class TestExtends(TestCase):
@@ -394,13 +404,9 @@ import os
 
 class TestComment(TestCase):
     def test_basic(self):
-        perform('''<div>
-<!-- This comment is preserved. -->
-<!--! This comment is stripped. -->
-</div>''',   '''<div>
-<!--  This comment is preserved.  -->
-
-</div>''')
+        perform('<div><!-- This comment is preserved. -->'
+                '<!--! This comment is stripped. --></div>',
+                '<div><!--  This comment is preserved.  --></div>')
 
 
 class TestAttributes(TestCase):
