@@ -88,14 +88,16 @@ class TestSimple(TestCase):
     def test_script_escaping(self):
         src = '<script>/*<![CDATA[*/\nif (1 < 2) { alert("Doh"); }\n' \
               '/*]]>*/</script>'
-        perform(src, src, mode='html')
         perform(src, src, mode='xml')
+        perform(src, '<script>\nif (1 < 2) { alert("Doh"); }\n</script>',
+                mode='html')
 
     def test_style_escaping(self):
         src = '<style>/*<![CDATA[*/\nhtml > body { display: none; }\n' \
               '/*]]>*/</style>'
-        perform(src, src, mode='html')
         perform(src, src, mode='xml')
+        perform(src, '<style>\nhtml > body { display: none; }\n</style>',
+                mode='html')
 
     def test_pre_whitespace(self):
         src = '<pre name="foo">\nHey there.  \n\n    I am indented.\n' \
