@@ -6,12 +6,7 @@ import re
 from codecs import open
 from xml import sax
 from xml.dom import minidom as dom
-
-from nine import IS_PYTHON2, basestring, str, iteritems, nimport
-entitydefs = nimport('html.entities:entitydefs')
-HTMLParser = nimport('html.parser:HTMLParser')
-unescape = HTMLParser().unescape
-del HTMLParser  # because we only use the unescape function
+from nine import IS_PYTHON2, basestring, str, iteritems
 
 if IS_PYTHON2:
     from cStringIO import StringIO as BytesIO
@@ -24,6 +19,7 @@ from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 from .html_utils import HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS
+from .entities import html5, unescape
 
 impl = dom.getDOMImplementation(' ')
 
@@ -450,12 +446,7 @@ class _Parser(sax.ContentHandler):
         a valid entity, better pass it along to sax and find out!"
         (Since expat is nonvalidating, it never reads the external doctypes.)
         '''
-        content = entitydefs[name]
-        # The value is bytes in Python 2 and str in Python 3, so:
-        if isinstance(content, bytes):
-            # Python docs specifically say this is in latin-1.
-            content = str(content, 'latin-1')  # get unicode
-        return self.characters(content)
+        return self.characters(html5[name])
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover
         raise NotImplementedError('startElementNS')

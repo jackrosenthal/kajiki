@@ -86,20 +86,22 @@ class TestSimple(TestCase):
         perform(source, output + '</html>', mode='xml')
 
     def test_script_escaping(self):
-        src = '<script><![CDATA[\nif (1 < 2) { alert("Offen&nbsp;bach"); }\n' \
-              ']]></script>'
-        perform(src, '<script>\nif (1 < 2) { alert("Offen&nbsp;bach"); }\n'
-                '</script>', mode='html')
-        perform(src, '<script>/*<![CDATA[*/\nif (1 < 2) { '
-                'alert("Offen&nbsp;bach"); }\n/*]]>*/</script>', mode='xml')
+        '''In HTML script and style tags are automatically CDATA; in XML they
+        must be explicitly be made so.
+        '''
+        script = 'if (1 < 2) { doc.write("<p>Offen&nbsp;bach</p>"); }\n'
+        src = '<script><![CDATA[\n{0}]]></script>'.format(script)
+        perform(src, mode='html',
+                expected_output='<script>\n{0}</script>'.format(script))
+        perform(src, '<script>/*<![CDATA[*/\n{0}/*]]>*/</script>'.format(
+                script), mode='xml')
 
     def test_style_escaping(self):
-        src = '<style><![CDATA[\nhtml > body { display: none; }\n' \
-              ']]></style>'
-        perform(src, '<style>/*<![CDATA[*/\nhtml > body { display: none; }\n'
-              '/*]]>*/</style>', mode='xml')
-        perform(src, '<style>\nhtml > body { display: none; }\n</style>',
-                mode='html')
+        style = 'html > body { display: none; }\n'
+        src = '<style><![CDATA[\n{0}]]></style>'.format(style)
+        perform(src, '<style>/*<![CDATA[*/\n{0}/*]]>*/</style>'.format(style),
+                mode='xml')
+        perform(src, '<style>\n{0}</style>'.format(style), mode='html')
 
     def test_pre_whitespace(self):
         src = '<pre name="foo">\nHey there.  \n\n    I am indented.\n' \
