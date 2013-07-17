@@ -17,9 +17,10 @@ from . import ir
 from . import template
 from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
-from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
-from .html_utils import HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS
 from .entities import html5, unescape
+from .html_utils import (HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS,
+                         HTML_CDATA_TAGS)
+from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 
 impl = dom.getDOMImplementation(' ')
 
@@ -156,7 +157,7 @@ class _Compiler(object):
         else:
             if node.childNodes:
                 yield ir.TextNode('>', guard)
-                if node.tagName in ('script', 'style'):
+                if node.tagName in HTML_CDATA_TAGS:  # <script>, <style>
                     content = repr(unescape(
                         ''.join([c.data for c in node.childNodes])))
                     if self.mode == 'xml':

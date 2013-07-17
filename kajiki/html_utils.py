@@ -42,3 +42,4 @@ HTML_OPTIONAL_END_TAGS = set([
     'tr',
 ])
 HTML_REQUIRED_END_TAGS = set(['script'])
+HTML_CDATA_TAGS = set(('script', 'style'))

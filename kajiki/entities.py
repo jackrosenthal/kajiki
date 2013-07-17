@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''python3.3/html/entities.py, plus HTMLParser.decode(), for Python 2 compat'''

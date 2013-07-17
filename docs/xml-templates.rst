@@ -512,3 +512,29 @@ In the above example, the div will only appear in the output if the
 ``explanation`` variable exists in the context and has a truish value.
 (Remember in Python, None and the empty string are not truish, they are
 evaluated as False.)
+
+Tips on writing your templates
+==============================
+
+Kajiki takes XML as input, with the exception that it recognizes HTML entities
+in addition to XML entities. (HTML has many more entities than XML;
+for instance, XML does not define ``&nbsp``).
+
+If your template contains complex content in ``<style>`` or ``<script>`` tags,
+you should either:
+
+1) Externalize these contents onto their own files, or
+2) Remembering that Kajiki takes XML as input, use CDATA sections inside
+   these tags in order to escape characters that are illegal in XML, such as
+   ``<``, ``>`` and ``&``. Here is an example:
+
+       <style><![CDATA[
+           html > body { display: none; }
+       ]]></style>
+       <script><![CDATA[
+           if (1 < 2) { document.write("<p>Albatross!!!</p>"); }
+       ]]></script>
+
+This is not necessary when you are writing HTML because HTML defines that the
+content of ``<style>`` and ``<script>`` tags is CDATA by default. However,
+Kajiki takes XML as input.
