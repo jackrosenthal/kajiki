@@ -86,16 +86,18 @@ class TestSimple(TestCase):
         perform(source, output + '</html>', mode='xml')
 
     def test_script_escaping(self):
-        src = '<script>/*<![CDATA[*/\nif (1 < 2) { alert("Doh"); }\n' \
-              '/*]]>*/</script>'
-        perform(src, src, mode='xml')
-        perform(src, '<script>\nif (1 < 2) { alert("Doh"); }\n</script>',
-                mode='html')
+        src = '<script><![CDATA[\nif (1 < 2) { alert("Offen&nbsp;bach"); }\n' \
+              ']]></script>'
+        perform(src, '<script>\nif (1 < 2) { alert("Offen&nbsp;bach"); }\n'
+                '</script>', mode='html')
+        perform(src, '<script>/*<![CDATA[*/\nif (1 < 2) { '
+                'alert("Offen&nbsp;bach"); }\n/*]]>*/</script>', mode='xml')
 
     def test_style_escaping(self):
-        src = '<style>/*<![CDATA[*/\nhtml > body { display: none; }\n' \
-              '/*]]>*/</style>'
-        perform(src, src, mode='xml')
+        src = '<style><![CDATA[\nhtml > body { display: none; }\n' \
+              ']]></style>'
+        perform(src, '<style>/*<![CDATA[*/\nhtml > body { display: none; }\n'
+              '/*]]>*/</style>', mode='xml')
         perform(src, '<style>\nhtml > body { display: none; }\n</style>',
                 mode='html')
 

@@ -8,8 +8,10 @@ from xml import sax
 from xml.dom import minidom as dom
 
 from nine import IS_PYTHON2, basestring, str, iteritems, nimport
-HTMLParser = nimport('html.parser:HTMLParser')
 entitydefs = nimport('html.entities:entitydefs')
+HTMLParser = nimport('html.parser:HTMLParser')
+unescape = HTMLParser().unescape
+del HTMLParser  # because we only use the unescape function
 
 if IS_PYTHON2:
     from cStringIO import StringIO as BytesIO
@@ -158,9 +160,19 @@ class _Compiler(object):
         else:
             if node.childNodes:
                 yield ir.TextNode('>', guard)
-                for cn in node.childNodes:
-                    for x in self._compile_node(cn):
-                        yield x
+                if node.tagName in ('script', 'style'):
+                    content = repr(unescape(
+                        ''.join([c.data for c in node.childNodes])))
+                    if self.mode == 'xml':
+                        yield ir.TextNode('/*<![CDATA[*/')
+                        yield ir.ExprNode(content, safe=True)
+                        yield ir.TextNode('/*]]>*/')
+                    else:
+                        yield ir.ExprNode(content, safe=True)
+                else:
+                    for cn in node.childNodes:
+                        for x in self._compile_node(cn):
+                            yield x
                 if not (self.mode.startswith('html')
                         and node.tagName in HTML_OPTIONAL_END_TAGS):
                     yield ir.TextNode('</%s>' % node.tagName, guard)
