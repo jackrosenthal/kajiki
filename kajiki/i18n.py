@@ -10,18 +10,16 @@ def gettext(s):
 
 
 def extract(fileobj, keywords, comment_tags, options):
-    '''Babel entry point that extracts translation strings from templates.'''
+    '''Babel entry point that extracts translation strings from XML templates.
+    '''
     from .xml_template import _Parser, _Compiler, expand
-    text = fileobj.read()
-    doc = _Parser('<string>', text).parse()
+    doc = _Parser(filename='<string>', source=fileobj.read()).parse()
     expand(doc)
-    compiler = _Compiler(
-        '<string>', doc,
-        options.get('mode', 'xml'),
-        is_fragment=options.get('is_fragment', False),
-        force_mode=options.get('force_mode', False))
-    ir_ = compiler.compile()
-    for node in ir_:
+    compiler = _Compiler(filename='<string>', doc=doc,
+                         mode=options.get('mode', 'xml'),
+                         is_fragment=options.get('is_fragment', False))
+    ir = compiler.compile()
+    for node in ir:
         if isinstance(node, TranslatableTextNode):
             if node.text.strip():
                 for line in node.text.split('\n'):
