@@ -8,7 +8,7 @@ import sys
 import traceback
 import xml.dom.minidom
 from unittest import TestCase, main
-from nine import chr
+from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 
@@ -69,6 +69,7 @@ def perform(source, expected_output, context=dict(name='Rick'),
             mode='xml', is_fragment=True):
     tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment)
     rsp = tpl(context).render()
+    assert isinstance(rsp, str), 'render() must return a unicode string.'
     assert rsp == expected_output, rsp
     return tpl
 
@@ -513,10 +514,16 @@ context=dict(parrot='Bereft of life, it rests in peace'))
         perform(TPL, expected_output="<p>Albatross!!!</p>")
 
     def test_literal(self):
+        '''Escape by default; literal() marks as safe.'''
         context = dict(albatross="<em>Albatross!!!</em>")
         expected_output = "<p><em>Albatross!!!</em></p>"
         perform("<p>${literal(albatross)}</p>", expected_output, context)
         perform("<p>${Markup(albatross)}</p>", expected_output, context)
+        perform("<p>$albatross</p>",
+                "<p>&lt;em&gt;Albatross!!!&lt;/em&gt;</p>", context)
+        from kajiki.util import literal
+        markup = '<b>"&amp;"</b>'
+        assert ''.join(list(literal(markup))) == markup
 
 
 if __name__ == '__main__':
