@@ -157,15 +157,18 @@ class _Compiler(object):
         else:
             if node.childNodes:
                 yield ir.TextNode('>', guard)
-                if node.tagName in HTML_CDATA_TAGS:  # <script>, <style>
-                    content = repr(unescape(
-                        ''.join([c.data for c in node.childNodes])))
-                    if self.mode == 'xml':
+                if node.tagName in HTML_CDATA_TAGS:
+                    # Special behaviour for <script>, <style> tags:
+                    if self.mode == 'xml':  # Start escaping
                         yield ir.TextNode('/*<![CDATA[*/')
-                        yield ir.ExprNode(content, safe=True)
+                    # Need to unescape the contents of these tags
+                    for child in node.childNodes:
+                        assert isinstance(child, dom.Text)
+                        for x in self._compile_text(child):
+                            x.text = unescape(x.text)
+                            yield x
+                    if self.mode == 'xml':  # Finish escaping
                         yield ir.TextNode('/*]]>*/')
-                    else:
-                        yield ir.ExprNode(content, safe=True)
                 else:
                     for cn in node.childNodes:
                         for x in self._compile_node(cn):

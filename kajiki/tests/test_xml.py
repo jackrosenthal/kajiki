@@ -103,6 +103,12 @@ class TestSimple(TestCase):
                 mode='xml')
         perform(src, '<style>\n{0}</style>'.format(style), mode='html')
 
+    def test_script_variable(self):
+        '''Interpolate variables inside <script> tags'''
+        src = '<script><![CDATA[ $name ]]></script>'
+        perform(src, '<script>/*<![CDATA[*/ Rick /*]]>*/</script>', mode='xml')
+        perform(src, '<script> Rick </script>', mode='html')
+
     def test_pre_whitespace(self):
         src = '<pre name="foo">\nHey there.  \n\n    I am indented.\n' \
               '</pre>'
