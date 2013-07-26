@@ -32,7 +32,15 @@ class Node(object):
         return PyLine(self.filename, self.lineno, text)
 
 
+class PassNode(Node):
+    def py(self):
+        # 'pass' would result in: TypeError: 'NoneType' object is not iterable
+        yield self.line('yield ""')
+
+
 class HierNode(Node):
+    '''Base for nodes that contain an indented Python block (def, for, if etc.)
+    '''
     def __init__(self, body):
         super(HierNode, self).__init__()
         self.body = tuple(x for x in body if x is not None)
@@ -133,7 +141,7 @@ class DefNode(HierNode):
         for x in self.body_iter():
             yield x
             is_empty = False
-        if is_empty:
+        if is_empty:  # In Python, a function without a body is a SyntaxError.
             yield PassNode()  # Prevent creation of a function without a body
         yield DedentNode()
 
@@ -257,6 +265,7 @@ class ElseNode(HierNode):
 
 
 class TextNode(Node):
+    '''Node that outputs Python literals.'''
     def __init__(self, text, guard=None):
         super(TextNode, self).__init__()
         self.text = text
@@ -284,6 +293,9 @@ class TranslatableTextNode(TextNode):
 
 
 class ExprNode(Node):
+    '''Node that contains a Python expression to be evaluated when the template
+    is executed.
+    '''
     def __init__(self, text, safe=False):
         super(ExprNode, self).__init__()
         self.text = text
@@ -296,12 +308,8 @@ class ExprNode(Node):
             yield self.line('yield self.__kj__.escape(%s)' % self.text)
 
 
-class PassNode(Node):
-    def py(self):
-        yield self.line('yield ""')
-
-
 class AttrNode(HierNode):
+    '''Node that renders HTML/XML attributes.'''
     class AttrTail(Node):
         def __init__(self, parent):
             super(AttrNode.AttrTail, self).__init__()
@@ -319,10 +327,9 @@ class AttrNode(HierNode):
     def __init__(self, attr, value, guard=None, mode='xml'):
         super(AttrNode, self).__init__(value)
         self.attr = attr
-        # self.value = value
         self.guard = guard
         self.mode = mode
-        self.attrname, self.genname = gen_name(), gen_name()
+        self.genname = gen_name()
 
     def py(self):
         yield self.line('def %s():' % self.genname)
