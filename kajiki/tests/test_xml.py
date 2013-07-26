@@ -479,11 +479,12 @@ class TestAttributes(TestCase):
         perform(TPL, TPL, mode='xml')
         perform(TPL, TPL[:-4], mode='html')
 
-    def test_dynamic_attr_value(self):
+    def test_escape_attr_values(self):
         '''Correctly escape attribute values.'''
         context = dict(url='https://domain.com/path?a=1&b=2')
-        source = '<a href="$url">Link</a>'
-        output = '<a href="https://domain.com/path?a=1&amp;b=2">Link</a>'
+        source = '''<a title='"Ha!"' href="$url">Link</a>'''
+        output = '<a href="https://domain.com/path?a=1&amp;b=2" ' \
+                 'title="&quot;Ha!&quot;">Link</a>'
         perform(source, output, context, mode='html')
         perform(source, output, context, mode='xml')
 
