@@ -473,6 +473,12 @@ class TestAttributes(TestCase):
                 '<!DOCTYPE html><input checked type="checkbox">',
                 context1, mode=None, is_fragment=False)
 
+    def test_xml_namespaces(self):
+        '''Namespaced attributes pass through.'''
+        TPL = '<p xml:lang="en">English text</p>'
+        perform(TPL, TPL, mode='xml')
+        perform(TPL, TPL[:-4], mode='html')
+
 
 class TestDebug(TestCase):
     def test_debug(self):
