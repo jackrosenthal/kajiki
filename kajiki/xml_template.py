@@ -24,15 +24,6 @@ from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 
 impl = dom.getDOMImplementation(' ')
 
-_pattern = r'''
-\$(?:
-    (?P<expr_escaped>\$) |      # Escape $$
-    (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
-    {(?P<expr_braced>) | # ${....
-    (?P<expr_invalid>)
-)'''
-_re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
-
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
                 encoding='utf-8'):
@@ -138,9 +129,8 @@ class _Compiler(object):
         yield ir.TextNode('<%s' % node.tagName, guard)
         for k, v in sorted(node.attributes.items()):
             tc = _TextCompiler(self.filename, v, node.lineno,
-                               ir.TextNode)
+                               ir.TextNode, in_html_attr=True)
             v = list(tc)
-            # v = ''.join(n.text for n in tc)
             if k == 'py:content':
                 content = node.getAttribute('py:content')
                 continue
@@ -308,14 +298,19 @@ class _Compiler(object):
 
 
 class _TextCompiler(object):
+    '''Separates expressions such as ${some_var} from the ordinary text
+    around them in the template source and generates ExprNode instances and
+    TextNode instances accordingly.
+    '''
     def __init__(self, filename, source, lineno,
-                 node_type=ir.TranslatableTextNode):
+                 node_type=ir.TranslatableTextNode, in_html_attr=False):
         self.filename = filename
         self.source = source
         self.orig_lineno = lineno
         self.lineno = 0
         self.pos = 0
         self.node_type = node_type
+        self.in_html_attr = in_html_attr
 
     def text(self, text):
         node = self.node_type(text)
@@ -324,7 +319,9 @@ class _TextCompiler(object):
         return node
 
     def expr(self, text):
-        node = ir.ExprNode(text)
+        # *safe* being True here avoids escaping twice, since
+        # HTML attributes are always escaped in the end.
+        node = ir.ExprNode(text, safe=self.in_html_attr)
         node.lineno = self.real_lineno
         self.lineno += text.count('\n')
         return node
@@ -333,9 +330,19 @@ class _TextCompiler(object):
     def real_lineno(self):
         return self.orig_lineno + self.lineno
 
+    _pattern = r'''
+    \$(?:
+        (?P<expr_escaped>\$) |      # Escape $$
+        (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
+        {(?P<expr_braced>) | # ${....
+        (?P<expr_invalid>)
+    )'''
+    _re_pattern = re.compile(
+        _pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
+
     def __iter__(self):
         source = self.source
-        for mo in _re_pattern.finditer(source):
+        for mo in self._re_pattern.finditer(source):
             start = mo.start()
             if start > self.pos:
                 yield self.text(source[self.pos:start])

@@ -68,10 +68,15 @@ class TestExpand(TestCase):
 def perform(source, expected_output, context=dict(name='Rick'),
             mode='xml', is_fragment=True):
     tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment)
-    rsp = tpl(context).render()
-    assert isinstance(rsp, str), 'render() must return a unicode string.'
-    assert rsp == expected_output, rsp
-    return tpl
+    try:
+        rsp = tpl(context).render()
+        assert isinstance(rsp, str), 'render() must return a unicode string.'
+        assert rsp == expected_output, rsp
+    except:
+        print('\n' + tpl.py_text)
+        raise
+    else:
+        return tpl
 
 
 class TestSimple(TestCase):
@@ -480,7 +485,7 @@ class TestAttributes(TestCase):
         perform(TPL, TPL[:-4], mode='html')
 
     def test_escape_attr_values(self):
-        '''Correctly escape attribute values.'''
+        '''Escape static and dynamic attribute values.'''
         context = dict(url='https://domain.com/path?a=1&b=2')
         source = '''<a title='"Ha!"' href="$url">Link</a>'''
         output = '<a href="https://domain.com/path?a=1&amp;b=2" ' \

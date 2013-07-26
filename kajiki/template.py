@@ -4,8 +4,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import re
 import types
-from nine import IS_PYTHON2, basestring, str, iteritems, nimport
-escape = nimport('html:escape')
+from nine import IS_PYTHON2, basestring, str, iteritems
 
 try:
     from functools import update_wrapper
@@ -25,12 +24,6 @@ from .html_utils import HTML_EMPTY_ATTRS
 from .ir import generate_python
 from . import lnotab
 from kajiki import i18n
-
-re_escape = re.compile(r'&|<|>')
-escape_dict = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;'}
 
 
 class _obj(object):
@@ -147,17 +140,25 @@ class _Template(object):
         return r
 
     def _escape(self, value):
-        if value is None:
+        "Returns the given HTML with ampersands, carets and quotes encoded."
+        if value is None or isinstance(value, flattener):
             return value
         if hasattr(value, '__html__'):
             return value.__html__()
-        if type(value) == flattener:
-            return value
         uval = str(value)
-        if re_escape.search(uval):
-            return escape(uval)
+        if self._re_escape.search(uval):  # Scan the string before working.
+            # stdlib escape() is inconsistent between Python 2 and Python 3.
+            # In 3, html.escape() translates the single quote to '&#39;'
+            # In 2.6 and 2.7, cgi.escape() does not touch the single quote.
+            # Preserve our tests and Kajiki behaviour across Python versions:
+            return uval.replace('&', '&amp;').replace('<', '&lt;') \
+                .replace('>', '&gt;').replace('"', '&quot;')
+                # .replace("'", '&#39;'))
+            # Above we do NOT escape the single quote; we don't need it because
+            # all HTML attributes are double-quoted in our output.
         else:
             return uval
+    _re_escape = re.compile(r'&|<|>|"')
 
     def _render_attrs(self, attrs, mode):
         if hasattr(attrs, 'items'):
@@ -176,7 +177,7 @@ class _Template(object):
         for part in it:
             if part is None:
                 continue
-            result.append(part)
+            result.append(str(part))
         if result:
             return ''.join(result)
         else:
