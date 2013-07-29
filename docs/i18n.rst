@@ -50,4 +50,4 @@ Please consult the Babel documentation for further details.  If all goes well,
 the extraction process should create a POT file containing the strings from your
 Kajiki templates and your Python source files.
 
-.. _Babel: http://babel.edgewall.org/
+.. _Babel: http://babel.pocoo.org/

@@ -2,5 +2,5 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-__version__ = '0.3'
-__release__ = '0.3.5'
+__version__ = '0.4'
+__release__ = '0.4.0'

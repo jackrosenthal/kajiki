@@ -17,7 +17,7 @@ from kajiki import version as _version
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
+# sys.path.append(os.path.abspath('..'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -42,7 +42,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Kajiki'
-copyright = u'2010, Rick Copeland'
+copyright = u'2010-2013, Rick Copeland'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

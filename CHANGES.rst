@@ -1,5 +1,9 @@
-0.4.0
-=====
+CHANGES
+=======
+
+0.4.0 (2013-07-29)
+------------------
+
 * Support Python versions 2.6, 2.7, 3.2, 3.3 in a single codebase
   using the *nine* library.
 * Support HTML entities as well as XML entities in input templates.
@@ -17,13 +21,24 @@
 * Use Travis for continuous integration.
 * The whole codebase is formatted according to PEP8.
 
-0.3.2
-=====
+0.3.5 (2012-05-07)
+------------------
+
+* Several bugfixes
+* Output HTML attributes in alphabetical order (for testability)
+
+0.3.4 (2011-06-01)
+------------------
+
+* Make Kajiki work on Python 2.4
+
+0.3.2 (2010-11-26)
+------------------
 
 * Fix Python 2.5 syntax error
 
-0.3.1
-=====
+0.3.1 (2010-11-24)
+------------------
 
 * Add support for py:with
 * Remove unused babel import that was breaking pip/easy_install
@@ -31,8 +46,8 @@
 * Correctly strip None attributes and expressions
 * Turn off autoescaping in text templates
 
-0.3
-===
+0.3 (2010-10-10)
+----------------
 
 * Adds i18n support
 * Fixes several bugs: [#7], [#9], [#10]

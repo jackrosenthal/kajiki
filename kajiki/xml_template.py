@@ -466,10 +466,10 @@ class _Parser(sax.ContentHandler):
         raise NotImplementedError('startElementNS')
 
     def startPrefixMapping(self, prefix, uri):  # pragma no cover
-        raise NotImplemented('startPrefixMapping')
+        raise NotImplementedError('startPrefixMapping')
 
     def endPrefixMapping(self, prefix):  # pragma no cover
-        raise NotImplemented('endPrefixMapping')
+        raise NotImplementedError('endPrefixMapping')
 
     # LexicalHandler implementation
     def comment(self, text):
