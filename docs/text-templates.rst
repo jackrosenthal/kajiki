@@ -21,7 +21,7 @@ Basic Expressions
 Let's start with a hello world template:
 
 >>> Template = kajiki.TextTemplate('Hello, $name!')
->>> print Template(dict(name='world')).render()
+>>> print(Template(dict(name='world')).render())
 Hello, world!
 
 By default, the $-syntax picks up any identifiers following it, as well as any
@@ -29,13 +29,13 @@ periods.  If you want something more explicit, use the extended expression form
 as follows:
 
 >>> Template = kajiki.TextTemplate('Hello, 2+2 is ${2+2}')
->>> print Template().render()
+>>> print(Template().render())
 Hello, 2+2 is 4
 
 If you wish to include a literal $, simply double it:
 
 >>> Template = kajiki.TextTemplate('The price is $$${price}')
->>> print Template(dict(price='5.00')).render()
+>>> print(Template(dict(price='5.00')).render())
 The price is $5.00
 
 Control Flow
@@ -62,9 +62,9 @@ an 'end' directive (either `{%end%}` or `%end`.
 Only render the enclosed content if the expression evaluates to a truthy value:
 
 >>> Template = kajiki.TextTemplate('{%if foo %}bar{%else%}baz{%end%}')
->>> print Template(dict(foo=True)).render()
+>>> print(Template(dict(foo=True)).render())
 bar
->>> print Template(dict(foo=False)).render()
+>>> print(Template(dict(foo=False)).render())
 baz
 
 %switch, %case, %else
@@ -75,9 +75,9 @@ Perform multiple tests to render one of several alternatives.  The first matchin
 
 >>> Template = kajiki.TextTemplate('''$i is \
 ... {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}''')
->>> print Template(dict(i=4)).render()
+>>> print(Template(dict(i=4)).render())
 4 is even
->>> print Template(dict(i=3)).render()
+>>> print(Template(dict(i=3)).render())
 3 is odd
 
 %for
@@ -88,7 +88,7 @@ Repeatedly render the content for each item in an iterable:
 >>> Template = kajiki.TextTemplate('''%for i in range(3)
 ... $i
 ... %end''')
->>> print Template().render(),
+>>> print(Template().render(), end='')
 0
 1
 2
@@ -104,10 +104,10 @@ Defines a function that can be used elsewhere in the template:
 ... %for i in range(2)
 ... $i is ${evenness(i)}
 ... %end''')
->>> print Template().render(),
+>>> print(Template().render(), end='')
 0 is even
 1 is odd
-   
+
 %call
 ^^^^^^^^^^^^^^^^^^
 
@@ -122,8 +122,8 @@ expansion of a function call.  In normal circumstances, you would just use `${my
 ... %end
 ... %call(n) quote(%caller, 'the raven')
 ... Nevermore $n\\
-... %end''')    
->>> print Template().render(),
+... %end''')
+>>> print(Template().render(), end='')
 Quoth the raven, "Nevermore 0."
 Quoth the raven, "Nevermore 1."
 
@@ -161,7 +161,7 @@ following template in a file `lib.txt`:
         %else
             odd\
         %end
-    %end        
+    %end
 
 Then (using the `FileLoader`) we could write a template using the `evenness`
 function as follows:
@@ -197,7 +197,7 @@ For instance, consider the following template "parent.txt":
 
     ${sign(from_)}
 
-This would render to the following (assuming a context of 
+This would render to the following (assuming a context of
 `dict(to=Mark, from_=Rick)`:
 
 .. code-block::none
@@ -206,7 +206,7 @@ This would render to the following (assuming a context of
 
    It was good seeing you last friday.  Thanks for the gift!
 
-   Sincerely, 
+   Sincerely,
    Rick
 
 Now we can extend "parent.txt" with "child.txt":
@@ -219,7 +219,7 @@ Now we can extend "parent.txt" with "child.txt":
     %end
     %block body
     ${parent_block()}\
-    
+
     And don't forget you owe me money!
     %end
 
@@ -238,7 +238,7 @@ Rendering this template would then give us:
 
 Notice how in the child block, we have overridden both the block "body" and the
 function "greet."  When overriding a block, we always have access to the parent
-template's block of the same name via the `parent_block()` function.  
+template's block of the same name via the `parent_block()` function.
 
 If you ever need to access the parent template itself (perhaps to call another
 function), kajiki provides access to a special variable in child templates
@@ -285,7 +285,7 @@ inheritance hierarchy:
 ... 'mid.txt':mid,
 ... 'child.txt':child})
 >>> Template = loader.import_('child.txt')
->>> print Template(dict(name='Rick')).render(),
+>>> print(Template(dict(name='Rick')).render(), end='')
 # Header name=Rick
 ## Child Body
 ## Parent Body
@@ -294,4 +294,3 @@ local.id() = parent
 self.id() = child
 child.id() = mid
 # Footer
-

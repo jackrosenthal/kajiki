@@ -49,11 +49,12 @@ steps should suffice:
    ``py:block`` directive.
 
 Kajiki also provides some helper functions of Genshi:
+
 * ``defined('some_variable')`` (which returns True if 'some_variable' exists
   in the template context),
 * ``value_of('name', default_value)``, and
 * ``Markup(some_string)`` (which marks a string so it won't be escaped in the
-output), though Kajiki prefers to call this ``literal(some_string)``.
+  output), though Kajiki prefers to call this ``literal(some_string)``.
 
 Example Migration
 ---------------------------------

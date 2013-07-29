@@ -112,14 +112,14 @@ For instance:
 >>> Template = kajiki.XMLTemplate('<h1>Hello, $name!</h1>')
 >>> t = Template(dict(name='world'))
 >>> t.render()
-u'<h1>Hello, world!</h1>'
+'<h1>Hello, world!</h1>'
 
 Using text templates is similar:
 
 >>> Template = kajiki.TextTemplate('Hello, $name!')
 >>> t = Template(dict(name='world'))
 >>> t.render()
-u'Hello, world!'
+'Hello, world!'
 
 You can also use a template loader to indirectly generate the template classes.
 Using a template loader gives two main advantages over directly instantiating
@@ -148,11 +148,11 @@ For example:
 
 >>> Template = kajiki.XMLTemplate('<em>${items[0].capitalize()}</em>')
 >>> Template(dict(items=['first', 'second'])).render()
-u'<em>First</em>'
+'<em>First</em>'
 >>> import sys
->>> Template = kajiki.TextTemplate('Maxint is $sys.maxint')
+>>> Template = kajiki.TextTemplate('Maxint is $sys.maxsize')
 >>> Template(dict(sys=sys)).render()
-u'Maxint is 9223372036854775807'
+'Maxint is 9223372036854775807'
 
 Escaping
 ^^^^^^^^^^^^^^
@@ -167,7 +167,7 @@ Traceback (most recent call last):
 NameError: global name 'foo' is not defined
 >>> Template = kajiki.XMLTemplate('<em>$$foo</em>')
 >>> Template().render()
-u'<em>$foo</em>'
+'<em>$foo</em>'
 
 Code Blocks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -215,7 +215,7 @@ first line of the Python with a percent (%) sign:
 ... >${os.path.join('a', 'b', 'c')}</py:def
 ... >${test()}</div>''')
 >>> Template().render()
-u'<div>a/b/c</div>'
+'<div>a/b/c</div>'
 
 In text templates, replace the %py directive with %py%:
 
@@ -225,7 +225,7 @@ In text templates, replace the %py directive with %py%:
 ... %end
 ... ${test()}''')
 >>> Template().render()
-u'a/b/c'
+'a/b/c'
 
 Built-in Functions and Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -6,11 +6,12 @@
 .. image:: media/Logo.png
 
 Welcome to Kajiki's documentation!
-==================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Code Development / Issue Tracker / Forums are hosted on SourceForge_
+.. include:: ../README.rst
 
-Contents:
+Documentation contents
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 2
@@ -28,5 +29,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. _SourceForge: http://sourceforge.net/p/kajiki/

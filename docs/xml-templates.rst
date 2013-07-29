@@ -37,26 +37,26 @@ template to determine how to render:
 ...     </body>
 ... </html>'''
 >>> Template = kajiki.XMLTemplate(tpl_text)
->>> print Template().render().strip()
+>>> print(Template().render().strip())
 <!DOCTYPE html><html>
     <head><!--  Some stuff here  -->
     <body>
         <form>
-            <input type="checkbox" CHECKED>
+            <input checked type="checkbox">
             <select>
-                <option SELECTED>One
+                <option selected>One
                 <option>Two
                 <option>Three
             </select>
         </form>
 >>> # If we want to override the detected type, we can pass a 'mode' param
 >>> Template = kajiki.XMLTemplate(tpl_text, mode='xml')
->>> print Template().render().strip()
+>>> print(Template().render().strip())
 <!DOCTYPE html><html>
     <head><!--  Some stuff here  --></head>
     <body>
         <form>
-            <input type="checkbox" checked="checked"/>
+            <input checked="checked" type="checkbox"/>
             <select>
                 <option selected="selected">One</option>
                 <option>Two</option>
@@ -68,12 +68,12 @@ template to determine how to render:
 >>> # We can also omit the generated DOCTYPE by specifying the template
 >>> # is a fragment
 >>> Template = kajiki.XMLTemplate(tpl_text, mode='xml', is_fragment=True)
->>> print Template().render().strip()
+>>> print(Template().render().strip())
 <html>
     <head><!--  Some stuff here  --></head>
     <body>
         <form>
-            <input type="checkbox" checked="checked"/>
+            <input checked="checked" type="checkbox"/>
             <select>
                 <option selected="selected">One</option>
                 <option>Two</option>
@@ -93,7 +93,7 @@ template to determine how to render:
     ... <!-- This comment is preserved.
     ... --><!--! This comment is stripped. -->
     ... </div>''')
-    >>> print Template().render()
+    >>> print(Template().render())
     <div>
     <!--  This comment is preserved.
      -->
@@ -105,7 +105,7 @@ Basic Expressions
 Let's start with a hello world template:
 
 >>> Template = kajiki.XMLTemplate('<div>Hello, $name!</div>')
->>> print Template(dict(name='world')).render()
+>>> print(Template(dict(name='world')).render())
 <div>Hello, world!</div>
 
 By default, the $-syntax picks up any identifiers following it, as well as any
@@ -113,19 +113,19 @@ periods.  If you want something more explicit, use the extended expression form
 as follows:
 
 >>> Template = kajiki.XMLTemplate('<div>Hello, 2+2 is ${2+2}</div>')
->>> print Template().render()
+>>> print(Template().render())
 <div>Hello, 2+2 is 4</div>
 
 If you wish to include a literal $, simply double it:
 
 >>> Template = kajiki.XMLTemplate('<div>The price is $$${price}</div>')
->>> print Template(dict(price='5.00')).render()
+>>> print(Template(dict(price='5.00')).render())
 <div>The price is $5.00</div>
 
 You can also include expressions in template attributes:
 
 >>> Template = kajiki.XMLTemplate('<div id="$foo">Bar</div>')
->>> print Template(dict(foo='baz')).render()
+>>> print(Template(dict(foo='baz')).render())
 <div id="baz">Bar</div>
 
 Control Flow
@@ -142,14 +142,14 @@ py:if, py:else
 Only render the enclosed content if the expression evaluates to a truthy value:
 
 >>> Template = kajiki.XMLTemplate('<div><py:if test="foo">bar</py:if><py:else>baz</py:else></div>')
->>> print Template(dict(foo=True)).render()
+>>> print(Template(dict(foo=True)).render())
 <div>bar</div>
->>> print Template(dict(foo=False)).render()
+>>> print(Template(dict(foo=False)).render())
 <div>baz</div>
 >>> Template = kajiki.XMLTemplate('<div><span py:if="foo">bar</span></div>')
->>> print Template(dict(foo=True)).render()
+>>> print(Template(dict(foo=True)).render())
 <div><span>bar</span></div>
->>> print Template(dict(foo=False)).render()
+>>> print(Template(dict(foo=False)).render())
 <div></div>
 
 py:switch, py:case, py:else
@@ -163,10 +163,10 @@ Perform multiple tests to render one of several alternatives.  The first matchin
 ... <py:case value="0">even</py:case>
 ... <py:else>odd</py:else>
 ... </py:switch></div>''')
->>> print Template(dict(i=4)).render()
+>>> print(Template(dict(i=4)).render())
 <div>
 4 is even</div>
->>> print Template(dict(i=3)).render()
+>>> print(Template(dict(i=3)).render())
 <div>
 3 is odd</div>
 
@@ -178,7 +178,7 @@ Repeatedly render the content for each item in an iterable:
 >>> Template = kajiki.XMLTemplate('''<ul>
 ... <li py:for="x in range(sz)">$x</li>
 ... </ul>''')
->>> print Template(dict(sz=3)).render()
+>>> print(Template(dict(sz=3)).render())
 <ul>
 <li>0</li><li>1</li><li>2</li>
 </ul>
@@ -194,7 +194,7 @@ Defines a function that can be used elsewhere in the template:
 ... ><ul>
 ... <li py:for="x in range(sz)">$x is ${evenness(x)}</li>
 ... </ul></div>''')
->>> print Template(dict(sz=3)).render()
+>>> print(Template(dict(sz=3)).render())
 <div><ul>
 <li>0 is even</li><li>1 is odd</li><li>2 is even</li>
 </ul></div>
@@ -214,7 +214,7 @@ expansion of a function call.  In normal circumstances, you would just use `${my
 ... </ul></py:def
 ... ><py:call args="n" function="quote(%caller, 'the raven')"
 ... >Nevermore $n</py:call></div>''')
->>> print Template(dict(sz=3)).render()
+>>> print(Template(dict(sz=3)).render())
 <div><ul>
    <li>Quoth the raven, Nevermore 0</li><li>Quoth the raven, Nevermore 1</li><li>Quoth the raven, Nevermore 2</li>
 </ul></div>
@@ -274,7 +274,7 @@ the block:
 ... <div py:with="a=5">$a</div>
 ... <div>$a</div>
 ... </div>''')
->>> print Template().render()
+>>> print(Template().render())
 <div>
 <div>foo</div>
 <div>5</div>
@@ -291,16 +291,16 @@ With the `py:attrs` custom attribute, you can include dynamic attributes in an
 xml/html tag by passing a either a Python dict or a list of pairs:
 
 >>> Template = kajiki.XMLTemplate('<div py:attrs="attrs"/>')
->>> print Template(dict(attrs={'id':'foo', 'class':'bar'})).render()
-<div id="foo" class="bar"/>
->>> print Template(dict(attrs=[('id', 'foo'), ('class', 'bar')])).render()
-<div id="foo" class="bar"/>
+>>> print(Template(dict(attrs={'id':'foo', 'class':'bar'})).render())
+<div class="bar" id="foo"/>
+>>> print(Template(dict(attrs=[('id', 'foo'), ('class', 'bar')])).render())
+<div class="bar" id="foo"/>
 
 Any attribute values that evaluate to `None` will not be emitted in the generated
 markup:
 
 >>> Template = kajiki.XMLTemplate('<div py:attrs="attrs"/>')
->>> print Template(dict(attrs={'id':'foo', 'class':None})).render()
+>>> print(Template(dict(attrs={'id':'foo', 'class':None})).render())
 <div id="foo"/>
 
 py:strip
@@ -310,7 +310,7 @@ With ``py:strip``, you can remove the tag to which the attribute is attached
 without removing the content of the tag:
 
 >>> Template = kajiki.XMLTemplate('<div><div py:strip="True">Foo</div></div>')
->>> print Template().render()
+>>> print(Template().render())
 <div>Foo</div>
 
 As a shorthand, if the value of the ``py:strip`` attribute is empty, that has
@@ -323,7 +323,7 @@ With `py:content`, you can remove the tag to which the attribute is attached
 without removing the content of the tag:
 
 >>> Template = kajiki.XMLTemplate('<div py:content="content"/>')
->>> print Template(dict(content="Foo")).render()
+>>> print(Template(dict(content="Foo")).render())
 <div>Foo</div>
 
 py:replace
@@ -333,7 +333,7 @@ With `py:replace`, you can replace the entire tag to which the document is
 attached and its children:
 
 >>> Template = kajiki.XMLTemplate('<div py:replace="content"/>')
->>> print Template(dict(content="Foo")).render()
+>>> print(Template(dict(content="Foo")).render())
 Foo
 
 Inheritance (py:extends, py:block)
@@ -440,7 +440,7 @@ inheritance hierarchy:
 ... 'mid.html':mid,
 ... 'child.html':child})
 >>> Template = loader.import_('child.html')
->>> print Template(dict(name='Rick')).render()
+>>> print(Template(dict(name='Rick')).render())
 <div>
 <h1>Header name=Rick</h1>
 <div>
@@ -526,7 +526,7 @@ you should either:
 1) Externalize these contents onto their own files, or
 2) Remembering that Kajiki takes XML as input, use CDATA sections inside
    these tags in order to escape characters that are illegal in XML, such as
-   ``<``, ``>`` and ``&``. Here is an example:
+   ``<``, ``>`` and ``&``. Here is an example::
 
        <style><![CDATA[
            html > body { display: none; }
