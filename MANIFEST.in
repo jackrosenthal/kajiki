@@ -1,0 +1,6 @@
+# http://docs.python.org/2/distutils/sourcedist.html#the-manifest-in-template
+include *.rst
+recursive-include kajiki *.py *.rst *.md *.kajiki *.genshi *.txt *.pot *.po *.mo *.html *.css *.js *.ico *.jpg *.png
+prune kajiki/perf
+recursive-include docs *
+prune docs/_build
