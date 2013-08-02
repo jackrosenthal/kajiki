@@ -5,8 +5,6 @@ from __future__ import (absolute_import, division, print_function)
 import os
 from setuptools import setup, find_packages
 # http://peak.telecommunity.com/DevCenter/setuptools#developer-s-guide
-import codecs
-open = lambda path: codecs.open(path, encoding='utf-8')
 
 # Get version info
 __version__ = None
@@ -15,6 +13,8 @@ exec(open('kajiki/version.py').read())
 
 
 def content_of(*files):
+    import codecs
+    open = lambda path: codecs.open(path, encoding='utf-8')
     here = os.path.abspath(os.path.dirname(__file__))
     content = []
     for f in files:
