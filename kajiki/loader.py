@@ -84,14 +84,10 @@ class FileLoader(Loader):
         filename = self._filename(name)
         self._timestamps[name] = os.stat(filename).st_mtime
         if self._force_mode == 'text':
-            with codecs.open(filename, encoding=encoding) as f:
-                source = f.read()
-            return TextTemplate(source=source, filename=filename,
+            return TextTemplate(filename=filename,
                 autoescape=self._autoescape_text, *args, **kwargs)
         elif self._force_mode:
-            with open(filename, 'rb') as f:
-                source = f.read()
-            return XMLTemplate(source=source, filename=filename,
+            return XMLTemplate(filename=filename,
                 mode=self._force_mode, *args, **kwargs)
         else:
             ext = os.path.splitext(filename)[1][1:]
