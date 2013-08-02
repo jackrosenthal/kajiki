@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.4.1 (2013-08-01)
+------------------
+
+* There was a showstopper regression in FileLoader. Fixes #1
+
 0.4.0 (2013-07-29)
 ------------------
 
