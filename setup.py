@@ -5,6 +5,8 @@ from __future__ import (absolute_import, division, print_function)
 import os
 from setuptools import setup, find_packages
 # http://peak.telecommunity.com/DevCenter/setuptools#developer-s-guide
+import codecs
+open = lambda path: codecs.open(path, encoding='utf-8')
 
 # Get version info
 __version__ = None
@@ -18,7 +20,7 @@ def content_of(*files):
     for f in files:
         with open(os.path.join(here, f)) as stream:
             content.append(stream.read())
-    return '\n\n'.join(content)
+    return '\n'.join(content)
 
 
 setup(name='Kajiki',
