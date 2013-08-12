@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.4.3 (2013-08-12)
+------------------
+
+* Accept "$(" without erroring out. Easier to write jQuery stuff.
+
 0.4.2 (2013-08-01)
 ------------------
 
