@@ -84,6 +84,18 @@ class TestSimple(TestCase):
         perform(source='<img src="/foo/bar.baz.gif" alt="" />', mode='html',
             expected_output='<img alt="" src="/foo/bar.baz.gif">')
 
+    def test_pre_whitespace(self):
+        src = '<pre name="foo">\nHey there.  \n\n    I am indented.\n' \
+              '</pre>'
+        perform(src, src, mode='html')
+        perform(src, src, mode='xml')
+
+    def test_textarea_whitespace(self):
+        src = '<textarea name="foo">\nHey there.  \n\n    I am indented.\n' \
+              '</textarea>'
+        perform(src, src, mode='html')
+        perform(src, src, mode='xml')
+
     def test_script(self):
         'Always close script tags, even in xml mode.'
         source = '<html><script src="public"/></html>'
@@ -115,18 +127,6 @@ class TestSimple(TestCase):
         perform(src, '<script>/*<![CDATA[*/ Rick /*]]>*/</script>', mode='xml')
         perform(src, '<script> Rick </script>', mode='html')
 
-    def test_pre_whitespace(self):
-        src = '<pre name="foo">\nHey there.  \n\n    I am indented.\n' \
-              '</pre>'
-        perform(src, src, mode='html')
-        perform(src, src, mode='xml')
-
-    def test_textarea_whitespace(self):
-        src = '<textarea name="foo">\nHey there.  \n\n    I am indented.\n' \
-              '</textarea>'
-        perform(src, src, mode='html')
-        perform(src, src, mode='xml')
-
     def test_expr_name(self):
         perform('<div>Hello, $name</div>', '<div>Hello, Rick</div>')
 
@@ -136,6 +136,19 @@ class TestSimple(TestCase):
     def test_expr_brace_complex(self):
         perform("<div>Hello, ${{'name':name}['name']}</div>",
                 '<div>Hello, Rick</div>')
+
+    def test_jquery_call_is_not_expr(self):
+        '''Ensure we handle '$(' as a text literal, since it cannot be a
+        valid variable sequence.  This simplifies, for example,
+        templates containing inline scripts with jQuery calls
+        which otherwise have to be written '$$(...'
+        '''
+        js = "$(function () { alert('.ready()'); });"
+        src = "<html><pre>" + js + "</pre><script>" + js + \
+              "</script></html>"
+        out = "<html><pre>" + js + "</pre><script>/*<![CDATA[*/" + js + \
+              "/*]]>*/</script></html>"
+        perform(src, out)
 
     def test_xml_entities(self):
         source = "<div>Cookies &amp; Cream</div>"

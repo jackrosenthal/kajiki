@@ -332,7 +332,7 @@ class _TextCompiler(object):
 
     _pattern = r'''
     \$(?:
-        (?P<expr_escaped>\$|(?=\()) |      # Escape $$, $(
+        (?P<expr_escaped>\$|(?=\()) |      # Escape '$$' or lookahead '$('
         (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
         {(?P<expr_braced>) | # ${....
         (?P<expr_invalid>)
