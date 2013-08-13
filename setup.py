@@ -63,5 +63,8 @@ setup(name='Kajiki',
       entry_points="""
           [babel.extractors]
           kajiki = kajiki.i18n:extract
+
+          [python.templating.engines]
+          kajiki = kajiki.integration.turbogears1:XMLTemplateEnginePlugin
       """,
 )
