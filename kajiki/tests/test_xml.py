@@ -127,6 +127,19 @@ class TestSimple(TestCase):
         perform(src, '<script>/*<![CDATA[*/ Rick /*]]>*/</script>', mode='xml')
         perform(src, '<script> Rick </script>', mode='html')
 
+    def test_escape_dollar(self):
+        perform('<div>$$</div>', '<div>$</div>')
+
+    def test_escape_dollar_followed_by_dollar(self):
+        perform('<div>$$$</div>', '<div>$$</div>')
+
+    def test_double_escape_dollar(self):
+        perform('<div>$$$$</div>', '<div>$$</div>')
+
+    def test_preserve_dollar_not_variable_brace(self):
+        perform('<div>$(</div>', '<div>$(</div>')
+        perform('<div>$.</div>', '<div>$.</div>')
+
     def test_expr_name(self):
         perform('<div>Hello, $name</div>', '<div>Hello, Rick</div>')
 
@@ -144,6 +157,16 @@ class TestSimple(TestCase):
         which otherwise have to be written '$$(...'
         '''
         js = "$(function () { alert('.ready()'); });"
+        src = "<html><pre>" + js + "</pre><script>" + js + \
+              "</script></html>"
+        out = "<html><pre>" + js + "</pre><script>/*<![CDATA[*/" + js + \
+              "/*]]>*/</script></html>"
+        perform(src, out)
+
+    def test_jquery_shortcut_is_not_expr(self):
+        '''Ensure we handle '$.' as a text literal in script blocks'''
+
+        js = "$.extend({}, {foo: 'bar'})"
         src = "<html><pre>" + js + "</pre><script>" + js + \
               "</script></html>"
         out = "<html><pre>" + js + "</pre><script>/*<![CDATA[*/" + js + \
