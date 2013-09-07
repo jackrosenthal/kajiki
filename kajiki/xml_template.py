@@ -332,10 +332,9 @@ class _TextCompiler(object):
 
     _pattern = r'''
     \$(?:
-        (?P<expr_escaped>\$|(?=\()) |      # Escape '$$' or lookahead '$('
         (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
         {(?P<expr_braced>) | # ${....
-        (?P<expr_invalid>)
+        \$ # $$ -> $
     )'''
     _re_pattern = re.compile(
         _pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
@@ -354,15 +353,11 @@ class _TextCompiler(object):
             elif groups['expr_named'] is not None:
                 self.pos = mo.end()
                 yield self.expr(groups['expr_named'])
-            elif groups['expr_escaped'] is not None:
+            else:
+                # handle $$ and $ followed by anything that is neither a valid
+                # variable name or braced expression
                 self.pos = mo.end()
                 yield self.text('$')
-            else:
-                msg = 'Syntax error %s:%s' % (self.filename, self.real_lineno)
-                for i, line in enumerate(self.source.splitlines()):
-                    print('%3d %s' % (i + 1, line))
-                print(msg)
-                assert False, groups
         if self.pos != len(source):
             yield self.text(source[self.pos:])
 
