@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.4.4 (2013-09-07)
+------------------
+
+* Also accept "$." without erroring out. In fact, accept anything.
+* Add integration plugin for TurboGears 1
+
 0.4.3 (2013-08-12)
 ------------------
 
