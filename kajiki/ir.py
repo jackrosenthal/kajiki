@@ -410,18 +410,14 @@ class PythonNode(Node):
 def optimize(iter_node):
     last_node = None
     for node in iter_node:
-        if type(node) == TextNode:
-            if (type(last_node) == TextNode
-                    and last_node.guard == node.guard):
-                last_node.text += node.text
-            else:
-                if last_node is not None:
-                    yield last_node
-                last_node = node
-        else:
-            if last_node is not None:
-                yield last_node
-            last_node = node
+        if (type(node) == TextNode and type(last_node) == TextNode
+                and last_node.guard == node.guard):
+            last_node.text += node.text
+            # Erase this node by not yielding it.
+            continue
+        if last_node is not None:
+            yield last_node
+        last_node = node
     if last_node is not None:
         yield last_node
 
