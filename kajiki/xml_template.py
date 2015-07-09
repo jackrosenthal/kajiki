@@ -153,14 +153,22 @@ class _Compiler(object):
                         yield ir.TextNode('/*<![CDATA[*/')
                     # Need to unescape the contents of these tags
                     for child in node.childNodes:
+                        # CDATA for scripts and styles are automatically managed.
+                        if getattr(child, '_cdata', False):
+                            continue
                         assert isinstance(child, dom.Text)
                         for x in self._compile_text(child):
-                            x.text = unescape(x.text)
+                            if child.escaped:  # If user declared CDATA no escaping happened.
+                                x.text = unescape(x.text)
                             yield x
                     if self.mode == 'xml':  # Finish escaping
                         yield ir.TextNode('/*]]>*/')
                 else:
                     for cn in node.childNodes:
+                        # Keep CDATA sections around if declared by user
+                        if getattr(cn, '_cdata', False):
+                            yield ir.TextNode(cn.data)
+                            continue
                         for x in self._compile_node(cn):
                             yield x
                 if not (self.mode.startswith('html')
@@ -396,6 +404,7 @@ class _Parser(sax.ContentHandler):
         self._doc._dtd, position, source = extract_dtd(source)
         # Use our own DTD just for XML parsing
         self._source = source[:position] + self.DTD + source[position:]
+        self._cdata_stack = []
 
     def parse(self):
         self._parser = parser = sax.make_parser()
@@ -434,9 +443,12 @@ class _Parser(sax.ContentHandler):
         assert name == popped.tagName
 
     def characters(self, content):
-        content = sax.saxutils.escape(content)
+        should_escape = not self._cdata_stack
+        if should_escape:
+            content = sax.saxutils.escape(content)
         node = self._doc.createTextNode(content)
         node.lineno = self._parser.getLineNumber()
+        node.escaped = should_escape
         self._els[-1].appendChild(node)
 
     def processingInstruction(self, target, data):
@@ -473,10 +485,18 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def startCDATA(self):
-        pass
+        node = self._doc.createTextNode('<![CDATA[')
+        node._cdata = True
+        node.lineno = self._parser.getLineNumber()
+        self._els[-1].appendChild(node)
+        self._cdata_stack.append(self._els[-1])
 
     def endCDATA(self):
-        pass
+        node = self._doc.createTextNode(']]>')
+        node._cdata = True
+        node.lineno = self._parser.getLineNumber()
+        self._els[-1].appendChild(node)
+        self._cdata_stack.pop()
 
     def startDTD(self, name, pubid, sysid):
         self._doc.doctype = impl.createDocumentType(name, pubid, sysid)
