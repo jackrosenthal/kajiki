@@ -128,12 +128,12 @@ class TestSimple(TestCase):
         perform(src, '<script> Rick </script>', mode='html')
 
     def test_CDATA_escaping(self):
-        src = u'''<myxml><data><![CDATA[&gt;&#240; $name]]></data></myxml>'''
+        src = '''<myxml><data><![CDATA[&gt;&#240; $name]]></data></myxml>'''
         perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>', mode='xml')
         perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>', mode='html')
 
     def test_CDATA_escaping_mixed(self):
-        src = u'''<myxml><data><![CDATA[&gt;&#240; $name]]> &gt;</data></myxml>'''
+        src = '''<myxml><data><![CDATA[&gt;&#240; $name]]> &gt;</data></myxml>'''
         perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]> &gt;</data></myxml>', mode='xml')
         perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]> &gt;</data></myxml>', mode='html')
 
