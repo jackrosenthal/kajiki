@@ -42,7 +42,7 @@ class MockLoader(Loader):
 
 class FileLoader(Loader):
     def __init__(self, path, reload=True, force_mode=None,
-                 autoescape_text=False):
+                 autoescape_text=False, xml_autoblocks=None):
         super(FileLoader, self).__init__()
         from kajiki import XMLTemplate, TextTemplate
         if isinstance(path, basestring):
@@ -53,6 +53,7 @@ class FileLoader(Loader):
         self._reload = reload
         self._force_mode = force_mode
         self._autoescape_text = autoescape_text
+        self._xml_autoblocks = xml_autoblocks
         self.extension_map = dict(
             txt=lambda *a, **kw: TextTemplate(
                 autoescape=self._autoescape_text, *a, **kw),
@@ -88,7 +89,9 @@ class FileLoader(Loader):
                 autoescape=self._autoescape_text, *args, **kwargs)
         elif self._force_mode:
             return XMLTemplate(filename=filename,
-                mode=self._force_mode, *args, **kwargs)
+                               mode=self._force_mode,
+                               autoblocks=self._xml_autoblocks,
+                               *args, **kwargs)
         else:
             ext = os.path.splitext(filename)[1][1:]
             return self.extension_map[ext](

@@ -26,7 +26,7 @@ impl = dom.getDOMImplementation(' ')
 
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
-                encoding='utf-8'):
+                encoding='utf-8', autoblocks=None):
     if source is None:
         with open(filename, encoding=encoding) as f:
             source = f.read()  # source is a unicode string
@@ -34,7 +34,8 @@ def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    compiler = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment)
+    compiler = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment,
+                         autoblocks=autoblocks)
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
@@ -48,7 +49,8 @@ def annotate(gen):
 
 
 class _Compiler(object):
-    def __init__(self, filename, doc, mode=None, is_fragment=False):
+    def __init__(self, filename, doc, mode=None, is_fragment=False,
+                 autoblocks=None):
         self.filename = filename
         self.doc = doc
         self.is_fragment = is_fragment
@@ -56,6 +58,7 @@ class _Compiler(object):
         self.functions['__main__()'] = []
         self.function_lnos = {}
         self.mod_py = []
+        self.autoblocks = autoblocks or []
         self.in_def = False
         self.is_child = False
         # The rendering mode is either specified in the *mode* argument,
@@ -100,6 +103,22 @@ class _Compiler(object):
         ir_node.filename = self.filename
         ir_node.lineno = dom_node.lineno
 
+    def _is_autoblock(self, node):
+        if node.tagName not in self.autoblocks:
+            return False
+
+        if node.hasAttribute('py:autoblock'):
+            guard = node.getAttribute('py:autoblock').lower()
+            if guard not in ('false', 'true'):
+                raise ValueError('py:autoblock is evaluated at compile time '
+                                 'and only accepts True/False constants')
+            if guard == 'false':
+                # We throw away the attribute so it doesn't remain in rendered nodes.
+                node.removeAttribute('py:autoblock')
+                return False
+
+        return True
+
     def _compile_node(self, node):
         if isinstance(node, dom.Comment):
             return self._compile_comment(node)
@@ -107,6 +126,10 @@ class _Compiler(object):
             return self._compile_text(node)
         elif isinstance(node, dom.ProcessingInstruction):
             return self._compile_pi(node)
+        elif self._is_autoblock(node):
+            # Set the name of the block equal to the tag itself.
+            node.setAttribute('name', node.tagName)
+            return self._compile_block(node)
         elif node.tagName.startswith('py:'):
             # Handle directives
             compiler = getattr(
