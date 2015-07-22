@@ -430,6 +430,82 @@ Thanks for the gift!</p>
 Sincerely,<br/><em>Rick</em>
 </div>''', rsp
 
+    def test_autoblocks(self):
+        loader = MockLoader({
+            'parent.html': XMLTemplate('''
+<html py:strip="">
+<head></head>
+<body>
+    <p py:block="body">It was good seeing you last Friday.
+    Thanks for the gift!</p>
+</body>
+</html>'''),
+            'child.html': XMLTemplate('''
+<html>
+<py:extends href="parent.html"/>
+<body><em>Great conference this weekend!</em></body>
+</html>''', autoblocks=['body'])})
+
+        parent = loader.import_('parent.html')
+        rsp = parent().render()
+        assert rsp == '''
+<head/>
+<body>
+    <p>It was good seeing you last Friday.
+    Thanks for the gift!</p>
+</body>
+''', rsp
+
+        child = loader.import_('child.html')
+        rsp = child().render()
+        assert rsp == '''<html>
+
+<head/>
+<body>
+    <em>Great conference this weekend!</em>
+</body>
+
+
+</html>''', rsp
+
+    def test_autoblocks_disabling(self):
+        loader = MockLoader({
+            'parent.html': XMLTemplate('''
+<html py:strip="">
+<head></head>
+<body py:autoblock="False">
+    <p py:block="body">It was good seeing you last Friday.
+    Thanks for the gift!</p>
+</body>
+</html>''', autoblocks=['body']),
+            'child.html': XMLTemplate('''
+<html>
+<py:extends href="parent.html"/>
+<body><em>Great conference this weekend!</em></body>
+</html>''', autoblocks=['body'])})
+
+        parent = loader.import_('parent.html')
+        rsp = parent().render()
+        assert rsp == '''
+<head/>
+<body>
+    <p>It was good seeing you last Friday.
+    Thanks for the gift!</p>
+</body>
+''', rsp
+
+        child = loader.import_('child.html')
+        rsp = child().render()
+        assert rsp == '''<html>
+
+<head/>
+<body>
+    <em>Great conference this weekend!</em>
+</body>
+
+
+</html>''', rsp
+
 
 class TestClosure(TestCase):
     def test(self):
