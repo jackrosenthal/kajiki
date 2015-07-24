@@ -66,8 +66,9 @@ class TestExpand(TestCase):
 
 
 def perform(source, expected_output, context=dict(name='Rick'),
-            mode='xml', is_fragment=True):
-    tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment)
+            mode='xml', is_fragment=True, cdata_scripts=True):
+    tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment,
+                      cdata_scripts=cdata_scripts)
     try:
         rsp = tpl(context).render()
         assert isinstance(rsp, str), 'render() must return a unicode string.'
@@ -126,6 +127,11 @@ class TestSimple(TestCase):
         src = '<script><![CDATA[ $name ]]></script>'
         perform(src, '<script>/*<![CDATA[*/ Rick /*]]>*/</script>', mode='xml')
         perform(src, '<script> Rick </script>', mode='html')
+
+    def test_CDATA_disabled(self):
+        src = '<script> $name </script>'
+        perform(src, '<script> Rick </script>', mode='xml', cdata_scripts=False)
+        perform(src, '<script> Rick </script>', mode='html', cdata_scripts=False)
 
     def test_CDATA_escaping(self):
         src = '''<myxml><data><![CDATA[&gt;&#240; $name]]></data></myxml>'''

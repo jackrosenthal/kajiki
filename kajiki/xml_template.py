@@ -26,7 +26,7 @@ impl = dom.getDOMImplementation(' ')
 
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
-                encoding='utf-8', autoblocks=None):
+                encoding='utf-8', autoblocks=None, cdata_scripts=True):
     if source is None:
         with open(filename, encoding=encoding) as f:
             source = f.read()  # source is a unicode string
@@ -35,7 +35,7 @@ def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
     doc = _Parser(filename, source).parse()
     expand(doc)
     compiler = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment,
-                         autoblocks=autoblocks)
+                         autoblocks=autoblocks, cdata_scripts=cdata_scripts)
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
@@ -50,7 +50,7 @@ def annotate(gen):
 
 class _Compiler(object):
     def __init__(self, filename, doc, mode=None, is_fragment=False,
-                 autoblocks=None):
+                 autoblocks=None, cdata_scripts=True):
         self.filename = filename
         self.doc = doc
         self.is_fragment = is_fragment
@@ -59,6 +59,7 @@ class _Compiler(object):
         self.function_lnos = {}
         self.mod_py = []
         self.autoblocks = autoblocks or []
+        self.cdata_scripts = cdata_scripts
         self.in_def = False
         self.is_child = False
         # The rendering mode is either specified in the *mode* argument,
@@ -170,7 +171,7 @@ class _Compiler(object):
         else:
             if node.childNodes:
                 yield ir.TextNode('>', guard)
-                if node.tagName in HTML_CDATA_TAGS:
+                if self.cdata_scripts and node.tagName in HTML_CDATA_TAGS:
                     # Special behaviour for <script>, <style> tags:
                     if self.mode == 'xml':  # Start escaping
                         yield ir.TextNode('/*<![CDATA[*/')
