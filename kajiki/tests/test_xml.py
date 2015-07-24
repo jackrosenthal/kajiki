@@ -66,12 +66,13 @@ class TestExpand(TestCase):
 
 
 def perform(source, expected_output, context=dict(name='Rick'),
-            mode='xml', is_fragment=True):
-    tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment)
+            mode='xml', is_fragment=True, cdata_scripts=True):
+    tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment,
+                      cdata_scripts=cdata_scripts)
     try:
         rsp = tpl(context).render()
         assert isinstance(rsp, str), 'render() must return a unicode string.'
-        assert rsp == expected_output, rsp
+        assert rsp == expected_output, (rsp, expected_output)
     except:
         print('\n' + tpl.py_text)
         raise
@@ -126,6 +127,29 @@ class TestSimple(TestCase):
         src = '<script><![CDATA[ $name ]]></script>'
         perform(src, '<script>/*<![CDATA[*/ Rick /*]]>*/</script>', mode='xml')
         perform(src, '<script> Rick </script>', mode='html')
+
+    def test_CDATA_disabled(self):
+        src = '<script> $name </script>'
+        perform(src, '<script> Rick </script>', mode='xml', cdata_scripts=False)
+        perform(src, '<script> Rick </script>', mode='html', cdata_scripts=False)
+
+    def test_CDATA_escaping(self):
+        src = '''<myxml><data><![CDATA[&gt;&#240; $name]]></data></myxml>'''
+        perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>', mode='xml')
+        perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>', mode='html')
+
+    def test_CDATA_escaping_mixed(self):
+        src = '''<myxml><data><![CDATA[&gt;&#240; $name]]> &gt;</data></myxml>'''
+        perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]> &gt;</data></myxml>', mode='xml')
+        perform(src, '<myxml><data><![CDATA[&gt;&#240; Rick]]> &gt;</data></myxml>', mode='html')
+
+    def test_script_commented_CDATA(self):
+        script = 'if (1 < 2) { doc.write("<p>Offen&nbsp;bach</p>"); }\n'
+        src = '<script>/*<![CDATA[*/\n{0}/*]]>*/</script>'.format(script)
+        perform(src, mode='html',
+                expected_output='<script>/**/\n{0}/**/</script>'.format(script))
+        perform(src, '<script>/*<![CDATA[*//**/\n{0}/**//*]]>*/</script>'.format(
+                script), mode='xml')
 
     def test_escape_dollar(self):
         perform('<div>$$</div>', '<div>$</div>')

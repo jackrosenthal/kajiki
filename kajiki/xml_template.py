@@ -26,7 +26,7 @@ impl = dom.getDOMImplementation(' ')
 
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
-                encoding='utf-8'):
+                encoding='utf-8', autoblocks=None, cdata_scripts=True):
     if source is None:
         with open(filename, encoding=encoding) as f:
             source = f.read()  # source is a unicode string
@@ -34,7 +34,8 @@ def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
         filename = '<string>'
     doc = _Parser(filename, source).parse()
     expand(doc)
-    compiler = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment)
+    compiler = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment,
+                         autoblocks=autoblocks, cdata_scripts=cdata_scripts)
     ir_ = compiler.compile()
     return template.from_ir(ir_)
 
@@ -48,7 +49,8 @@ def annotate(gen):
 
 
 class _Compiler(object):
-    def __init__(self, filename, doc, mode=None, is_fragment=False):
+    def __init__(self, filename, doc, mode=None, is_fragment=False,
+                 autoblocks=None, cdata_scripts=True):
         self.filename = filename
         self.doc = doc
         self.is_fragment = is_fragment
@@ -56,6 +58,8 @@ class _Compiler(object):
         self.functions['__main__()'] = []
         self.function_lnos = {}
         self.mod_py = []
+        self.autoblocks = autoblocks or []
+        self.cdata_scripts = cdata_scripts
         self.in_def = False
         self.is_child = False
         # The rendering mode is either specified in the *mode* argument,
@@ -100,6 +104,22 @@ class _Compiler(object):
         ir_node.filename = self.filename
         ir_node.lineno = dom_node.lineno
 
+    def _is_autoblock(self, node):
+        if node.tagName not in self.autoblocks:
+            return False
+
+        if node.hasAttribute('py:autoblock'):
+            guard = node.getAttribute('py:autoblock').lower()
+            if guard not in ('false', 'true'):
+                raise ValueError('py:autoblock is evaluated at compile time '
+                                 'and only accepts True/False constants')
+            if guard == 'false':
+                # We throw away the attribute so it doesn't remain in rendered nodes.
+                node.removeAttribute('py:autoblock')
+                return False
+
+        return True
+
     def _compile_node(self, node):
         if isinstance(node, dom.Comment):
             return self._compile_comment(node)
@@ -107,6 +127,10 @@ class _Compiler(object):
             return self._compile_text(node)
         elif isinstance(node, dom.ProcessingInstruction):
             return self._compile_pi(node)
+        elif self._is_autoblock(node):
+            # Set the name of the block equal to the tag itself.
+            node.setAttribute('name', node.tagName)
+            return self._compile_block(node)
         elif node.tagName.startswith('py:'):
             # Handle directives
             compiler = getattr(
@@ -147,20 +171,28 @@ class _Compiler(object):
         else:
             if node.childNodes:
                 yield ir.TextNode('>', guard)
-                if node.tagName in HTML_CDATA_TAGS:
+                if self.cdata_scripts and node.tagName in HTML_CDATA_TAGS:
                     # Special behaviour for <script>, <style> tags:
                     if self.mode == 'xml':  # Start escaping
                         yield ir.TextNode('/*<![CDATA[*/')
                     # Need to unescape the contents of these tags
                     for child in node.childNodes:
+                        # CDATA for scripts and styles are automatically managed.
+                        if getattr(child, '_cdata', False):
+                            continue
                         assert isinstance(child, dom.Text)
                         for x in self._compile_text(child):
-                            x.text = unescape(x.text)
+                            if child.escaped:  # If user declared CDATA no escaping happened.
+                                x.text = unescape(x.text)
                             yield x
                     if self.mode == 'xml':  # Finish escaping
                         yield ir.TextNode('/*]]>*/')
                 else:
                     for cn in node.childNodes:
+                        # Keep CDATA sections around if declared by user
+                        if getattr(cn, '_cdata', False):
+                            yield ir.TextNode(cn.data)
+                            continue
                         for x in self._compile_node(cn):
                             yield x
                 if not (self.mode.startswith('html')
@@ -396,6 +428,7 @@ class _Parser(sax.ContentHandler):
         self._doc._dtd, position, source = extract_dtd(source)
         # Use our own DTD just for XML parsing
         self._source = source[:position] + self.DTD + source[position:]
+        self._cdata_stack = []
 
     def parse(self):
         self._parser = parser = sax.make_parser()
@@ -434,9 +467,12 @@ class _Parser(sax.ContentHandler):
         assert name == popped.tagName
 
     def characters(self, content):
-        content = sax.saxutils.escape(content)
+        should_escape = not self._cdata_stack
+        if should_escape:
+            content = sax.saxutils.escape(content)
         node = self._doc.createTextNode(content)
         node.lineno = self._parser.getLineNumber()
+        node.escaped = should_escape
         self._els[-1].appendChild(node)
 
     def processingInstruction(self, target, data):
@@ -473,10 +509,18 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def startCDATA(self):
-        pass
+        node = self._doc.createTextNode('<![CDATA[')
+        node._cdata = True
+        node.lineno = self._parser.getLineNumber()
+        self._els[-1].appendChild(node)
+        self._cdata_stack.append(self._els[-1])
 
     def endCDATA(self):
-        pass
+        node = self._doc.createTextNode(']]>')
+        node._cdata = True
+        node.lineno = self._parser.getLineNumber()
+        self._els[-1].appendChild(node)
+        self._cdata_stack.pop()
 
     def startDTD(self, name, pubid, sysid):
         self._doc.doctype = impl.createDocumentType(name, pubid, sysid)
