@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+0.5.0 (2015-07-25)
+------------------
+
+* CDATA sections created by the user are now properly preserved
+* ``cdata_scripts=False`` option in ``XMLTemplate`` allows disabling automatic CDATA for script and style tags.
+* Autoblocks experimental feature automatically creates blocks from specified tag names.
+
 0.4.4 (2013-09-07)
 ------------------
 
