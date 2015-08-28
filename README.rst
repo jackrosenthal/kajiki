@@ -19,6 +19,8 @@ And more features are coming soon; stay tuned!
 Example
 =======
 
+.. code:: python
+
     >>> import kajiki
     >>> Template = kajiki.XMLTemplate('''<html>
     ...     <head><title>$title</title></head>
