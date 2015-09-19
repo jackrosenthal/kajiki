@@ -330,10 +330,9 @@ class _Compiler(object):
 
 
 def make_text_node(text, guard=None):
-    """
-    Return a TranslatableTextNode if the text is not empty,
-    otherwise a regular TextNode
-    """
+    '''Return a TranslatableTextNode if the text is not empty,
+    otherwise a regular TextNode.
+    '''
     if text.strip():
         return ir.TranslatableTextNode(text, guard)
     return ir.TextNode(text, guard)
