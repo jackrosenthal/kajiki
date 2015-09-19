@@ -257,7 +257,7 @@ class IfNode(HierNode):
 
 
 class ElseNode(HierNode):
-    def __init__(self,  *body):
+    def __init__(self, *body):
         super(ElseNode, self).__init__(body)
 
     def py(self):

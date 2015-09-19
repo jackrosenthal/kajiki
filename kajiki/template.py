@@ -153,7 +153,7 @@ class _Template(object):
             # Preserve our tests and Kajiki behaviour across Python versions:
             return uval.replace('&', '&amp;').replace('<', '&lt;') \
                 .replace('>', '&gt;').replace('"', '&quot;')
-                # .replace("'", '&#39;'))
+            # .replace("'", '&#39;'))
             # Above we do NOT escape the single quote; we don't need it because
             # all HTML attributes are double-quoted in our output.
         else:
