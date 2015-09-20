@@ -3,7 +3,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from nine import basestring, itervalues
-import codecs
 import os
 import pkg_resources
 
