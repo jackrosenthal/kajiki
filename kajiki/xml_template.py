@@ -329,13 +329,22 @@ class _Compiler(object):
                 yield x
 
 
+def make_text_node(text, guard=None):
+    '''Return a TranslatableTextNode if the text is not empty,
+    otherwise a regular TextNode.
+    '''
+    if text.strip():
+        return ir.TranslatableTextNode(text, guard)
+    return ir.TextNode(text, guard)
+
+
 class _TextCompiler(object):
     '''Separates expressions such as ${some_var} from the ordinary text
     around them in the template source and generates ExprNode instances and
     TextNode instances accordingly.
     '''
     def __init__(self, filename, source, lineno,
-                 node_type=ir.TranslatableTextNode, in_html_attr=False):
+                 node_type=make_text_node, in_html_attr=False):
         self.filename = filename
         self.source = source
         self.orig_lineno = lineno
