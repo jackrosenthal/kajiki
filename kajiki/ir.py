@@ -202,13 +202,13 @@ class WithNode(HierNode):
 
     def __init__(self, vars, *body):
         super(WithNode, self).__init__(body)
-        self.vars_text = vars
-        self.vars = dict(var.split('=', 1)
-                         for var in vars.split(';'))
+        self.vars = dict(var.split('=', 1) for var in vars.split(';'))
+        self.vars_args = ','.join('%s=%s' % v for v in self.vars.items())
 
     def py(self):
         yield self.line(
-            'local.__kj__.push_with(locals(), %s)' % self.vars_text)
+            'local.__kj__.push_with(locals(), %s)' % self.vars_args
+        )
         for k, v in iteritems(self.vars):
             yield self.line('%s = %s' % (k, v))
 

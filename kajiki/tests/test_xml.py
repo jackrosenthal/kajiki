@@ -232,6 +232,18 @@ class TestWith(TestCase):
 <div>foo</div>
 </div>''')
 
+    def test_with_multiple(self):
+        perform('''<div py:with="a='foo';b=3">
+<div>$a - $b</div>
+<div py:with="a=5;b=1">$a - $b</div>
+<div>$a - $b</div>
+</div>''',   '''<div>
+<div>foo - 3</div>
+<div>5 - 1</div>
+<div>foo - 3</div>
+</div>''')
+
+
 
 class TestFunction(TestCase):
     def test_function(self):
