@@ -13,7 +13,10 @@ def extract(fileobj, keywords, comment_tags, options):
     '''Babel entry point that extracts translation strings from XML templates.
     '''
     from .xml_template import _Parser, _Compiler, expand
-    doc = _Parser(filename='<string>', source=fileobj.read()).parse()
+    source = fileobj.read()
+    if isinstance(source, bytes):
+        source = source.decode('utf-8')
+    doc = _Parser(filename='<string>', source=source).parse()
     expand(doc)
     compiler = _Compiler(filename='<string>', doc=doc,
                          mode=options.get('mode', 'xml'),
