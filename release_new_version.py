@@ -26,7 +26,7 @@ config = dict(
 Releaser(config,
     Shell('python setup.py test'),  # First of all ensure tests pass
     # CheckRstFiles,  # Documentation: recursively verify ALL .rst files, or:
-    CheckRstFiles('README.rst', 'CHANGES.rst', 'LICENSE.rst'),  # just a few.
+    CheckRstFiles('CHANGES.rst', 'LICENSE.rst'),  # just a few.
     # TODO IMPLEMENT CompileAndVerifyTranslations,
     # TODO IMPLEMENT BuildSphinxDocumentation,
     # TODO IMPLEMENT Tell the user to upload the built docs (give URL)
