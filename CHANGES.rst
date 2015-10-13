@@ -1,7 +1,15 @@
 CHANGES
 =======
 
+0.5.2 (2015-10-13)
+------------------
+
+* TranslatableTextNodes are now only generated for non-empty strings
+* ``py:with`` statement now accepts multiple variables separated by semicolon
+* Babel message extractor fixed on Python2
+
 0.5.1 (2015-07-26)
+------------------
 
 * Fix crash on PyPy
 
