@@ -2,6 +2,7 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+from collections import deque
 import sys
 from random import randint
 from threading import local
@@ -108,3 +109,13 @@ class NameGen(object):
 
 def gen_name(hint='_kj_'):
     return NameGen.gen(hint)
+
+
+def window(seq, n=2):
+    """Return a sliding window of size ``n`` over an iterator"""
+    l = deque((next(seq, None) for _ in range(n)), maxlen=n)
+    push = l.append
+    yield l
+    for item in seq:
+        push(item)
+        yield l

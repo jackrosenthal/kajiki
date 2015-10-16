@@ -243,6 +243,23 @@ class TestWith(TestCase):
 <div>foo - 3</div>
 </div>''')
 
+    def test_with_multiple_and_whitespace(self):
+        perform('''<div py:with="a = 'foo';
+                                 b = 3">$a - $b</div>''',
+                '<div>foo - 3</div>')
+
+    def test_with_trailing_semicolon(self):
+        perform('''<div py:with="a = 'foo';">$a</div>''',
+                '<div>foo</div>')
+
+    def test_with_ordered_multiple(self):
+        perform('''<div py:with="a='foo';b=a * 2;c=b[::-1];d=c[:3]">'''
+                '''$a $b $c $d</div>''',
+                '<div>foo foofoo oofoof oof</div>')
+
+    def test_with_multiple_with_embedded_semicolons(self):
+        perform('''<div py:with="a=';';b='-)'">$a$b</div>''',
+                '<div>;-)</div>')
 
 
 class TestFunction(TestCase):
