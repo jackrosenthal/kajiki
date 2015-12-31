@@ -410,7 +410,6 @@ class _TextCompiler(object):
             if se.lineno > 1:
                 end = end + sum([len(line) + 1 for lineno, line in enumerate(self.source[self.pos:].split('\n')) if lineno + 1 < se.lineno])
             text = self.source[self.pos:end - 1]
-            print(repr(text))
             self.pos = end
             return self.expr(text)
 
@@ -468,12 +467,7 @@ class _Parser(sax.ContentHandler):
         self._els.append(self._doc)
 
     def startElement(self, name, attrs):
-        if self._characters:
-            node = self._doc.createTextNode(''.join([t for (t, _, _) in self._characters]))
-            node.lineno = self._characters[0][1]
-            node.escaped = self._characters[0][2]
-            self._els[-1].appendChild(node)
-            self._characters = []
+        self.process_characters()
         el = self._doc.createElement(name)
         el.lineno = self._parser.getLineNumber()
         for k, v in attrs.items():
@@ -482,12 +476,7 @@ class _Parser(sax.ContentHandler):
         self._els.append(el)
 
     def endElement(self, name):
-        if self._characters:
-            node = self._doc.createTextNode(''.join([t for (t, _, _) in self._characters]))
-            node.lineno = self._characters[0][1]
-            node.escaped = self._characters[0][2]
-            self._els[-1].appendChild(node)
-            self._characters = []
+        self.process_characters()
         popped = self._els.pop()
         assert name == popped.tagName
 
@@ -531,6 +520,7 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def startCDATA(self):
+        self.process_characters()
         node = self._doc.createTextNode('<![CDATA[')
         node._cdata = True
         node.lineno = self._parser.getLineNumber()
@@ -538,6 +528,7 @@ class _Parser(sax.ContentHandler):
         self._cdata_stack.append(self._els[-1])
 
     def endCDATA(self):
+        self.process_characters()
         node = self._doc.createTextNode(']]>')
         node._cdata = True
         node.lineno = self._parser.getLineNumber()
@@ -549,6 +540,16 @@ class _Parser(sax.ContentHandler):
 
     def endDTD(self):
         pass
+
+    def process_characters(self):
+        '''If there is text stored in self._characters, merge these lines
+        into one TextNode and add to the current parent element.'''
+        if self._characters:
+            node = self._doc.createTextNode(''.join([t for (t, _, _) in self._characters]))
+            node.lineno = self._characters[0][1]
+            node.escaped = self._characters[0][2]
+            self._els[-1].appendChild(node)
+            self._characters = []
 
 
 def expand(tree, parent=None):
@@ -587,4 +588,3 @@ def expand(tree, parent=None):
     for child in tree.childNodes:
         expand(child, tree)
     return tree
-
