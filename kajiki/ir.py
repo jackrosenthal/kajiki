@@ -2,8 +2,11 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-from .util import gen_name, flattener
-from nine import iteritems, nine
+from itertools import chain
+import re
+
+from .util import gen_name, flattener, window
+from nine import nine
 
 
 def generate_python(ir):
@@ -188,35 +191,43 @@ class ForNode(HierNode):
 
 
 class WithNode(HierNode):
+
+    assignment_pattern = re.compile(r'(?:^|;)\s*([^;=]+)=(?!=)', re.M)
+
     class WithTail(Node):
-        def __init__(self, vars):
+        def __init__(self, var_names):
             super(WithNode.WithTail, self).__init__()
-            self.vars = vars
+            self.var_names = var_names
 
         def py(self):
-            gen = gen_name()
-            yield self.line('%s = local.__kj__.pop_with()' % gen)
-            for v in self.vars:
-                yield self.line('%s = %s.get(%r)' % (v, gen, v))
-                # yield self.line('if %s == (): del %s' % (v, v))
+            yield self.line('(%s,) = local.__kj__.pop_with()' %
+                            (','.join(self.var_names),))
+            # yield self.line('if %s == (): del %s' % (v, v))
 
     def __init__(self, vars, *body):
         super(WithNode, self).__init__(body)
-        self.vars = dict(var.split('=', 1) for var in vars.split(';'))
-        self.vars_args = ','.join('%s=%s' % v for v in self.vars.items())
+        assignments = []
+        matches = self.assignment_pattern.finditer(vars)
+        for m1, m2 in window(chain(matches, [None]), 2):
+            lhs = m1.group(1).strip()
+            rhs = vars[m1.end():(m2.start() if m2 else len(vars))]
+            assignments.append((lhs, rhs))
+
+        self.vars = assignments
+        self.var_names = [l for l, _ in assignments]
 
     def py(self):
         yield self.line(
-            'local.__kj__.push_with(locals(), %s)' % self.vars_args
-        )
-        for k, v in iteritems(self.vars):
+            'local.__kj__.push_with(locals(), [%s])' % (
+                ','.join('"%s"' % k for k in self.var_names),))
+        for k, v in self.vars:
             yield self.line('%s = %s' % (k, v))
 
     def __iter__(self):
         yield self
         for x in self.body_iter():
             yield x
-        yield self.WithTail(self.vars)
+        yield self.WithTail(self.var_names)
 
 
 class SwitchNode(HierNode):

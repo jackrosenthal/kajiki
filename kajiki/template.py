@@ -80,10 +80,8 @@ class _Template(object):
     def render(self):
         return ''.join(self)
 
-    def _push_with(self, lcls, **kw):
-        d = dict((k, lcls.get(k, ()))
-                 for k in kw)
-        self._with_stack.append(d)
+    def _push_with(self, locals_, vars):
+        self._with_stack.append([locals_.get(k, ()) for k in vars])
 
     def _pop_with(self):
         return self._with_stack.pop()
