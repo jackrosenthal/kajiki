@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.5.3 (2016-01-25)
+------------------
+
+* ``py:with`` statement now keeps order of variables, so that variables can depend from each other.
+* Babel is no longer a dependency unless you want to use the message extractor.
+
 0.5.2 (2015-10-13)
 ------------------
 
