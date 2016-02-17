@@ -241,6 +241,7 @@ class SwitchNode(HierNode):
 
     def py(self):
         yield self.line('local.__kj__.push_switch(%s)' % self.decl)
+        yield self.line('if False: pass')
 
     def __iter__(self):
         yield self
@@ -255,7 +256,7 @@ class CaseNode(HierNode):
         self.decl = decl
 
     def py(self):
-        yield self.line('if local.__kj__.case(%s):' % self.decl)
+        yield self.line('elif local.__kj__.case(%s):' % self.decl)
 
 
 class IfNode(HierNode):

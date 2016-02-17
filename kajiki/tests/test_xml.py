@@ -219,6 +219,22 @@ $i is <py:switch test="i % 2">
 0 is even</div><div>
 1 is odd</div>''')
 
+    def test_switch_multi(self):
+        perform('''<div py:for="i in range(8)">
+$i is <py:switch test="i % 4">
+<py:case value="0">ok</py:case>
+<py:case value="1">nearly</py:case>
+<py:else>nope</py:else>
+</py:switch></div>''',   '''<div>
+0 is ok</div><div>
+1 is nearly</div><div>
+2 is nope</div><div>
+3 is nope</div><div>
+4 is ok</div><div>
+5 is nearly</div><div>
+6 is nope</div><div>
+7 is nope</div>''')
+
 
 class TestWith(TestCase):
     def test_with(self):
