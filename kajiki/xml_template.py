@@ -143,27 +143,27 @@ class _Compiler(object):
     def _merge_text_nodes(self, nodes):
         """Merges consecutive TextNodes into a single TextNode by adding together
         the TextNode's data. Any other node (including CDATA TextNodes) splits
-        runs of TextNodes.
+        runs of TextNodes. Returns a list of Nodes.
         """
-        idx = 0
         merge_node = None
-        while idx < len(nodes):
-            if getattr(nodes[idx], '_cdata', False):
+        merged_nodes = []
+        for node in nodes:
+            if getattr(node, '_cdata', False):
                 merge_node = None
-                idx = idx + 1
+                merged_nodes.append(node)
             else:
-                if isinstance(nodes[idx], dom.Text):
+                if isinstance(node, dom.Text):
                     if merge_node is None:
-                        merge_node = nodes[idx]
-                        idx = idx + 1
+                        merge_node = node.ownerDocument.createTextNode(node.data)
+                        merge_node.lineno = node.lineno
+                        merge_node.escaped = node.escaped
+                        merged_nodes.append(merge_node)
                     else:
-                        merge_node.data = merge_node.data + nodes[idx].data
-                        nodes = nodes[0:idx] + nodes[idx + 1:]
+                        merge_node.data = merge_node.data + node.data
                 else:
                     merge_node = None
-                    idx = idx + 1
-        return nodes
-
+                    merged_nodes.append(node)
+        return merged_nodes
 
     @annotate
     def _compile_xml(self, node):
