@@ -140,6 +140,31 @@ class _Compiler(object):
         else:
             return self._compile_xml(node)
 
+    def _merge_text_nodes(self, nodes):
+        """Merges consecutive TextNodes into a single TextNode by adding together
+        the TextNode's data. Any other node (including CDATA TextNodes) splits
+        runs of TextNodes.
+        """
+        idx = 0
+        merge_node = None
+        while idx < len(nodes):
+            if getattr(nodes[idx], '_cdata', False):
+                merge_node = None
+                idx = idx + 1
+            else:
+                if isinstance(nodes[idx], dom.Text):
+                    if merge_node is None:
+                        merge_node = nodes[idx]
+                        idx = idx + 1
+                    else:
+                        merge_node.data = merge_node.data + nodes[idx].data
+                        nodes = nodes[0:idx] + nodes[idx + 1:]
+                else:
+                    merge_node = None
+                    idx = idx + 1
+        return nodes
+
+
     @annotate
     def _compile_xml(self, node):
         content = attrs = guard = None
@@ -176,7 +201,7 @@ class _Compiler(object):
                     if self.mode == 'xml':  # Start escaping
                         yield ir.TextNode('/*<![CDATA[*/')
                     # Need to unescape the contents of these tags
-                    for child in node.childNodes:
+                    for child in self._merge_text_nodes(node.childNodes):
                         # CDATA for scripts and styles are automatically managed.
                         if getattr(child, '_cdata', False):
                             continue
@@ -188,7 +213,7 @@ class _Compiler(object):
                     if self.mode == 'xml':  # Finish escaping
                         yield ir.TextNode('/*]]>*/')
                 else:
-                    for cn in node.childNodes:
+                    for cn in self._merge_text_nodes(node.childNodes):
                         # Keep CDATA sections around if declared by user
                         if getattr(cn, '_cdata', False):
                             yield ir.TextNode(cn.data)
@@ -406,7 +431,9 @@ class _TextCompiler(object):
         try:
             compile(self.source[self.pos:], '', 'eval')
         except SyntaxError as se:
-            end = se.offset + self.pos
+            end = self.pos + sum([se.offset] + [len(line) + 1
+                                                for idx, line in enumerate(self.source[self.pos:].splitlines())
+                                                if idx < se.lineno - 1])
             text = self.source[self.pos:end - 1]
             self.pos = end
             return self.expr(text)

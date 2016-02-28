@@ -174,6 +174,16 @@ class TestSimple(TestCase):
         perform("<div>Hello, ${{'name':name}['name']}</div>",
                 '<div>Hello, Rick</div>')
 
+    def test_expr_multiline(self):
+        perform("""<div>Hello, ${{'name': 'Rick',
+                                 'age': 26}['name']}</div>""",
+                '<div>Hello, Rick</div>')
+
+    def test_expr_multiline_cdata(self):
+        perform("""<script><![CDATA[Hello, ${{'name': 'Rick',
+                                 'age': 26}['name']}]]></script>""",
+                '<script>/*<![CDATA[*/Hello, Rick/*]]>*/</script>')
+
     def test_jquery_call_is_not_expr(self):
         '''Ensure we handle '$(' as a text literal, since it cannot be a
         valid variable sequence.  This simplifies, for example,

@@ -156,7 +156,9 @@ class _Scanner(object):
         try:
             compile(self.source[self.pos:], '', 'eval')
         except SyntaxError as se:
-            end = se.offset + self.pos
+            end = self.pos + sum([se.offset] + [len(line) + 1
+                                                for idx, line in enumerate(self.source[self.pos:].splitlines())
+                                                if idx < se.lineno - 1])
             text = self.source[self.pos:end - 1]
             self.pos = end
             return self.expr(text)
