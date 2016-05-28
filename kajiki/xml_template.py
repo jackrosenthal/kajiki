@@ -281,7 +281,12 @@ class _Compiler(object):
 
     @annotate
     def _compile_text(self, node):
-        tc = _TextCompiler(self.filename, node.data, node.lineno)
+        kwargs = {}
+        if node.parentNode and node.parentNode.tagName in HTML_CDATA_TAGS:
+            # script and style should always be untranslatable.
+            kwargs['node_type'] = ir.TextNode
+
+        tc = _TextCompiler(self.filename, node.data, node.lineno, **kwargs)
         for x in tc:
             yield x
 

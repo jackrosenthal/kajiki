@@ -11,7 +11,8 @@ from unittest import TestCase, main
 from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
-
+from kajiki.ir import TranslatableTextNode
+from kajiki.xml_template import _Compiler, _Parser
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -150,6 +151,20 @@ class TestSimple(TestCase):
                 expected_output='<script>/**/\n{0}/**/</script>'.format(script))
         perform(src, '<script>/*<![CDATA[*//**/\n{0}/**//*]]>*/</script>'.format(
                 script), mode='xml')
+
+    def test_scripts_non_translatable(self):
+        src = '<xml><div>Hi</div><script>hello world</script><style>hello style</style></xml>'
+        doc = _Parser('<string>', src).parse()
+
+        for n in _Compiler('<string>', doc).compile():
+            text = getattr(n, 'text', '')
+            if text in ('hello world', 'hello style'):
+                self.assertFalse(isinstance(n, TranslatableTextNode))
+
+        for n in _Compiler('<string>', doc, cdata_scripts=False).compile():
+            text = getattr(n, 'text', '')
+            if text in ('hello world', 'hello style'):
+                self.assertFalse(isinstance(n, TranslatableTextNode))
 
     def test_escape_dollar(self):
         perform('<div>$$</div>', '<div>$</div>')
