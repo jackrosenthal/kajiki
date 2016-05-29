@@ -29,6 +29,14 @@ impl = dom.getDOMImplementation(' ')
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
                 encoding='utf-8', autoblocks=None, cdata_scripts=True):
+    """Given XML source code of a Kajiki Templates parses returns a Template instance.
+
+    The source code is parsed to its DOM representation, which is then
+    expanded to separate directives from tags and then compiled to the
+    Intermediate Representation tree. The Intermediate Representation
+    is then processed to create the Python code which defined the template
+    class of which a new instance is returned.
+    """
     if source is None:
         with open(filename, encoding=encoding) as f:
             source = f.read()  # source is a unicode string

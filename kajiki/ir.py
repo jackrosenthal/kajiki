@@ -69,6 +69,7 @@ class DedentNode(Node):
 
 
 class TemplateNode(HierNode):
+    """Represents the root Intermediate Representation node of a template."""
     class TemplateTail(Node):
         def py(self):
             yield self.line('template = kajiki.Template(template)')
