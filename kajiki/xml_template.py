@@ -51,6 +51,11 @@ def annotate(gen):
 
 
 class _Compiler(object):
+    """Compiles a DOM tree into Intermediate Representation TemplateNode.
+
+    Intermediate Representation is a tree of nodes that represent
+    Python Code that should be generated to execute the template.
+    """
     def __init__(self, filename, doc, mode=None, is_fragment=False,
                  autoblocks=None, cdata_scripts=True):
         self.filename = filename
@@ -359,6 +364,8 @@ class _Compiler(object):
 def make_text_node(text, guard=None):
     '''Return a TranslatableTextNode if the text is not empty,
     otherwise a regular TextNode.
+
+    This avoid spending the cost of translating empty nodes.
     '''
     if text.strip():
         return ir.TranslatableTextNode(text, guard)
@@ -440,6 +447,12 @@ class _TextCompiler(object):
 
 
 class _Parser(sax.ContentHandler):
+    """Parse an XML template into a Tree of DOM Nodes.
+
+    Nodes should then be passed to a `_Compiler` to be
+    converted into the intermediate representation and
+    then to Python Code.
+    """
     DTD = '<!DOCTYPE kajiki SYSTEM "kajiki.dtd">'
 
     def __init__(self, filename, source):
@@ -575,6 +588,24 @@ class _Parser(sax.ContentHandler):
 
 
 def expand(tree, parent=None):
+    """Expands directives attached to nodes into separate nodes.
+
+    This will convert all instances of::
+
+        <div py:if="check">
+        </div>
+
+    into::
+
+        <py:if test="check">
+            <div>
+            </div>
+        </py:if>
+
+    This ensures that whenever a template is processed there is no
+    different between the two formats as the Compiler will always
+    receive the latter.
+    """
     if isinstance(tree, dom.Document):
         expand(tree.firstChild, tree)
         return tree
