@@ -29,7 +29,7 @@ impl = dom.getDOMImplementation(' ')
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
                 encoding='utf-8', autoblocks=None, cdata_scripts=True):
-    """Given XML source code of a Kajiki Templates parses returns a Template instance.
+    """Given XML source code of a Kajiki Templates parses returns a Template class.
 
     The source code is parsed to its DOM representation, which is then
     expanded to separate directives from tags and then compiled to the
