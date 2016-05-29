@@ -309,9 +309,20 @@ class _Compiler(object):
 
     @annotate
     def _compile_switch(self, node):
-        # Filter out text nodes
-        body = [x for x in self._compile_nop(node)
-                if not isinstance(x, ir.TextNode)]
+        body = []
+
+        # Filter out empty text nodes and report unsupported nodes
+        for n in self._compile_nop(node):
+            if isinstance(n, ir.TextNode) and not n.text.strip():
+                continue
+            elif not isinstance(n, (ir.CaseNode, ir.ElseNode)):
+                raise XMLTemplateCompileError(
+                    'py:with directive can only contain py:case and py:else nodes '
+                    'and cannot be placed on a tag.',
+                    doc=self.doc, filename=self.filename, linen=node.lineno
+                )
+            body.append(n)
+
         yield ir.SwitchNode(node.getAttribute('test'), *body)
 
     @annotate
@@ -472,6 +483,7 @@ class _Parser(sax.ContentHandler):
             exc.__cause__ = None
             raise exc
 
+        self._doc._source = self._source
         return self._doc
 
     # ContentHandler implementation
@@ -591,9 +603,9 @@ def expand(tree, parent=None):
     return tree
 
 
-class XMLTemplateParseError(Exception):
+class XMLTemplateError(Exception):
     def __init__(self, msg, source, filename, linen, coln):
-        super(XMLTemplateParseError, self).__init__(
+        super(XMLTemplateError, self).__init__(
             '[%s:%s] %s\n%s' % (filename, linen, msg, self._get_source_snippet(source, linen))
         )
         self.filename = filename
@@ -620,3 +632,14 @@ class XMLTemplateParseError(Exception):
             return source.splitlines()[linen]
         except:
             return ''
+
+
+class XMLTemplateCompileError(XMLTemplateError):
+    def __init__(self, msg, doc, filename, linen):
+        super(XMLTemplateCompileError, self).__init__(
+            msg, getattr(doc, '_source', ''), filename, linen, 0
+        )
+
+
+class XMLTemplateParseError(XMLTemplateError):
+    pass

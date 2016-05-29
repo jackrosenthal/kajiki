@@ -12,7 +12,7 @@ from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 from kajiki.ir import TranslatableTextNode
-from kajiki.xml_template import _Compiler, _Parser
+from kajiki.xml_template import _Compiler, _Parser, XMLTemplateCompileError
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -249,6 +249,20 @@ $i is <py:switch test="i % 4">
 5 is nearly</div><div>
 6 is nope</div><div>
 7 is nope</div>''')
+
+    def test_switch_div(self):
+        try:
+            tpl = perform('''
+        <div class="test" py:switch="5 == 3">
+            <p py:case="True">True</p>
+            <p py:else="">False</p>
+        </div>''', '<div><div>False</div></div>')
+        except XMLTemplateCompileError as e:
+            self.assertTrue(
+                'py:with directive can only contain py:case and py:else nodes' in str(e)
+            )
+        else:
+            self.assertTrue(False, msg='Should have raised XMLTemplateParseError')
 
 
 class TestWith(TestCase):
