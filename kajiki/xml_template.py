@@ -337,6 +337,15 @@ class _Compiler(object):
 
     @annotate
     def _compile_else(self, node):
+        if (getattr(node.parentNode, 'tagName', '') != 'py:nop' and
+                not node.parentNode.hasAttribute('py:switch') and
+                getattr(node.previousSibling, 'tagName', '') != 'py:if'):
+            raise XMLTemplateCompileError(
+                'py:else directive must be inside a py:switch or directly after py:if '
+                'without text or spaces in between',
+                doc=self.doc, filename=self.filename, linen=node.lineno
+            )
+
         yield ir.ElseNode(
             *list(self._compile_nop(node)))
 

@@ -265,6 +265,34 @@ $i is <py:switch test="i % 4">
             self.assertTrue(False, msg='Should have raised XMLTemplateParseError')
 
 
+class TestElse(TestCase):
+    def test_pyif_pyelse(self):
+        try:
+            tpl = perform('''
+            <div>
+                <div py:if="False">True</div>
+                <py:else>False</py:else>
+            </div>''', '''<div>False</div>''')
+        except XMLTemplateCompileError as e:
+            self.assertTrue(
+                'py:else directive must be inside a py:switch or directly after py:if' in str(e)
+            )
+        else:
+            self.assertTrue(False, msg='Should have raised XMLTemplateParseError')
+
+    def test_pyiftag_pyelse_continuation(self):
+        tpl = perform(
+            '''<div><div py:if="False">True</div><py:else>False</py:else></div>''',
+            '''<div>False</div>'''
+        )
+
+    def test_pyif_pyelse_continuation(self):
+        tpl = perform(
+            '''<div><py:if test="False">True</py:if><py:else>False</py:else></div>''',
+            '''<div>False</div>'''
+        )
+
+
 class TestWith(TestCase):
     def test_with(self):
         perform('''<div py:with="a='foo'">
