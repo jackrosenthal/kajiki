@@ -6,6 +6,8 @@ import re
 from codecs import open
 from xml import sax
 from xml.dom import minidom as dom
+from xml.sax import SAXParseException
+
 from nine import IS_PYTHON2, basestring, str, iteritems, native_str
 
 if IS_PYTHON2:
@@ -461,7 +463,15 @@ class _Parser(sax.ContentHandler):
         source.setEncoding(native_str('utf-8'))
         source.setByteStream(BytesIO(byts))
         source.setSystemId(self._filename)
-        parser.parse(source)
+
+        try:
+            parser.parse(source)
+        except SAXParseException as e:
+            exc = XMLTemplateParseError(e.getMessage(), self._source, self._filename,
+                                        e.getLineNumber(), e.getColumnNumber())
+            exc.__cause__ = None
+            raise exc
+
         return self._doc
 
     # ContentHandler implementation
@@ -579,3 +589,34 @@ def expand(tree, parent=None):
     for child in tree.childNodes:
         expand(child, tree)
     return tree
+
+
+class XMLTemplateParseError(Exception):
+    def __init__(self, msg, source, filename, linen, coln):
+        super(XMLTemplateParseError, self).__init__(
+            '[%s:%s] %s\n%s' % (filename, linen, msg, self._get_source_snippet(source, linen))
+        )
+        self.filename = filename
+        self.linenum = linen
+        self.colnum = coln
+
+    def _get_source_snippet(self, source, linen):
+        SURROUNDING = 2
+        linen -= 1
+
+        parts = []
+        for i in range(SURROUNDING, 0, -1):
+            parts.append('\t     %s\n' % self._get_source_line(source, linen - i))
+        parts.append('\t --> %s\n' % self._get_source_line(source, linen))
+        for i in range(1, SURROUNDING + 1):
+            parts.append('\t     %s\n' % self._get_source_line(source, linen + i))
+        return ''.join(parts)
+
+    def _get_source_line(self, source, linen):
+        if linen < 0:
+            return ''
+
+        try:
+            return source.splitlines()[linen]
+        except:
+            return ''

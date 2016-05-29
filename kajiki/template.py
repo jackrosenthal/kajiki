@@ -212,10 +212,8 @@ def from_ir(ir_node):
     dct = dict(kajiki=kajiki)
     try:
         exec(py_text, dct)
-    except (SyntaxError, IndentationError):  # pragma no cover
-        for i, line in enumerate(py_text.splitlines()):
-            print('%3d %s' % (i + 1, line))
-        raise
+    except (SyntaxError, IndentationError) as e:  # pragma no cover
+        raise KajikiSyntaxError(e.msg, py_text, e.filename, e.lineno, e.offset)
     tpl = dct['template']
     tpl.base_globals = dct
     tpl.py_text = py_text
@@ -316,3 +314,34 @@ else:
                             lnotab,
                             code.co_freevars,
                             code.co_cellvars)
+
+
+class KajikiSyntaxError(Exception):
+    def __init__(self, msg, source, filename, linen, coln):
+        super(KajikiSyntaxError, self).__init__(
+            '[%s:%s] %s\n%s' % (filename, linen, msg, self._get_source_snippet(source, linen))
+        )
+        self.filename = filename
+        self.linenum = linen
+        self.colnum = coln
+
+    def _get_source_snippet(self, source, linen):
+        SURROUNDING = 2
+        linen -= 1
+
+        parts = []
+        for i in range(SURROUNDING, 0, -1):
+            parts.append('\t     %s\n' % self._get_source_line(source, linen - i))
+        parts.append('\t --> %s\n' % self._get_source_line(source, linen))
+        for i in range(1, SURROUNDING+1):
+            parts.append('\t     %s\n' % self._get_source_line(source, linen + i))
+        return ''.join(parts)
+
+    def _get_source_line(self, source, linen):
+        if linen < 0:
+            return ''
+
+        try:
+            return source.splitlines()[linen]
+        except:
+            return ''
