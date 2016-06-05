@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+0.5.4 (2016-06-04)
+------------------
+
+* ``py:switch`` now correctly supports multiple ``py:case`` statements.
+* text inside ``<script>`` and ``<style>`` tags is no longer collected translation.
+* Syntax errors now report the line and the surrounding code when there is a markup or python syntax error.
+* As ``py:swtich`` discards all its content apart from ``py:case`` and ``py:else`` statements it will now correctly report an error when the statements has other content.
+* ``py:else`` will now correctly detect spurious content between itself and ``py:if`` as the two must be consequential.
+* Improved code documentation on core classes.
+
 0.5.3 (2016-01-25)
 ------------------
 
@@ -23,7 +33,7 @@ CHANGES
 ------------------
 
 * CDATA sections created by the user are now properly preserved
-* ``cdata_scripts=False`` option in ``XMLTemplate`` allows disabling automatic CDATA for script and style tags.
+* ``cdata_scripts=False`` option in ``XMLTemplate`` allows disabling automatic CDATA for script and style tags.
 * Autoblocks experimental feature automatically creates blocks from specified tag names.
 
 0.4.4 (2013-09-07)
