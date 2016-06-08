@@ -1,6 +1,13 @@
 CHANGES
 =======
 
+0.5.5 (2016-06-08)
+------------------
+
+* ``py:attrs`` will now emit the attribute name itself or will omit the attribute at all in case of
+  ``bool`` values for 'checked', 'disabled', 'readonly', 'multiple', 'selected', 'nohref',
+  'ismap', 'declare' and 'defer',
+
 0.5.4 (2016-06-04)
 ------------------
 
