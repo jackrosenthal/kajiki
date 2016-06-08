@@ -184,6 +184,8 @@ class _Template(object):
             attrs = attrs.items()
         if attrs is not None:
             for k, v in sorted(attrs):
+                if k in HTML_EMPTY_ATTRS and v in (True, False):
+                    v = k if v else None
                 if v is None:
                     continue
                 if mode.startswith('html') and k in HTML_EMPTY_ATTRS:

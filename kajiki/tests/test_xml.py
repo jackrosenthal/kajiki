@@ -692,6 +692,9 @@ class TestAttributes(TestCase):
         perform('''<div py:attrs="[('a', 5), ('b', 6)]"/>''',
                 '''<div a="5" b="6"/>''')
         perform('<div py:attrs="None"/>',   '<div/>')
+        perform('<div py:attrs="dict(checked=True)"/>', '<div checked="checked"/>')
+        perform('<div py:attrs="dict(checked=False)"/>', '<div/>')
+        perform('<div py:attrs="dict(checked=None)"/>', '<div/>')
 
     def test_strip(self):
         TPL = '<div><h1 py:strip="header">Header</h1></div>'
