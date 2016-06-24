@@ -250,6 +250,15 @@ $i is <py:switch test="i % 4">
 6 is nope</div><div>
 7 is nope</div>''')
 
+    def test_case_elem(self):
+        perform('''<div>
+    <py:switch test="True">
+      <span py:case="0 == 1">0</span>
+      <span py:case="1 == 1">1</span>
+      <span py:else="">2</span>
+    </py:switch>
+  </div>''', '<div>\n    <span>1</span>\n  </div>')
+
     def test_switch_div(self):
         try:
             tpl = perform('''
@@ -259,7 +268,7 @@ $i is <py:switch test="i % 4">
         </div>''', '<div><div>False</div></div>')
         except XMLTemplateCompileError as e:
             self.assertTrue(
-                'py:with directive can only contain py:case and py:else nodes' in str(e)
+                'py:switch directive can only contain py:case and py:else nodes' in str(e)
             )
         else:
             self.assertTrue(False, msg='Should have raised XMLTemplateParseError')
@@ -332,6 +341,10 @@ class TestWith(TestCase):
 
     def test_with_multiple_with_embedded_semicolons(self):
         perform('''<div py:with="a=';';b='-)'">$a$b</div>''',
+                '<div>;-)</div>')
+
+    def test_standalone(self):
+        perform('''<div><py:with vars="a=';';b='-)'">$a$b</py:with></div>''',
                 '<div>;-)</div>')
 
 

@@ -330,7 +330,7 @@ class _Compiler(object):
                 continue
             elif not isinstance(n, (ir.CaseNode, ir.ElseNode)):
                 raise XMLTemplateCompileError(
-                    'py:with directive can only contain py:case and py:else nodes '
+                    'py:switch directive can only contain py:case and py:else nodes '
                     'and cannot be placed on a tag.',
                     doc=self.doc, filename=self.filename, linen=node.lineno
                 )
