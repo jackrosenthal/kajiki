@@ -52,6 +52,12 @@ class TestBasic(TestCase):
         rsp = tpl(dict(obj=Empty)).render()
         assert rsp == 'Hello, Rick\n', rsp
 
+    def test_expr_multiline(self):
+        tpl = TextTemplate(source="""Hello, ${{'name': 'Rick',
+                                               'age': 26}['name']}""")
+        rsp = tpl().render()
+        assert rsp == 'Hello, Rick', (rsp, 'Hello, Rick')
+
 
 class TestSwitch(TestCase):
     def test_switch(self):
