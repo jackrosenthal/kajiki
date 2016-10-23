@@ -25,5 +25,4 @@ def extract(fileobj, keywords, comment_tags, options):
     for node in ir:
         if isinstance(node, TranslatableTextNode):
             if node.text.strip():
-                for line in node.text.split('\n'):
-                    yield (node.lineno, '_', line, [])
+                yield (node.lineno, '_', node.text, [])

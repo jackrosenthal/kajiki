@@ -172,6 +172,7 @@ class _Compiler(object):
                         merge_node = node.ownerDocument.createTextNode(node.data)
                         merge_node.lineno = node.lineno
                         merge_node.escaped = node.escaped
+                        merge_node.parentNode = node.parentNode
                         merged_nodes.append(merge_node)
                     else:
                         merge_node.data = merge_node.data + node.data

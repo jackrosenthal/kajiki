@@ -7,7 +7,10 @@ import os
 import sys
 import traceback
 import xml.dom.minidom
+from io import BytesIO
 from unittest import TestCase, main
+
+from kajiki import i18n
 from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
@@ -151,20 +154,6 @@ class TestSimple(TestCase):
                 expected_output='<script>/**/\n{0}/**/</script>'.format(script))
         perform(src, '<script>/*<![CDATA[*//**/\n{0}/**//*]]>*/</script>'.format(
                 script), mode='xml')
-
-    def test_scripts_non_translatable(self):
-        src = '<xml><div>Hi</div><script>hello world</script><style>hello style</style></xml>'
-        doc = _Parser('<string>', src).parse()
-
-        for n in _Compiler('<string>', doc).compile():
-            text = getattr(n, 'text', '')
-            if text in ('hello world', 'hello style'):
-                self.assertFalse(isinstance(n, TranslatableTextNode))
-
-        for n in _Compiler('<string>', doc, cdata_scripts=False).compile():
-            text = getattr(n, 'text', '')
-            if text in ('hello world', 'hello style'):
-                self.assertFalse(isinstance(n, TranslatableTextNode))
 
     def test_escape_dollar(self):
         perform('<div>$$</div>', '<div>$</div>')
@@ -808,6 +797,44 @@ context=dict(parrot='Bereft of life, it rests in peace'))
         from kajiki.util import literal
         markup = '<b>"&amp;"</b>'
         assert ''.join(list(literal(markup))) == markup
+
+
+class TestTranslation(TestCase):
+    def test_scripts_non_translatable(self):
+        src = '<xml><div>Hi</div><script>hello world</script><style>hello style</style></xml>'
+        doc = _Parser('<string>', src).parse()
+
+        for n in _Compiler('<string>', doc).compile():
+            text = getattr(n, 'text', '')
+            if text in ('hello world', 'hello style'):
+                self.assertFalse(isinstance(n, TranslatableTextNode))
+
+        for n in _Compiler('<string>', doc, cdata_scripts=False).compile():
+            text = getattr(n, 'text', '')
+            if text in ('hello world', 'hello style'):
+                self.assertFalse(isinstance(n, TranslatableTextNode))
+
+    def test_extract_translate(self):
+        src = '''<xml><div>Hi</div><p>
+
+        Hello
+        World</p></xml>'''
+
+        # Build translation table
+        messages = {}
+        for _, _, msgid, _ in i18n.extract(BytesIO(src.encode('utf-8')), None, None, {}):
+            messages[msgid] = 'TRANSLATED(%s)' % msgid
+
+        # Provide a fake translation function
+        default_gettext = i18n.gettext
+        i18n.gettext = lambda s: messages[s]
+        try:
+            perform(src, '''<xml><div>TRANSLATED(Hi)</div><p>TRANSLATED(
+
+        Hello
+        World)</p></xml>''')
+        finally:
+            i18n.gettext = default_gettext
 
 
 if __name__ == '__main__':
