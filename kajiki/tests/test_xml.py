@@ -51,7 +51,7 @@ class TestExpand(TestCase):
         py:replace="replace"
         py:block="block"
         py:extends="extends">Foo</div>''').parse()
-        kajiki.xml_template.expand(doc)
+        doc = kajiki.xml_template._DomTransformer(doc).transform()
         node = doc.childNodes[0]
         for tagname, attr in kajiki.markup_template.QDIRECTIVES:
             if node.tagName == 'div':
