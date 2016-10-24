@@ -11,6 +11,7 @@ from io import BytesIO
 from unittest import TestCase, main
 
 from kajiki import i18n
+from kajiki.template import KajikiSyntaxError
 from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
@@ -69,10 +70,8 @@ class TestExpand(TestCase):
             node = node.childNodes[0]
 
 
-def perform(source, expected_output, context=dict(name='Rick'),
-            mode='xml', is_fragment=True, cdata_scripts=True):
-    tpl = XMLTemplate(source, mode=mode, is_fragment=is_fragment,
-                      cdata_scripts=cdata_scripts)
+def perform(source, expected_output, context=dict(name='Rick'), **options):
+    tpl = XMLTemplate(source, **options)
     try:
         rsp = tpl(context).render()
         assert isinstance(rsp, str), 'render() must return a unicode string.'
@@ -722,13 +721,13 @@ class TestAttributes(TestCase):
         perform(TPL, '<input type="checkbox"/>', context0, mode='xml')
         perform(TPL, '<input checked="True" type="checkbox"/>',
                 context1, mode='xml')
-        perform(TPL, '<input type="checkbox">', context0, 'html')
+        perform(TPL, '<input type="checkbox">', context0, mode='html')
         perform(TPL, '<input checked type="checkbox">',
-                context1, 'html')
-        perform(TPL, '<!DOCTYPE html><input checked type="checkbox">',
+                context1, mode='html')
+        perform(TPL, '<!DOCTYPE html>\n<input checked type="checkbox">',
                 context1, mode='html5', is_fragment=False)
         perform('<!DOCTYPE html>\n' + TPL,
-                '<!DOCTYPE html><input checked type="checkbox">',
+                '<!DOCTYPE html>\n<input checked type="checkbox">',
                 context1, mode=None, is_fragment=False)
 
     def test_xml_namespaces(self):
@@ -819,22 +818,53 @@ class TestTranslation(TestCase):
 
         Hello
         World</p></xml>'''
-
-        # Build translation table
-        messages = {}
-        for _, _, msgid, _ in i18n.extract(BytesIO(src.encode('utf-8')), None, None, {}):
-            messages[msgid] = 'TRANSLATED(%s)' % msgid
-
-        # Provide a fake translation function
-        default_gettext = i18n.gettext
-        i18n.gettext = lambda s: messages[s]
-        try:
-            perform(src, '''<xml><div>TRANSLATED(Hi)</div><p>TRANSLATED(
+        expected = {
+            False: '''<xml><div>TRANSLATED(Hi)</div><p>TRANSLATED(
 
         Hello
-        World)</p></xml>''')
-        finally:
-            i18n.gettext = default_gettext
+        World)</p></xml>''',
+            True: '''<xml><div>TRANSLATED(Hi)</div><p>TRANSLATED(Hello
+        World)</p></xml>'''
+        }
+
+        for strip_text in (False, True):
+            # Build translation table
+            messages = {}
+            for _, _, msgid, _ in i18n.extract(BytesIO(src.encode('utf-8')), None, None, {
+                'strip_text': strip_text
+            }):
+                messages[msgid] = 'TRANSLATED(%s)' % msgid
+
+            # Provide a fake translation function
+            default_gettext = i18n.gettext
+            i18n.gettext = lambda s: messages[s]
+            try:
+                perform(src, expected[strip_text], strip_text=strip_text)
+            finally:
+                i18n.gettext = default_gettext
+
+
+class TestErrorReporting(TestCase):
+    def test_syntax_error(self):
+        for strip_text in (False, True):
+            with self.assertRaises(KajikiSyntaxError) as err:
+                perform('<div py:for="i i range(1, 2)">${i}</div>', '', strip_text=strip_text)
+            self.assertIn('-->         for i i range(1, 2):', str(err.exception))
+
+    def test_code_error(self):
+        for strip_text in (False, True):
+            try:
+                child = FileLoader(
+                    os.path.join(os.path.dirname(__file__), 'data')
+                ).load('error.html', strip_text=strip_text)
+                child().render()
+            except ZeroDivisionError as exc:
+                import traceback, sys
+                l = traceback.format_exception(*sys.exc_info())
+                last_line = l[-2]
+                self.assertIn('${3/0}', last_line)
+            else:
+                assert False
 
 
 if __name__ == '__main__':

@@ -28,7 +28,8 @@ impl = dom.getDOMImplementation(' ')
 
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
-                encoding='utf-8', autoblocks=None, cdata_scripts=True):
+                encoding='utf-8', autoblocks=None, cdata_scripts=True,
+                strip_text=False):
     """Given XML source code of a Kajiki Templates parses returns a Template class.
 
     The source code is parsed to its DOM representation, which is then
@@ -43,7 +44,7 @@ def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
     if filename is None:
         filename = '<string>'
     doc = _Parser(filename, source).parse()
-    doc = _DomTransformer(doc).transform()
+    doc = _DomTransformer(doc, strip_text=strip_text).transform()
     ir_ = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment,
                     autoblocks=autoblocks, cdata_scripts=cdata_scripts).compile()
     return template.from_ir(ir_)
@@ -97,7 +98,7 @@ class _Compiler(object):
             else:
                 dtd = None
             if dtd:
-                dtd = ir.TextNode(dtd)
+                dtd = ir.TextNode(dtd.strip()+'\n')
                 dtd.filename = self.filename
                 dtd.lineno = 1
                 body.insert(0, dtd)
@@ -608,9 +609,10 @@ class _DomTransformer(object):
 
     The Transformer mutates the original document.
     """
-    def __init__(self, tree):
+    def __init__(self, tree, strip_text=True):
         self._transformed = False
         self._tree = tree
+        self._strip_text = strip_text
 
     def transform(self):
         if self._transformed:
@@ -618,6 +620,8 @@ class _DomTransformer(object):
 
         self._tree = self._expand_directives(self._tree)
         self._tree = self._merge_text_nodes(self._tree)
+        if self._strip_text:
+            self._tree = self._strip_text_nodes(self._tree)
         return self._tree
 
     @classmethod
@@ -654,6 +658,19 @@ class _DomTransformer(object):
             if not isinstance(child, dom.Text):
                 cls._merge_text_nodes(child)
 
+        return tree
+
+    @classmethod
+    def _strip_text_nodes(cls, tree):
+        for child in tree.childNodes:
+            if isinstance(child, dom.Text):
+                if not getattr(child, '_cdata', False):
+                    # Move lineno forward the amount of lines we are going to strip.
+                    lstripped_data = child.data.lstrip()
+                    child.lineno += child.data[:len(child.data)-len(lstripped_data)].count('\n')
+                    child.data = child.data.strip()
+            else:
+                cls._strip_text_nodes(child)
         return tree
 
     @classmethod
