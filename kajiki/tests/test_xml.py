@@ -363,6 +363,13 @@ class TestFunction(TestCase):
         perform('<div><py:def function="bruhaha()"></py:def></div>',
                 '<div></div>')
 
+    def test_function_in_attr(self):
+        '''Attribute value with a function call.'''
+        perform('''<div
+><py:def function="attrtest(n, sz=16)">text/$sz/$n</py:def><img
+src="${attrtest(name)}"/></div>''',
+                '<div><img src="text/16/Rick"/></div>')
+
 
 class TestCall(TestCase):
     def test_call(self):

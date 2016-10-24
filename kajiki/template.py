@@ -198,7 +198,10 @@ class _Template(object):
         for part in it:
             if part is None:
                 continue
-            result.append(str(part))
+            if isinstance(part, flattener):
+                result.append(str(part.accumulate_str()))
+            else:
+                result.append(str(part))
         if result:
             return ''.join(result)
         else:

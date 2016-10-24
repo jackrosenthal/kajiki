@@ -61,7 +61,7 @@ class flattener(object):
         iter_stack = [self.iterator]
         while iter_stack:
             try:
-                x = iter_stack[-1].next()
+                x = next(iter_stack[-1])
             except StopIteration:
                 iter_stack.pop()
                 continue
