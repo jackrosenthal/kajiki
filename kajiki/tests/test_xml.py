@@ -847,9 +847,12 @@ class TestTranslation(TestCase):
 class TestErrorReporting(TestCase):
     def test_syntax_error(self):
         for strip_text in (False, True):
-            with self.assertRaises(KajikiSyntaxError) as err:
+            try:
                 perform('<div py:for="i i range(1, 2)">${i}</div>', '', strip_text=strip_text)
-            self.assertIn('-->         for i i range(1, 2):', str(err.exception))
+            except KajikiSyntaxError as exc:
+                assert '-->         for i i range(1, 2):' in str(exc), exc
+            else:
+                assert False
 
     def test_code_error(self):
         for strip_text in (False, True):
@@ -862,7 +865,7 @@ class TestErrorReporting(TestCase):
                 import traceback, sys
                 l = traceback.format_exception(*sys.exc_info())
                 last_line = l[-2]
-                self.assertIn('${3/0}', last_line)
+                assert '${3/0}' in last_line, last_line
             else:
                 assert False
 
