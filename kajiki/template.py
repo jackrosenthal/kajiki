@@ -35,7 +35,7 @@ class _obj(object):
 class _Template(object):
     """Base Class for all compiled Kajiki Templates.
 
-    All kajiki templates created from an ``ir.TemplateNode`` will
+    All kajiki templates created from a :class:`kajiki.ir.TemplateNode` will
     be subclasses of this class.
 
     As the template body code runs inside ``__main__`` method of this
