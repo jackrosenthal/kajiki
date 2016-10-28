@@ -1,12 +1,34 @@
-==================================
-Kajiki Runtime Transformations
-==================================
+==============
+Kajiki Runtime
+==============
+
+.. module:: kajiki
+    :synopsis: Kajiki Runtime APIs
 
 It's sometimes good to have a mental model of the Python code that Kajiki
 creates in order to generate your templates.  This document uses several
 examples taken from the text templating language to illustrate the semantics of
 Kajiki templates.  If in doubt, you can always view the Python text generated for
 a template by examining the py_text attribute of the generated Template class.
+
+.. automethod:: kajiki.xml_template.XMLTemplate
+
+.. autoclass:: kajiki.ir.TemplateNode
+    :members:
+
+.. automethod:: kajiki.template.Template
+
+.. autoclass:: kajiki.template._Template
+    :members:
+
+.. autoclass:: kajiki.xml_template._Compiler
+    :members:
+
+.. autoclass:: kajiki.xml_template._Parser
+    :members:
+
+.. autoclass:: kajiki.xml_template._DomTransformer
+    :members:
 
 Basic Expressions
 =========================

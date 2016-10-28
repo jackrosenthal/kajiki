@@ -99,6 +99,7 @@ class _Template(object):
             yield str(chunk)
 
     def render(self):
+        """Render the template to a string."""
         return ''.join(self)
 
     def _push_with(self, locals_, vars):
@@ -217,9 +218,9 @@ class _Template(object):
 
 
 def Template(ns):
-    """Creates a new ``_Template`` subclass from an entity with ``exposed`` functions.
+    """Creates a new :class:`._Template` subclass from an entity with ``exposed`` functions.
 
-    Kajiki used classes as containers of the exposed functions for convenience,
+    Kajiki uses classes as containers of the exposed functions for convenience,
     but any object that can have the functions as attributes works.
 
     To be a valid template the original entity must provide at least a ``__main__``
@@ -248,9 +249,9 @@ def Template(ns):
 def from_ir(ir_node):
     """Creates a template class from Intermediate Representation TemplateNode.
 
-    This actually creates the class defined by the TemplateNode and returns
-    a subclass of it.
-    The returned class is a subclass of a `kajiki.template._Template`.
+    This actually creates the class defined by the TemplateNode by executing
+    its code and returns a subclass of it.
+    The returned class is a subclass of :class:`kajiki.template._Template`.
     """
     py_lines = list(generate_python(ir_node))
     py_text = '\n'.join(map(str, py_lines))

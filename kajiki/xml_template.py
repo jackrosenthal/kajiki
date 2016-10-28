@@ -88,6 +88,26 @@ class _Compiler(object):
             self.mode = 'xml'  # by default
 
     def compile(self):
+        """Compile the document provided by :class:`._Parser`.
+
+        Returns as :class:`kajiki.ir.TemplateNode` instance representing
+        the whole tree of nodes as their intermediate representation.
+
+        The returned template will include at least a ``__main__``
+        function which is the document itself including a DOCTYPE and
+        any function declared through ``py:def`` or as a ``py:block``.
+
+        The ``TemplateNode`` will also include the module level
+        code specified through ``<?py %``.
+
+        If the compiled document didn't specify a DOCTYPE provides
+        one at least for HTML5.
+
+        .. note::
+            As this alters the functions and mode wide code
+            registries of the compiler ``compile`` should
+            never be called twice or might lead to unexpected results.
+        """
         body = list(self._compile_node(self.doc.firstChild))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
@@ -136,6 +156,14 @@ class _Compiler(object):
         return True
 
     def _compile_node(self, node):
+        """Convert a DOM node to its intermediate representation.
+
+        Calls specific compile functions for special nodes and any
+        directive that was expanded by :meth:`._DomTransformer._expand_directives`.
+        For any plain XML node forward it to :meth:`._compile_xml`.
+
+        Automatically converts any ``autoblock`` node to a ``py:block`` directive.
+        """
         if isinstance(node, dom.Comment):
             return self._compile_comment(node)
         elif isinstance(node, dom.Text):
@@ -157,6 +185,22 @@ class _Compiler(object):
 
     @annotate
     def _compile_xml(self, node):
+        """Compile plain XML nodes.
+
+        When compiling a node also take care of directives that
+        only modify the node itself (``py:strip``, ``py:attrs``
+        and ``py:content``) as all directives wrapping the node
+        and its children have already been handled by :meth:`._compile_node`.
+
+        The provided intermediate representations include
+        the node itself, its attributes and its content.
+
+        Attributes of the node are handled through :class:`._TextCompiler`
+        to ensure ${expr} expressions are handled in attributes too.
+
+        In case the node has children (and no py:content)
+        compile the children too.
+        """
         content = attrs = guard = None
         if node.hasAttribute('py:strip'):
             guard = node.getAttribute('py:strip')
@@ -226,10 +270,17 @@ class _Compiler(object):
 
     @annotate
     def _compile_replace(self, node):
+        """Convert py:replace nodes to their intermediate representation."""
         yield ir.ExprNode(node.getAttribute('value'))
 
     @annotate
     def _compile_pi(self, node):
+        """Convert <?py and <?python nodes to their intermediate representation.
+
+        Any code identified by :class:`.ir.PythonNode` as ``module_level``
+        (it starts with % character) will be registered in compiler registry
+        of module wide code to be provided to be template.
+        """
         body = ir.TextNode(node.data.strip())
         node = ir.PythonNode(body)
         if node.module_level:
@@ -239,6 +290,7 @@ class _Compiler(object):
 
     @annotate
     def _compile_import(self, node):
+        """Convert py:import nodes to their intermediate representation."""
         href = node.getAttribute('href')
         if node.hasAttribute('alias'):
             yield ir.ImportNode(href, node.getAttribute('alias'))
@@ -247,6 +299,7 @@ class _Compiler(object):
 
     @annotate
     def _compile_extends(self, node):
+        """Convert py:extends nodes to their intermediate representation."""
         self.is_child = True
         href = node.getAttribute('href')
         yield ir.ExtendNode(href)
@@ -255,11 +308,17 @@ class _Compiler(object):
 
     @annotate
     def _compile_include(self, node):
+        """Convert py:include nodes to their intermediate representation."""
         href = node.getAttribute('href')
         yield ir.IncludeNode(href)
 
     @annotate
     def _compile_block(self, node):
+        """Convert py:block nodes to their intermediate representation.
+
+        Any compiled block will be registered in the compiler functions
+        registry to be provided to the template.
+        """
         fname = '_kj_block_' + node.getAttribute('name')
         decl = fname + '()'
         body = list(self._compile_nop(node))
@@ -275,6 +334,11 @@ class _Compiler(object):
 
     @annotate
     def _compile_def(self, node):
+        """Convert py:def nodes to their intermediate representation.
+
+        Any compiled definition will be registered in the compiler functions
+        registry to be provided to the template.
+        """
         old_in_def, self.in_def = self.in_def, True
         body = list(self._compile_nop(node))
         self.in_def = old_in_def
@@ -285,6 +349,7 @@ class _Compiler(object):
 
     @annotate
     def _compile_call(self, node):
+        """Convert py:call nodes to their intermediate representation."""
         if node.childNodes[0].hasAttribute('args'):
             defn = '$caller(' + node.childNodes[0].getAttribute('args') + ')'
         else:
@@ -296,6 +361,7 @@ class _Compiler(object):
 
     @annotate
     def _compile_text(self, node):
+        """Compile text nodes to their intermediate representation"""
         kwargs = {}
         if node.parentNode and node.parentNode.tagName in HTML_CDATA_TAGS:
             # script and style should always be untranslatable.
@@ -307,21 +373,25 @@ class _Compiler(object):
 
     @annotate
     def _compile_comment(self, node):
+        """Convert comments to their intermediate representation."""
         if not node.data.startswith('!'):
             yield ir.TextNode('<!-- %s -->' % node.data)
 
     @annotate
     def _compile_for(self, node):
+        """Convert py:for nodes to their intermediate representation."""
         yield ir.ForNode(node.getAttribute('each'),
                          *list(self._compile_nop(node)))
 
     @annotate
     def _compile_with(self, node):
+        """Convert py:with nodes to their intermediate representation."""
         yield ir.WithNode(node.getAttribute('vars'),
                           *list(self._compile_nop(node)))
 
     @annotate
     def _compile_switch(self, node):
+        """Convert py:switch nodes to their intermediate representation."""
         body = []
 
         # Filter out empty text nodes and report unsupported nodes
@@ -340,16 +410,19 @@ class _Compiler(object):
 
     @annotate
     def _compile_case(self, node):
+        """Convert py:case nodes to their intermediate representation."""
         yield ir.CaseNode(node.getAttribute('value'),
                           *list(self._compile_nop(node)))
 
     @annotate
     def _compile_if(self, node):
+        """Convert py:if nodes to their intermediate representation."""
         yield ir.IfNode(node.getAttribute('test'),
                         *list(self._compile_nop(node)))
 
     @annotate
     def _compile_else(self, node):
+        """Convert py:else nodes to their intermediate representation."""
         if (getattr(node.parentNode, 'tagName', '') != 'py:nop' and
                 not node.parentNode.hasAttribute('py:switch') and
                 getattr(node.previousSibling, 'tagName', '') != 'py:if'):
@@ -381,10 +454,10 @@ def make_text_node(text, guard=None):
 
 
 class _TextCompiler(object):
-    '''Separates expressions such as ${some_var} from the ordinary text
-    around them in the template source and generates ExprNode instances and
-    TextNode instances accordingly.
-    '''
+    """Separates expressions such as ${some_var} from the ordinary text
+    around them in the template source and generates :class:`.ir.ExprNode`
+    instances and :class:`.ir.TextNode` instances accordingly.
+    """
     def __init__(self, filename, source, lineno,
                  node_type=make_text_node, in_html_attr=False):
         self.filename = filename
@@ -466,7 +539,7 @@ class _Parser(sax.ContentHandler):
     DTD = '<!DOCTYPE kajiki SYSTEM "kajiki.dtd">'
 
     def __init__(self, filename, source):
-        '''XML defines only a few entities; HTML defines many more.
+        """XML defines only a few entities; HTML defines many more.
         The XML parser errors out when it finds HTML entities, unless the
         template contains a reference to an external DTD (in which case
         skippedEntity() gets called, this is what we want). In other words,
@@ -477,7 +550,7 @@ class _Parser(sax.ContentHandler):
         replace it with our own; then in the compiling stage we put the
         user's doctype back in. The XML parser is thus tricked and nobody
         needs to know this implementation detail of Kajiki.
-        '''
+        """
         if not isinstance(source, str):
             raise TypeError('The template source must be a unicode string.')
         self._els = []
@@ -490,6 +563,7 @@ class _Parser(sax.ContentHandler):
         self._cdata_stack = []
 
     def parse(self):
+        """Parse an XML/HTML document to its DOM representation."""
         self._parser = parser = sax.make_parser()
         parser.setFeature(sax.handler.feature_external_pes, False)
         parser.setFeature(sax.handler.feature_external_ges, False)
@@ -549,13 +623,11 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
-        '''Deals with an HTML entity such as &nbsp;
-        (XML itself defines very few entities.)
+        # Deals with an HTML entity such as &nbsp; (XML itself defines very few entities.)
 
-        The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
-        a valid entity, better pass it along to sax and find out!"
-        (Since expat is nonvalidating, it never reads the external doctypes.)
-        '''
+        # The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
+        # a valid entity, better pass it along to sax and find out!"
+        # (Since expat is nonvalidating, it never reads the external doctypes.)
         return self.characters(html5[name])
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover
@@ -609,20 +681,24 @@ class _DomTransformer(object):
 
     The Transformer mutates the original document.
     """
-    def __init__(self, tree, strip_text=True):
+    def __init__(self, doc, strip_text=True):
         self._transformed = False
-        self._tree = tree
+        self.doc = doc
         self._strip_text = strip_text
 
     def transform(self):
-        if self._transformed:
-            return self._tree
+        """Applies all the DOM transformations to the document.
 
-        self._tree = self._expand_directives(self._tree)
-        self._tree = self._merge_text_nodes(self._tree)
+        Calling this twice will do nothing as the result is persisted.
+        """
+        if self._transformed:
+            return self.doc
+
+        self.doc = self._expand_directives(self.doc)
+        self.doc = self._merge_text_nodes(self.doc)
         if self._strip_text:
-            self._tree = self._strip_text_nodes(self._tree)
-        return self._tree
+            self.doc = self._strip_text_nodes(self.doc)
+        return self.doc
 
     @classmethod
     def _merge_text_nodes(cls, tree):

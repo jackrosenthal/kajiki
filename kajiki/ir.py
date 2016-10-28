@@ -69,7 +69,16 @@ class DedentNode(Node):
 
 
 class TemplateNode(HierNode):
-    """Represents the root Intermediate Representation node of a template."""
+    """Represents the root Intermediate Representation node of a template.
+
+    Iterating over this will generate the Python code for the class
+    that provides all the functions that are part of the template including
+    the ``__main__`` function that represents the template code itself.
+
+    The generated class will then be passed to :meth:`kajiki.template.Template` to
+    create a :class:`kajiki.template._Template` subclass that has the
+    ``render`` method to render the template.
+    """
     class TemplateTail(Node):
         def py(self):
             yield self.line('template = kajiki.Template(template)')
