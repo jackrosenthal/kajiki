@@ -29,6 +29,10 @@ class DocumentTypeDeclaration(object):
         ... )
         >>> print match.name
         'html4transitional'
+
+    DocumentTypeDeclaration is used by :class:`kajiki.xml_template._Compiler`
+    to detect the document doctype and tune generated template (for example
+    by deciding if tags closed inline are allowed or not).
     """
     def __init__(self, name, fpi='', uri='', rendering_mode='xml',
                  root_element='html', kind='PUBLIC'):
