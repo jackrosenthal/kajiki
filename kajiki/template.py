@@ -275,6 +275,15 @@ def from_ir(ir_node):
 
 
 class TplFunc(object):
+    """A template function attached to a _Template.
+
+    By default template functions (ie: __main__) depends
+    on variables like ``self``, ``local`` and so on which
+    are provided by :class:`._Template`.
+
+    This is used by :meth:`.Template` to create a new
+    ``_Template`` with the attached functions.
+    """
     def __init__(self, func, inst=None):
         self._func = func
         self._inst = inst

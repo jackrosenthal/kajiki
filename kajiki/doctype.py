@@ -9,7 +9,27 @@ from nine.decorator import reify
 
 @nine
 class DocumentTypeDeclaration(object):
-    '''Represents a http://en.wikipedia.org/wiki/Document_Type_Declaration'''
+    """Represents a http://en.wikipedia.org/wiki/Document_Type_Declaration
+
+    This is used to lookup DTDs details by its string, DTDs can
+    be registered in :attr:`.by_uri` and can then be looked up
+    using :meth:`.matching` method::
+
+        >>> from kajiki.doctype import DocumentTypeDeclaration
+        >>> dtd = DocumentTypeDeclaration("html4transitional",
+        ...                               "-//W3C//DTD HTML 4.01 Transitional//EN",
+        ...                               "http://www.w3.org/TR/html4/loose.dtd",
+        ...                               rendering_mode='html')
+        >>> print dtd.uri
+        http://www.w3.org/TR/html4/loose.dtd
+        >>> DocumentTypeDeclaration.by_uri["http://www.w3.org/TR/html4/loose.dtd"] = dtd
+        >>> match = DocumentTypeDeclaration.matching(
+        ...     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
+        ...     '"http://www.w3.org/TR/html4/loose.dtd">'
+        ... )
+        >>> print match.name
+        'html4transitional'
+    """
     def __init__(self, name, fpi='', uri='', rendering_mode='xml',
                  root_element='html', kind='PUBLIC'):
         '''*fpi* is the Formal Public Identifier.'''
@@ -99,10 +119,28 @@ for dtd in (
 
 
 def extract_dtd(markup):
-    '''Tries to find any DTD in the string *markup* and returns a tuple
+    """Lookup the DTD in the provided markup code.
+
+    Tries to find any DTD in the string *markup* and returns a tuple
     (dtd_string, position, markup_without_the_DTD). Note the first of
-    these values might be an empty string.
-    '''
+    these values might be an empty string::
+
+        >>> markup = '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        ...             "http://www.w3.org/TR/html4/loose.dtd">
+        ...     <html>
+        ...     <head>
+        ...     ...
+        ...     </head>
+        ...     <body>
+        ...     ...
+        ...     </body>
+        ...     </html>'''
+        >>> import kajiki.doctype
+        >>> dtd, dtd_pos, html = kajiki.doctype.extract_dtd(markup)
+        >>> print dtd
+        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+    """
     match = DocumentTypeDeclaration.REGEX.search(markup)
     if not match:
         return '', 0, markup

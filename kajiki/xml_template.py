@@ -30,7 +30,7 @@ impl = dom.getDOMImplementation(' ')
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
                 encoding='utf-8', autoblocks=None, cdata_scripts=True,
                 strip_text=False):
-    """Given XML source code of a Kajiki Templates parses returns a template class.
+    """Given XML source code of a Kajiki Templates parses and returns a template class.
 
     The source code is parsed to its DOM representation by :class:`._Parser`,
     which is then expanded to separate directives from tags by :class:`._DomTransformer`
@@ -65,7 +65,7 @@ def annotate(gen):
 
 
 class _Compiler(object):
-    """Compiles a DOM tree into Intermediate Representation TemplateNode.
+    """Compiles a DOM tree into Intermediate Representation :class:`kajiki.ir.TemplateNode`.
 
     Intermediate Representation is a tree of nodes that represent
     Python Code that should be generated to execute the template.
