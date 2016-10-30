@@ -557,6 +557,7 @@ class _Parser(sax.ContentHandler):
         user's doctype back in. The XML parser is thus tricked and nobody
         needs to know this implementation detail of Kajiki.
         """
+        sax.ContentHandler.__init__(self)
         if not isinstance(source, str):
             raise TypeError('The template source must be a unicode string.')
         self._els = []
@@ -744,6 +745,7 @@ class _DomTransformer(object):
 
     @classmethod
     def _strip_text_nodes(cls, tree):
+        """Strips empty characters in all text nodes."""
         for child in tree.childNodes:
             if isinstance(child, dom.Text):
                 if not getattr(child, '_cdata', False):
@@ -813,6 +815,7 @@ class _DomTransformer(object):
 
 
 class XMLTemplateError(Exception):
+    """Base class for all Parse/Compile errors."""
     def __init__(self, msg, source, filename, linen, coln):
         super(XMLTemplateError, self).__init__(
             '[%s:%s] %s\n%s' % (filename, linen, msg, self._get_source_snippet(source, linen))
@@ -844,6 +847,12 @@ class XMLTemplateError(Exception):
 
 
 class XMLTemplateCompileError(XMLTemplateError):
+    """Error for failed template constraints.
+
+    This is used to signal directives in contexts where
+    they are invalid or any kajiki template constraint
+    that fails in the provided template code.
+    """
     def __init__(self, msg, doc, filename, linen):
         super(XMLTemplateCompileError, self).__init__(
             msg, getattr(doc, '_source', ''), filename, linen, 0
@@ -851,4 +860,7 @@ class XMLTemplateCompileError(XMLTemplateError):
 
 
 class XMLTemplateParseError(XMLTemplateError):
-    pass
+    """Error while parsing template XML.
+
+    Signals an invalid XML error in the provided template code.
+    """
