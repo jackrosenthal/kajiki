@@ -144,15 +144,29 @@ class _Template(object):
         return p_inst
 
     def _push_switch(self, expr):
+        """Enter a ``py:switch`` block.
+
+        Pushes provided value on the stack used
+        to check ``py:case`` statements against.
+
+        Calling :meth:`._pop_switch` will exit the switch block.
+        """
         self._switch_stack.append(expr)
 
     def _pop_switch(self):
+        """Exit current ``py:switch`` block.
+
+        Pops current value from the stack used
+        to check ``py:case`` statements against.
+        """
         self._switch_stack.pop()
 
     def _case(self, obj):
+        """Check against current ``py:switch`` value."""
         return obj == self._switch_stack[-1]
 
     def _import(self, name, alias, gbls):
+
         tpl_cls = self.loader.import_(name)
         if alias is None:
             alias = self.loader.default_alias_for(name)
