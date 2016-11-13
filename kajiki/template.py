@@ -91,10 +91,10 @@ class _Template(object):
         self.__globals__.update(context)
 
     def __iter__(self):
-        '''We convert the chunk to string because it can be of any type
+        """We convert the chunk to string because it can be of any type
         -- after all, the template supports expressions such as ${x+y}.
         Here, ``chunk`` can be the computed expression result.
-        '''
+        """
         for chunk in self.__main__():
             yield str(chunk)
 
@@ -103,9 +103,22 @@ class _Template(object):
         return ''.join(self)
 
     def _push_with(self, locals_, vars):
+        """Enter a ``py:with`` block.
+
+        When a ``py:with`` block is encountered, previous values
+        of the variables assigned inside the ``py:with`` statement are
+        pushed on top of a stack by :class:`kajiki.ir.WithNode` so that
+        when the node is exited the previous values can be recovered.
+        """
         self._with_stack.append([locals_.get(k, ()) for k in vars])
 
     def _pop_with(self):
+        """Exists a ``py:with`` block.
+
+        When a ``py:with`` block is exited the values stack is popped
+        and the head returned to :class:`kajiki.ir.WithNode` so that
+        it can set any previously existing variable to its old value.
+        """
         return self._with_stack.pop()
 
     def _extend(self, parent):
@@ -166,7 +179,6 @@ class _Template(object):
         return obj == self._switch_stack[-1]
 
     def _import(self, name, alias, gbls):
-
         tpl_cls = self.loader.import_(name)
         if alias is None:
             alias = self.loader.default_alias_for(name)
@@ -174,7 +186,7 @@ class _Template(object):
         return r
 
     def _escape(self, value):
-        "Returns the given HTML with ampersands, carets and quotes encoded."
+        """Returns the given HTML with ampersands, carets and quotes encoded."""
         if value is None or isinstance(value, flattener):
             return value
         if hasattr(value, '__html__'):
@@ -195,6 +207,12 @@ class _Template(object):
     _re_escape = re.compile(r'&|<|>|"')
 
     def _render_attrs(self, attrs, mode):
+        """Render tag attributes in key="value" format.
+
+        A :class:`kajiki.ir.AttrsNode` will generate
+        code that in fact leads to this function to generate
+        the html for tag attributes.
+        """
         if hasattr(attrs, 'items'):
             attrs = attrs.items()
         if attrs is not None:
@@ -228,6 +246,7 @@ class _Template(object):
             meth.annotate_lnotab(cls.filename, py_to_tpl, dict(py_to_tpl))
 
     def defined(self, name):
+        """Check if a variable was provided to the template or not"""
         return name in self._context
 
 
