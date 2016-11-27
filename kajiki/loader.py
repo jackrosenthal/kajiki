@@ -41,7 +41,8 @@ class MockLoader(Loader):
 
 class FileLoader(Loader):
     def __init__(self, path, reload=True, force_mode=None,
-                 autoescape_text=False, xml_autoblocks=None):
+                 autoescape_text=False, xml_autoblocks=None,
+                 **template_options):
         super(FileLoader, self).__init__()
         from kajiki import XMLTemplate, TextTemplate
         if isinstance(path, basestring):
@@ -53,6 +54,7 @@ class FileLoader(Loader):
         self._force_mode = force_mode
         self._autoescape_text = autoescape_text
         self._xml_autoblocks = xml_autoblocks
+        self._template_options = template_options
         self.extension_map = dict(
             txt=lambda *a, **kw: TextTemplate(
                 autoescape=self._autoescape_text, *a, **kw),
@@ -81,20 +83,23 @@ class FileLoader(Loader):
         text template files.
         '''
         from kajiki import XMLTemplate, TextTemplate
+        options = self._template_options.copy()
+        options.update(kwargs)
+
         filename = self._filename(name)
         self._timestamps[name] = os.stat(filename).st_mtime
         if self._force_mode == 'text':
             return TextTemplate(filename=filename,
-                autoescape=self._autoescape_text, *args, **kwargs)
+                autoescape=self._autoescape_text, *args, **options)
         elif self._force_mode:
             return XMLTemplate(filename=filename,
                                mode=self._force_mode,
                                autoblocks=self._xml_autoblocks,
-                               *args, **kwargs)
+                               *args, **options)
         else:
             ext = os.path.splitext(filename)[1][1:]
             return self.extension_map[ext](
-                source=None, filename=filename, *args, **kwargs)
+                source=None, filename=filename, *args, **options)
 
 
 class PackageLoader(FileLoader):
