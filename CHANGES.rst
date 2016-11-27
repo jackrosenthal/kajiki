@@ -1,6 +1,18 @@
 CHANGES
 =======
 
+0.6.0 (2016-11-27)
+------------------
+
+* Fixed ``py:switch`` error message wrongly mentioning ``py:with``
+* Support for multiline ``${}`` expressions
+* Subsequent text nodes are now squashed into a single text node. This allows translating whole paragraphs instead of single sentences.
+* Allow code and function calls inside tag attributes
+* Added ``strip_text`` option to XMLTemplate and i18n collector to ensure leading and trailing spaces are stipped by text nodes (also leads to minified HTML)
+* Some HTML nodes that do not require being closed but is commonly considered best practice to close them are now emitted with ending tag (IE: <p>)
+* Generally improved code documentation to lower entry barrier for contributors
+
+
 0.5.5 (2016-06-08)
 ------------------
 
