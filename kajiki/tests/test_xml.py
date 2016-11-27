@@ -103,9 +103,9 @@ class TestSimple(TestCase):
     def test_script(self):
         'Always close script tags, even in xml mode.'
         source = '<html><script src="public"/></html>'
-        output = '<html><script src="public"></script>'
+        output = '<html><script src="public"></script></html>'
         perform(source, output, mode='html')
-        perform(source, output + '</html>', mode='xml')
+        perform(source, output, mode='xml')
 
     def test_script_escaping(self):
         '''In HTML script and style tags are automatically CDATA; in XML they
@@ -741,7 +741,7 @@ class TestAttributes(TestCase):
         '''Namespaced attributes pass through.'''
         TPL = '<p xml:lang="en">English text</p>'
         perform(TPL, TPL, mode='xml')
-        perform(TPL, TPL[:-4], mode='html')
+        perform(TPL, TPL, mode='html')
 
     def test_escape_attr_values(self):
         '''Escape static and dynamic attribute values.'''
