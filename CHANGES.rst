@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.6.1 (2016-11-28)
+-----------------
+
+* Actually report 0.6 in kajiki/version.py
+* Expose ``strip_text`` option in loader
+
 0.6.0 (2016-11-27)
 ------------------
 
