@@ -87,6 +87,8 @@ class FileLoader(Loader):
         options.update(kwargs)
 
         filename = self._filename(name)
+        if filename is None:
+            raise IOError('Unknown template %r' % name)
         self._timestamps[name] = os.stat(filename).st_mtime
         if self._force_mode == 'text':
             return TextTemplate(filename=filename,
