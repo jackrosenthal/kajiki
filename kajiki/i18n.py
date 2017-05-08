@@ -2,7 +2,8 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-from .ir import TranslatableTextNode
+from io import BytesIO
+from .ir import TranslatableTextNode, ExprNode
 
 
 def gettext(s):
@@ -12,6 +13,14 @@ def gettext(s):
 def extract(fileobj, keywords, comment_tags, options):
     """Babel entry point that extracts translation strings from XML templates."""
     from .xml_template import _Parser, _Compiler, _DomTransformer
+
+    try:
+        from babel.messages.extract import extract_python
+        extract_expr = options.get('extract_python', False)
+    except ImportError:
+        extract_python = None
+        extract_expr = False
+
     source = fileobj.read()
     if isinstance(source, bytes):
         source = source.decode('utf-8')
@@ -25,3 +34,7 @@ def extract(fileobj, keywords, comment_tags, options):
         if isinstance(node, TranslatableTextNode):
             if node.text.strip():
                 yield (node.lineno, '_', node.text, [])
+        elif extract_expr and isinstance(node, ExprNode):
+            for e in extract_python(BytesIO(node.text.encode('utf-8')),
+                                    keywords, comment_tags, options):
+                yield (node.lineno, e[1], e[2], e[3])
