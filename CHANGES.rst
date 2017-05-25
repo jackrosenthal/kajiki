@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.6.3 (2017-05-25)
+------------------
+
+* Added ``extract_python`` option to babel message extractor, this allows extracting gettext calls in ``${}`` expressions
+
 0.6.1 (2016-11-28)
 ------------------
 
