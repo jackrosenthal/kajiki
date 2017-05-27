@@ -56,7 +56,7 @@ used SourceForge_ for the hg repository, issue tracker and forums.
 We use Travis_ for continuous integration.
 
 
-.. _Documentation: http://pythonhosted.org/Kajiki/
+.. _Documentation: http://kajiki.readthedocs.org/
 .. _license: https://github.com/nandoflorestan/kajiki/blob/master/LICENSE.rst
 .. _`issue tracker`: https://github.com/nandoflorestan/kajiki/issues
 .. _GitHub: https://github.com/nandoflorestan/kajiki
