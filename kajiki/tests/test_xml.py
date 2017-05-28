@@ -826,9 +826,7 @@ class TestTranslation(TestCase):
         Hello
         World</p></xml>'''
         expected = {
-            False: '''<xml><div>TRANSLATED(Hi)</div><p>TRANSLATED(
-
-        Hello
+            False: '''<xml><div>TRANSLATED(Hi)</div><p>\n\n        TRANSLATED(Hello
         World)</p></xml>''',
             True: '''<xml><div>TRANSLATED(Hi)</div><p>TRANSLATED(Hello
         World)</p></xml>'''
@@ -849,6 +847,24 @@ class TestTranslation(TestCase):
                 perform(src, expected[strip_text], strip_text=strip_text)
             finally:
                 i18n.gettext = default_gettext
+
+
+class TestDOMTransformations(TestCase):
+    def test_empty_text_extraction(self):
+        doc = kajiki.xml_template._Parser('<string>', '''<span>  text  </span>''').parse()
+        doc = kajiki.xml_template._DomTransformer(doc, strip_text=False).transform()
+        text_data = [n.data for n in doc.firstChild.childNodes]
+        self.assertEqual(['  ', 'text', '  '], text_data)
+
+    def test_empty_text_extraction_lineno(self):
+        doc = kajiki.xml_template._Parser('<string>', '''<span>
+
+          text
+
+            </span>''').parse()
+        doc = kajiki.xml_template._DomTransformer(doc, strip_text=False).transform()
+        linenos = [n.lineno for n in doc.firstChild.childNodes]
+        self.assertEqual([1, 3, 3], linenos)  # Last node starts on same line as it starts with \n
 
 
 class TestErrorReporting(TestCase):

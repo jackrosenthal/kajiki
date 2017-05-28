@@ -703,6 +703,7 @@ class _DomTransformer(object):
 
         self.doc = self._expand_directives(self.doc)
         self.doc = self._merge_text_nodes(self.doc)
+        self.doc = self._extract_nodes_leading_and_trailing_spaces(self.doc)
         if self._strip_text:
             self.doc = self._strip_text_nodes(self.doc)
         return self.doc
@@ -741,6 +742,48 @@ class _DomTransformer(object):
             if not isinstance(child, dom.Text):
                 cls._merge_text_nodes(child)
 
+        return tree
+
+    @classmethod
+    def _extract_nodes_leading_and_trailing_spaces(cls, tree):
+        """Extract the leading and traling spaces of TextNodes to separate nodes.
+
+        This is explicitly intended to make i18n easier, as we don't want people having
+        to pay attention to spaces at being and end of text when translating it. So those
+        are always extracted and only the meaningful part is preserved for translation.
+        """
+        for child in tree.childNodes:
+            if isinstance(child, dom.Text):
+                if not getattr(child, '_cdata', False):
+                    if not child.data.strip():
+                        # Already a totally empty node, do nothing...
+                        continue
+
+                    lstripped_data = child.data.lstrip()
+                    if len(lstripped_data) != len(child.data):
+                        # There is text to strip at begin, create a new text node with empty space
+                        empty_text_len = len(child.data) - len(lstripped_data)
+                        empty_text = child.data[:empty_text_len]
+                        begin_node = child.ownerDocument.createTextNode(empty_text)
+                        begin_node.lineno = child.lineno
+                        begin_node.escaped = child.escaped
+                        tree.insertBefore(newChild=begin_node, refChild=child)
+                        child.lineno += child.data[:empty_text_len].count('\n')
+                        child.data = lstripped_data
+
+                    rstripped_data = child.data.rstrip()
+                    if len(rstripped_data) != len(child.data):
+                        # There is text to strip at end, create a new text node with empty space
+                        empty_text_len = len(child.data) - len(rstripped_data)
+                        empty_text = child.data[-empty_text_len:]
+                        end_node = child.ownerDocument.createTextNode(empty_text)
+                        end_node.lineno = child.lineno + child.data[:-empty_text_len].count('\n')
+                        end_node.escaped = child.escaped
+                        tree.replaceChild(newChild=end_node, oldChild=child)
+                        tree.insertBefore(newChild=child, refChild=end_node)
+                        child.data = rstripped_data
+            else:
+                cls._extract_nodes_leading_and_trailing_spaces(child)
         return tree
 
     @classmethod
