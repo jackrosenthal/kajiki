@@ -878,7 +878,7 @@ class TestTranslation(TestCase):
                 'extract_python': True
             }))
         except KajikiSyntaxError as e:
-            self.assertIn("${_('hi'", str(e))
+            assert "${_('hi'" in str(e)
         else:
             assert False, 'Should have raised'
 
