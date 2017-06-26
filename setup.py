@@ -23,6 +23,14 @@ def content_of(*files):
     return '\n'.join(content)
 
 
+import sys
+py_version = sys.version_info[:2]
+
+TEST_DEPENDENCIES = ['babel', 'nose']
+if py_version == (2, 6):
+    TEST_DEPENDENCIES.extend(['importlib'])
+
+
 setup(name='Kajiki',
       version=__release__,
       description='Fast XML-based template engine with Genshi syntax and '
@@ -60,7 +68,7 @@ setup(name='Kajiki',
       zip_safe=False,
       install_requires=['nine'],
       extras_require = {
-        'testing': ['babel', 'nose', 'coverage'],
+        'testing': TEST_DEPENDENCIES,
       },
       test_suite='kajiki.tests',
       entry_points="""
