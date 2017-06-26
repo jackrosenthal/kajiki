@@ -848,6 +848,40 @@ class TestTranslation(TestCase):
             finally:
                 i18n.gettext = default_gettext
 
+    def test_extract_python_inside(self):
+        src = '''<xml><div>${_('hi')}</div><p>
+
+        Hello
+        World</p></xml>'''
+        expected = '''<xml><div>xi</div><p>\n\n        TRANSLATED(Hello
+        World)</p></xml>'''
+
+        # Build translation table
+        messages = {'hi': 'xi'}
+        for _, _, msgid, _ in i18n.extract(BytesIO(src.encode('utf-8')), [], None, {
+            'extract_python': True
+        }):
+            messages[msgid] = 'TRANSLATED(%s)' % msgid
+
+        # Provide a fake translation function
+        default_gettext = i18n.gettext
+        i18n.gettext = lambda s: messages[s]
+        try:
+            perform(src, expected)
+        finally:
+            i18n.gettext = default_gettext
+
+    def test_extract_python_inside_invalid(self):
+        src = '''<xml><div>${_('hi' +)}</div></xml>'''
+        try:
+            x = list(i18n.extract(BytesIO(src.encode('utf-8')), [], None, {
+                'extract_python': True
+            }))
+        except KajikiSyntaxError as e:
+            self.assertIn("${_('hi'", str(e))
+        else:
+            assert False, 'Should have raised'
+
 
 class TestDOMTransformations(TestCase):
     def test_empty_text_extraction(self):

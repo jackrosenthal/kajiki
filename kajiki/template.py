@@ -66,7 +66,7 @@ class _Template(object):
         base_globals = self.base_globals or {}
         self.__globals__ = dict(base_globals, local=self, self=self,
             defined=lambda x: x in self.__globals__,
-            literal=literal, Markup=literal,
+            literal=literal, Markup=literal, _=i18n.gettext,
             __builtins__=__builtins__, __kj__=kajiki)
         self.__globals__['value_of'] = self.__globals__.get
         for k, v in self.__methods__:

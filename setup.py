@@ -59,6 +59,9 @@ setup(name='Kajiki',
       include_package_data=True,
       zip_safe=False,
       install_requires=['nine'],
+      extras_require = {
+        'testing': ['babel', 'nose', 'coverage'],
+      },
       test_suite='kajiki.tests',
       entry_points="""
           [babel.extractors]

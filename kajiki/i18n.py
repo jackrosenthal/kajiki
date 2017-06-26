@@ -3,6 +3,8 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from io import BytesIO
+from tokenize import TokenError
+
 from .ir import TranslatableTextNode, ExprNode
 
 
@@ -12,6 +14,7 @@ def gettext(s):
 
 def extract(fileobj, keywords, comment_tags, options):
     """Babel entry point that extracts translation strings from XML templates."""
+    from .template import KajikiSyntaxError
     from .xml_template import _Parser, _Compiler, _DomTransformer
 
     try:
@@ -35,6 +38,9 @@ def extract(fileobj, keywords, comment_tags, options):
             if node.text.strip():
                 yield (node.lineno, '_', node.text, [])
         elif extract_expr and isinstance(node, ExprNode):
-            for e in extract_python(BytesIO(node.text.encode('utf-8')),
-                                    keywords, comment_tags, options):
-                yield (node.lineno, e[1], e[2], e[3])
+            try:
+                for e in extract_python(BytesIO(node.text.encode('utf-8')),
+                                        keywords, comment_tags, options):
+                    yield (node.lineno, e[1], e[2], e[3])
+            except (TokenError, SyntaxError) as e:
+                raise KajikiSyntaxError(e, source, '<string>', node.lineno, 0)
