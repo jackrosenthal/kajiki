@@ -872,13 +872,13 @@ class TestTranslation(TestCase):
             i18n.gettext = default_gettext
 
     def test_extract_python_inside_invalid(self):
-        src = '''<xml><div>${_('hi' +)}</div></xml>'''
+        src = '''<xml><div>${_('hi' +}</div></xml>'''
         try:
             x = list(i18n.extract(BytesIO(src.encode('utf-8')), [], None, {
                 'extract_python': True
             }))
         except KajikiSyntaxError as e:
-            assert "${_('hi'" in str(e)
+            assert "${_('hi' +" in str(e)
         else:
             assert False, 'Should have raised'
 
