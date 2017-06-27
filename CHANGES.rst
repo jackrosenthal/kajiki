@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.7.0 (2017-06-27)
+------------------
+
+* Text for i18n is now extracted ignoring the empty spaces surrounding the text itself. Empty text will always be treated as non translatable nodes for performance reasons.
+* ``extract_python`` option will now report syntax errors when extracting text for translation.
+
 0.6.3 (2017-05-25)
 ------------------
 
