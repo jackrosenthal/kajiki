@@ -29,7 +29,7 @@ impl = dom.getDOMImplementation(' ')
 
 def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
                 encoding='utf-8', autoblocks=None, cdata_scripts=True,
-                strip_text=False):
+                strip_text=False, base_globals=None):
     """Given XML source code of a Kajiki Templates parses and returns a template class.
 
     The source code is parsed to its DOM representation by :class:`._Parser`,
@@ -53,7 +53,8 @@ def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
     doc = _DomTransformer(doc, strip_text=strip_text).transform()
     ir_ = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment,
                     autoblocks=autoblocks, cdata_scripts=cdata_scripts).compile()
-    return template.from_ir(ir_)
+    t = template.from_ir(ir_, base_globals=base_globals)
+    return t
 
 
 def annotate(gen):

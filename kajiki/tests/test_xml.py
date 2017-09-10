@@ -882,6 +882,47 @@ class TestTranslation(TestCase):
         else:
             assert False, 'Should have raised'
 
+    def test_substituting_gettext_with_lambda(self):
+        src = '''<xml>hi</xml>'''
+        expected = '''<xml>spam</xml>'''
+
+        perform(src, expected, context=dict(gettext=lambda x: 'spam'))
+
+    def test_substituting_gettext_with_lambda_extending(self):
+        gettext = lambda x: 'egg'
+        loader = MockLoader({
+            'parent.html': XMLTemplate('''<div>parent</div>'''),
+            'child.html': XMLTemplate('''<py:extends href="parent.html"><div>child</div></py:extends>''')})
+        tpl = loader.import_('child.html')
+        rsp = tpl(dict(gettext=gettext)).render()
+        assert rsp == '''<div>egg</div><div>egg</div>''', rsp
+
+    def test_substituting_gettext_with_lambda_extending_twice(self):
+        gettext = lambda x: 'egg'
+        loader = MockLoader({
+            'parent.html': XMLTemplate('''<div>parent</div>'''),
+            'mid.html': XMLTemplate('''<py:extends href="parent.html"><div>${variable}</div></py:extends>'''),
+            'child.html': XMLTemplate('''<py:extends href="mid.html"><div>child</div></py:extends>''')})
+        tpl = loader.import_('child.html')
+        rsp = tpl(dict(variable='spam', gettext=gettext)).render()
+        # variables must not be translated
+        assert rsp == '''<div>egg</div><div>spam</div><div>egg</div>''', rsp
+
+    def test_substituting_gettext_with_lambda_extending_file(self):
+        loader = FileLoader(path=os.path.join(os.path.dirname(__file__),
+                            'data'), base_globals=dict(gettext=lambda x: 'egg'))
+        tpl = loader.import_('file_child.html')
+        rsp = tpl(dict()).render()
+        assert rsp == '''<div>egg</div><div>egg</div>''', rsp
+
+    def test_without_substituting_gettext_with_lambda_extending_file(self):
+        # this should use i18n.gettext
+        loader = FileLoader(path=os.path.join(os.path.dirname(__file__),
+                            'data'))
+        tpl = loader.import_('file_child.html')
+        rsp = tpl(dict()).render()
+        assert rsp == '''<div>parent</div><div>child</div>''', rsp
+
 
 class TestDOMTransformations(TestCase):
     def test_empty_text_extraction(self):

@@ -64,11 +64,11 @@ class _Template(object):
             context = {}
         self._context = context
         base_globals = self.base_globals or {}
-        self.__globals__ = dict(base_globals, local=self, self=self,
+        self.__globals__ = dict(local=self, self=self,
             defined=lambda x: x in self.__globals__,
-            literal=literal, Markup=literal, _=i18n.gettext,
+            literal=literal, Markup=literal, gettext=i18n.gettext,
             __builtins__=__builtins__, __kj__=kajiki)
-        self.__globals__['value_of'] = self.__globals__.get
+        self.__globals__.update(base_globals)
         for k, v in self.__methods__:
             v = v.bind_instance(self)
             setattr(self, k, v)
@@ -80,7 +80,7 @@ class _Template(object):
             case=self._case,
             import_=self._import,
             escape=self._escape,
-            gettext=i18n.gettext,
+            gettext=self._gettext,
             render_attrs=self._render_attrs,
             push_with=self._push_with,
             pop_with=self._pop_with,
@@ -89,6 +89,8 @@ class _Template(object):
         self._switch_stack = []
         self._with_stack = []
         self.__globals__.update(context)
+        self.__globals__['_'] = self.__globals__['gettext']
+        self.__globals__['value_of'] = self.__globals__.get
 
     def __iter__(self):
         """We convert the chunk to string because it can be of any type
@@ -101,6 +103,9 @@ class _Template(object):
     def render(self):
         """Render the template to a string."""
         return ''.join(self)
+
+    def _gettext(self, s):
+        return self.__globals__['gettext'](s)
 
     def _push_with(self, locals_, vars):
         """Enter a ``py:with`` block.
@@ -279,13 +284,15 @@ def Template(ns):
     return type(ns.__name__, (_Template,), dct)
 
 
-def from_ir(ir_node):
+def from_ir(ir_node, base_globals=None):
     """Creates a template class from Intermediate Representation TemplateNode.
 
     This actually creates the class defined by the TemplateNode by executing
     its code and returns a subclass of it.
     The returned class is a subclass of :class:`kajiki.template._Template`.
     """
+    if base_globals is None:
+        base_globals = dict()
     py_lines = list(generate_python(ir_node))
     py_text = '\n'.join(map(str, py_lines))
     py_linenos = []
@@ -300,7 +307,8 @@ def from_ir(ir_node):
     except (SyntaxError, IndentationError) as e:  # pragma no cover
         raise KajikiSyntaxError(e.msg, py_text, e.filename, e.lineno, e.offset)
     tpl = dct['template']
-    tpl.base_globals = dct
+    tpl.base_globals = base_globals.copy()
+    tpl.base_globals.update(dct)
     tpl.py_text = py_text
     tpl.filename = ir_node.filename
     tpl.annotate_lnotab(py_linenos)
