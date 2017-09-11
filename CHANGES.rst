@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.7.1 (2017-09-11)
+------------------
+
+* Allow to replace ``gettext`` function by providing it in the template context or through ``base_globals`` in Loader
+
 0.7.0 (2017-06-27)
 ------------------
 
