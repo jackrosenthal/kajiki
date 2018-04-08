@@ -995,7 +995,7 @@ class TestMultipleChildrenInDOM(TestCase):
         try:
             XMLTemplate('<!-- a --><x>${1+1}</x>')
         except XMLTemplateCompileError as e:
-            assert 'more than one children' in e.message, e
+            assert 'more than one children' in str(e), e
 
 
 

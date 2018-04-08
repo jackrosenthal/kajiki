@@ -30,7 +30,10 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+
+# virtualenvs
 venv
+venv3
 
 # Translations
 *.mo
