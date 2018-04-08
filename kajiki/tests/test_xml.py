@@ -987,5 +987,17 @@ class TestBracketsInExpression(TestCase):
                 '<x y="2"> helloworld  </x>')
 
 
+class TestMultipleChildrenInDOM(TestCase):
+    def test_ok(self):
+        XMLTemplate('<xml><!--  a  --><x>${1+1}</x></xml>')
+
+    def test_raise(self):
+        try:
+            XMLTemplate('<!-- a --><x>${1+1}</x>')
+        except XMLTemplateCompileError as e:
+            assert 'more than one children' in e.message, e
+
+
+
 if __name__ == '__main__':
     main()

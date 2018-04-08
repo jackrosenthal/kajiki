@@ -4,7 +4,6 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import re
 from codecs import open
-from itertools import chain
 from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
@@ -117,8 +116,10 @@ class _Compiler(object):
             registries of the compiler ``compile`` should
             never be called twice or might lead to unexpected results.
         """
-        body = [node for node in chain.from_iterable(
-            self._compile_node(node) for node in self.doc.childNodes)]
+        if len(self.doc.childNodes) != 1:
+            raise XMLTemplateCompileError('more than one children in document',
+                                          self.doc, self.filename, 0)
+        body = list(self._compile_node(self.doc.firstChild))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
             if self.doc._dtd:
