@@ -528,21 +528,29 @@ class _TextCompiler(object):
     def _get_braced_expr(self):
         # Assume self.source is '${{"a": "A"}["a"]}${1+1}'
         # The output should be 'A2'
-        # TODO: keep in mind that } must be discarded if inside a string
         py_expr = ''
         counter = 0
+        in_single_quote_str = False
+        in_double_quote_str = False
         for i in range(self.pos, len(self.source)):
             cur_char = self.source[i]
-            if cur_char == '{':
+            if cur_char == "'":
+                in_single_quote_str = not in_single_quote_str
+            elif cur_char == '"':
+                in_double_quote_str = not in_double_quote_str
+            in_str = in_single_quote_str or in_double_quote_str
+            if cur_char == '{' and not in_str:
                 counter += 1
-            elif cur_char == '}':
+            elif cur_char == '}' and not in_str:
                 if counter > 0:
                     counter -= 1
                 else:
                     self.pos = i + 1  # + 1 because skips the closing }
                     return self.expr(py_expr)
             py_expr += cur_char
-        raise KajikiSyntaxError('', self.source, self.filename, self.lineno, len(self.source) - 1)
+
+        raise KajikiSyntaxError('missing a closing } ?', self.source,
+                                self.filename, self.lineno, len(self.source) - 1)
 
 
 class _Parser(sax.ContentHandler):

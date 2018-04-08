@@ -968,5 +968,24 @@ class TestErrorReporting(TestCase):
                 assert False
 
 
+class TestBracketsInExpression(TestCase):
+    def test_simple(self):
+        perform('<x>${\'ok\'}</x>', '<x>ok</x>')
+
+    def test_some_brackets(self):
+        perform('<x>${\'{ok}\'}</x>', '<x>{ok}</x>')
+
+    def test_brackets_asymmetric(self):
+        perform('<x>${\'{o{k}k  { \'}</x>', '<x>{o{k}k  { </x>')
+
+    def test_complex(self):
+        perform(u"<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'} ${1+1}</div></xml>",
+                u"<xml><div>ciao {  } {a {} b {{{{} w}}rarsd{} 2</div></xml>")
+
+    def test_with_padding_space(self):
+        perform('<x y="${ 1 + 1}"> ${  "hello"     +   "world"   }  </x>',
+                '<x y="2"> helloworld  </x>')
+
+
 if __name__ == '__main__':
     main()
