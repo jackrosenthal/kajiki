@@ -17,6 +17,7 @@ else:
 
 from . import ir
 from . import template
+from .template import KajikiSyntaxError
 from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
 from .entities import html5, unescape
@@ -525,15 +526,23 @@ class _TextCompiler(object):
             yield self.text(source[self.pos:])
 
     def _get_braced_expr(self):
-        try:
-            compile(self.source[self.pos:], '', 'eval')
-        except SyntaxError as se:
-            end = self.pos + sum([se.offset] + [len(line) + 1
-                                                for idx, line in enumerate(self.source[self.pos:].splitlines())
-                                                if idx < se.lineno - 1])
-            text = self.source[self.pos:end - 1]
-            self.pos = end
-            return self.expr(text)
+        # Assume self.source is '${{"a": "A"}["a"]}${1+1}'
+        # The output should be 'A2'
+        # TODO: keep in mind that } must be discarded if inside a string
+        py_expr = ''
+        counter = 0
+        for i in range(self.pos, len(self.source)):
+            cur_char = self.source[i]
+            if cur_char == '{':
+                counter += 1
+            elif cur_char == '}':
+                if counter > 0:
+                    counter -= 1
+                else:
+                    self.pos = i + 1  # + 1 because skips the closing }
+                    return self.expr(py_expr)
+            py_expr += cur_char
+        raise KajikiSyntaxError('', self.source, self.filename, self.lineno, len(self.source) - 1)
 
 
 class _Parser(sax.ContentHandler):
