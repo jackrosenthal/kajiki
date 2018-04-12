@@ -877,8 +877,12 @@ class TestTranslation(TestCase):
             x = list(i18n.extract(BytesIO(src.encode('utf-8')), [], None, {
                 'extract_python': True
             }))
-        except KajikiSyntaxError as e:
-            assert "${_('hi' +" in str(e)
+        except (KajikiSyntaxError, SyntaxError) as e:
+            # the same expression may be parsed differently if you're using pypy or cpython
+            if isinstance(e, SyntaxError):  # for this test, pypy
+                assert "_('hi' +" in e.text
+            else:  # for this test, cpython
+                assert "${_('hi' +" in str(e)
         else:
             assert False, 'Should have raised'
 

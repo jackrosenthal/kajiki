@@ -34,6 +34,8 @@ nosetests.xml
 # virtualenvs
 venv
 venv3
+pypyenv
+pypyenv3
 
 # Translations
 *.mo
