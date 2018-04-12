@@ -530,18 +530,20 @@ class _TextCompiler(object):
 
     def _get_braced_expr(self):
         # see https://github.com/nandoflorestan/kajiki/pull/38
+        def py_expr(end=None):
+            return self.source[self.pos:end]
         try:
-            self.pos += len(self.source[self.pos:]) - len(self.source[self.pos:].lstrip())
-            compile(self.source[self.pos:], '', 'eval')
+            self.pos += len(py_expr()) - len(py_expr().lstrip())
+            compile(py_expr(), '', 'eval')
         except SyntaxError as se:
             end = self.pos + sum([se.offset] + [len(line) + 1
-                                                for idx, line in enumerate(self.source[self.pos:].splitlines())
+                                                for idx, line in enumerate(py_expr().splitlines())
                                                 if idx < se.lineno - 1])
-            if self.source[end - 1] != '}':
+            if py_expr(end)[-1] != '}':
                 raise se
-            text = self.source[self.pos:end - 1]
+            py_text = py_expr(end - 1)
             self.pos = end
-            return self.expr(text)
+            return self.expr(py_text)
 
 
 class _Parser(sax.ContentHandler):
