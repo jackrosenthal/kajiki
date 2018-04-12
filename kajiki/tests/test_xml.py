@@ -998,6 +998,16 @@ class TestMultipleChildrenInDOM(TestCase):
             assert 'more than one children' in str(e), e
 
 
+class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
+    def test_raise(self):
+        try:
+            XMLTemplate(u'''<div py:strip="True"
+><py:def function="echo(x)">$x</py:def
+>${echo('hello'))}</div>''')
+            assert False, 'should raise'
+        except KajikiSyntaxError as e:
+            pass
+
 
 if __name__ == '__main__':
     main()
