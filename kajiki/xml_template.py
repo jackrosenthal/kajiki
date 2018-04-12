@@ -529,31 +529,20 @@ class _TextCompiler(object):
             yield self.text(source[self.pos:])
 
     def _get_braced_expr(self):
-        # Assume self.source is '${{"a": "A"}["a"]}${1+1}'
-        # The output should be 'A2'
-        py_expr = ''
-        counter = 0
-        in_single_quote_str = False
-        in_double_quote_str = False
-        for i in range(self.pos, len(self.source)):
-            cur_char = self.source[i]
-            if cur_char == "'":
-                in_single_quote_str = not in_single_quote_str
-            elif cur_char == '"':
-                in_double_quote_str = not in_double_quote_str
-            in_str = in_single_quote_str or in_double_quote_str
-            if cur_char == '{' and not in_str:
-                counter += 1
-            elif cur_char == '}' and not in_str:
-                if counter > 0:
-                    counter -= 1
-                else:
-                    self.pos = i + 1  # + 1 because skips the closing }
-                    return self.expr(py_expr)
-            py_expr += cur_char
-
-        raise KajikiSyntaxError('missing a closing } ?', self.source,
-                                self.filename, self.lineno, len(self.source) - 1)
+        # see https://github.com/nandoflorestan/kajiki/pull/38
+        while True:
+            try:
+                compile(self.source[self.pos:], '', 'eval')
+            except IndentationError as e:
+                self.pos += 1
+                continue
+            except SyntaxError as se:
+                end = self.pos + sum([se.offset] + [len(line) + 1
+                                                    for idx, line in enumerate(self.source[self.pos:].splitlines())
+                                                    if idx < se.lineno - 1])
+                text = self.source[self.pos:end - 1]
+                self.pos = end
+                return self.expr(text)
 
 
 class _Parser(sax.ContentHandler):
