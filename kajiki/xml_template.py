@@ -530,19 +530,16 @@ class _TextCompiler(object):
 
     def _get_braced_expr(self):
         # see https://github.com/nandoflorestan/kajiki/pull/38
-        while True:
-            try:
-                compile(self.source[self.pos:], '', 'eval')
-            except IndentationError as e:
-                self.pos += 1
-                continue
-            except SyntaxError as se:
-                end = self.pos + sum([se.offset] + [len(line) + 1
-                                                    for idx, line in enumerate(self.source[self.pos:].splitlines())
-                                                    if idx < se.lineno - 1])
-                text = self.source[self.pos:end - 1]
-                self.pos = end
-                return self.expr(text)
+        try:
+            self.pos += len(self.source[self.pos:]) - len(self.source[self.pos:].lstrip())
+            compile(self.source[self.pos:], '', 'eval')
+        except SyntaxError as se:
+            end = self.pos + sum([se.offset] + [len(line) + 1
+                                                for idx, line in enumerate(self.source[self.pos:].splitlines())
+                                                if idx < se.lineno - 1])
+            text = self.source[self.pos:end - 1]
+            self.pos = end
+            return self.expr(text)
 
 
 class _Parser(sax.ContentHandler):
