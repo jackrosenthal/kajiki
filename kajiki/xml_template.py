@@ -537,6 +537,8 @@ class _TextCompiler(object):
             end = self.pos + sum([se.offset] + [len(line) + 1
                                                 for idx, line in enumerate(self.source[self.pos:].splitlines())
                                                 if idx < se.lineno - 1])
+            if self.source[end - 1] != '}':
+                raise se
             text = self.source[self.pos:end - 1]
             self.pos = end
             return self.expr(text)

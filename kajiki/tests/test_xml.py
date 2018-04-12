@@ -1005,7 +1005,7 @@ class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
 ><py:def function="echo(x)">$x</py:def
 >${echo('hello'))}</div>''')
             assert False, 'should raise'
-        except KajikiSyntaxError as e:
+        except SyntaxError as e:
             pass
 
 
