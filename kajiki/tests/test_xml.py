@@ -182,6 +182,15 @@ class TestSimple(TestCase):
                                  'age': 26}['name']}</div>""",
                 '<div>Hello, Rick</div>')
 
+    def test_expr_multiline_and_IndentationError(self):
+        try:
+            XMLTemplate("""<div>Hello, ${ 'pippo' +
+                'baudo'}</div>""")().render()
+        except XMLTemplateCompileError as e:
+            assert "`'pippo' +\n                'baudo'`" in str(e), str(e)
+            assert 'Hello' in str(e)
+            assert 'baudo' in str(e)
+
     def test_expr_multiline_cdata(self):
         perform("""<script><![CDATA[Hello, ${{'name': 'Rick',
                                  'age': 26}['name']}]]></script>""",
@@ -872,17 +881,13 @@ class TestTranslation(TestCase):
             i18n.gettext = default_gettext
 
     def test_extract_python_inside_invalid(self):
-        src = '''<xml><div>${_('hi' +}</div></xml>'''
+        src = '''<xml><div>${_('hi' +)}</div></xml>'''
         try:
             x = list(i18n.extract(BytesIO(src.encode('utf-8')), [], None, {
                 'extract_python': True
             }))
-        except (KajikiSyntaxError, SyntaxError) as e:
-            # the same expression may be parsed differently if you're using pypy or cpython
-            if isinstance(e, SyntaxError):  # for this test, pypy
-                assert "_('hi' +" in e.text
-            else:  # for this test, cpython
-                assert "${_('hi' +" in str(e)
+        except XMLTemplateCompileError as e:
+            assert "_('hi' +)" in str(e)
         else:
             assert False, 'Should have raised'
 
@@ -1009,7 +1014,7 @@ class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
 ><py:def function="echo(x)">$x</py:def
 >${echo('hello'))}</div>''')
             assert False, 'should raise'
-        except SyntaxError as e:
+        except XMLTemplateCompileError as e:
             pass
 
 

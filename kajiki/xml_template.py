@@ -223,7 +223,7 @@ class _Compiler(object):
         yield ir.TextNode('<%s' % node.tagName, guard)
         for k, v in sorted(node.attributes.items()):
             tc = _TextCompiler(self.filename, v, node.lineno,
-                               ir.TextNode, in_html_attr=True)
+                               ir.TextNode, in_html_attr=True, compiler_instance=self)
             v = list(tc)
             if k == 'py:content':
                 content = node.getAttribute('py:content')
@@ -378,7 +378,7 @@ class _Compiler(object):
             # script and style should always be untranslatable.
             kwargs['node_type'] = ir.TextNode
 
-        tc = _TextCompiler(self.filename, node.data, node.lineno, **kwargs)
+        tc = _TextCompiler(self.filename, node.data, node.lineno, compiler_instance=self, **kwargs)
         for x in tc:
             yield x
 
@@ -470,7 +470,7 @@ class _TextCompiler(object):
     instances and :class:`.ir.TextNode` instances accordingly.
     """
     def __init__(self, filename, source, lineno,
-                 node_type=make_text_node, in_html_attr=False):
+                 node_type=make_text_node, in_html_attr=False, compiler_instance=None):
         self.filename = filename
         self.source = source
         self.orig_lineno = lineno
@@ -478,6 +478,8 @@ class _TextCompiler(object):
         self.pos = 0
         self.node_type = node_type
         self.in_html_attr = in_html_attr
+        self.compiler_instance = compiler_instance
+        self.doc = self.compiler_instance.doc
 
     def text(self, text):
         node = self.node_type(text)
@@ -540,7 +542,12 @@ class _TextCompiler(object):
                                                 for idx, line in enumerate(py_expr().splitlines())
                                                 if idx < se.lineno - 1])
             if py_expr(end)[-1] != '}':
-                raise se
+                raise XMLTemplateCompileError(
+                    "Kajiki can't compile the python expression `%s`" % py_expr()[:-1],
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=self.lineno,
+                )
             py_text = py_expr(end - 1)
             self.pos = end
             return self.expr(py_text)
