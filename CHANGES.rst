@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.7.2 (2018-04-16)
+------------------
+
+* Improve parsing of ``${}`` expressions and fix syntax errors reporting in braced expressions.
+* Improve parsing of documents with comments before the root element
+
 0.7.1 (2017-09-11)
 ------------------
 

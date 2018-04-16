@@ -3,4 +3,4 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 __version__ = '0.7'
-__release__ = '0.7.2dev1'
+__release__ = '0.7.2'
