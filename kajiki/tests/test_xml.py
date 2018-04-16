@@ -9,6 +9,7 @@ import traceback
 import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
+from nose import SkipTest
 
 from kajiki import i18n
 from kajiki.template import KajikiSyntaxError
@@ -1020,7 +1021,7 @@ class TestBracketsInExpression(TestCase):
 
     def test_leading_opening_brace(self):
         if sys.version_info[:2] == (2, 6):
-            self.skipTest('Python 2.6 compiler raises a different kind of error')
+            raise SkipTest('Python 2.6 compiler raises a different kind of error')
 
         try:
             XMLTemplate('<x>${{"a", "b"}</x>')
