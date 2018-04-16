@@ -8,7 +8,7 @@ import sys
 import traceback
 import xml.dom.minidom
 from io import BytesIO
-from unittest import TestCase, main
+from unittest import TestCase, main, skipIf
 
 from kajiki import i18n
 from kajiki.template import KajikiSyntaxError
@@ -1018,6 +1018,7 @@ class TestBracketsInExpression(TestCase):
         except XMLTemplateCompileError as e:
             assert 'Braced expression not terminated' in str(e), e
 
+    @skipIf(sys.version_info[0] == 2 and sys.version_info[1] == 6, 'the error is raised')
     def test_leading_opening_brace(self):
         try:
             XMLTemplate('<x>${{"a", "b"}</x>')
