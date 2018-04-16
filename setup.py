@@ -70,7 +70,7 @@ setup(name='Kajiki',
       extras_require = {
         'testing': TEST_DEPENDENCIES,
       },
-      test_suite='kajiki.tests',
+      test_suite='nose.collector',
       entry_points="""
           [babel.extractors]
           kajiki = kajiki.i18n:extract
