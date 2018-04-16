@@ -9,6 +9,7 @@ import traceback
 import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
+from nose import SkipTest
 
 from kajiki import i18n
 from kajiki.template import KajikiSyntaxError
@@ -181,6 +182,15 @@ class TestSimple(TestCase):
         perform("""<div>Hello, ${{'name': 'Rick',
                                  'age': 26}['name']}</div>""",
                 '<div>Hello, Rick</div>')
+
+    def test_expr_multiline_and_IndentationError(self):
+        try:
+            XMLTemplate("""<div>Hello, ${ 'pippo' +
+                'baudo'}</div>""")().render()
+        except XMLTemplateCompileError as e:
+            assert "`'pippo' +\n                'baudo'`" in str(e), str(e)
+            assert 'Hello' in str(e)
+            assert 'baudo' in str(e)
 
     def test_expr_multiline_cdata(self):
         perform("""<script><![CDATA[Hello, ${{'name': 'Rick',
@@ -872,13 +882,13 @@ class TestTranslation(TestCase):
             i18n.gettext = default_gettext
 
     def test_extract_python_inside_invalid(self):
-        src = '''<xml><div>${_('hi' +}</div></xml>'''
+        src = '''<xml><div>${_('hi' +)}</div></xml>'''
         try:
             x = list(i18n.extract(BytesIO(src.encode('utf-8')), [], None, {
                 'extract_python': True
             }))
-        except KajikiSyntaxError as e:
-            assert "${_('hi' +" in str(e)
+        except XMLTemplateCompileError as e:
+            assert "_('hi' +)" in str(e)
         else:
             assert False, 'Should have raised'
 
@@ -966,6 +976,80 @@ class TestErrorReporting(TestCase):
                 assert '${3/0}' in last_line, last_line
             else:
                 assert False
+
+
+class TestBracketsInExpression(TestCase):
+    def test_simple(self):
+        perform('<x>${\'ok\'}</x>', '<x>ok</x>')
+
+    def test_some_brackets(self):
+        perform('<x>${\'{ok}\'}</x>', '<x>{ok}</x>')
+
+    def test_brackets_asymmetric(self):
+        perform('<x>${\'{o{k}k  { \'}</x>', '<x>{o{k}k  { </x>')
+
+    def test_complex(self):
+        perform(u"<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'} ${1+1}</div></xml>",
+                u"<xml><div>ciao {  } {a {} b {{{{} w}}rarsd{} 2</div></xml>")
+
+    def test_with_padding_space(self):
+        perform('<x y="${ 1 + 1}"> ${  "hello"     +   "world"   }  </x>',
+                '<x y="2"> helloworld  </x>')
+
+    def test_raise_unclosed_string(self):
+        try:
+            XMLTemplate('<x>${"ciao}</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            # assert "can't compile" in str(e), e  # different between pypy and cpython
+            assert '"ciao' in str(e), e
+
+    def test_raise_plus_with_an_operand(self):
+        try:
+            XMLTemplate('<x>${"ciao" + }</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            assert 'detected an invalid python expression' in str(e), e
+            assert '"ciao" +' in str(e), e
+
+    def test_unclosed_braced(self):
+        try:
+            XMLTemplate('<x>${"ciao"</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            assert 'Braced expression not terminated' in str(e), e
+
+    def test_leading_opening_brace(self):
+        if sys.version_info[:2] == (2, 6):
+            raise SkipTest('Python 2.6 compiler raises a different kind of error')
+
+        try:
+            XMLTemplate('<x>${{"a", "b"}</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            assert 'Braced expression not terminated' in str(e), e
+
+
+class TestMultipleChildrenInDOM(TestCase):
+    def test_ok(self):
+        XMLTemplate('<xml><!--  a  --><x>${1+1}</x></xml>')
+
+    def test_raise(self):
+        try:
+            XMLTemplate('<!-- a --><x>${1+1}</x>')
+        except XMLTemplateCompileError as e:
+            assert 'more than one children' in str(e), e
+
+
+class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
+    def test_raise(self):
+        try:
+            XMLTemplate(u'''<div py:strip="True"
+><py:def function="echo(x)">$x</py:def
+>${echo('hello'))}</div>''')
+            assert False, 'should raise'
+        except XMLTemplateCompileError as e:
+            pass
 
 
 if __name__ == '__main__':

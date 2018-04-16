@@ -1,10 +1,12 @@
 *.py[cod]
+__pycache__/
 
 # C extensions
 *.so
 
 # Packages
 *.egg
+.eggs/
 *.egg-info
 build
 dist
@@ -28,6 +30,12 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+
+# virtualenvs
+venv
+venv3
+pypyenv
+pypyenv3
 
 # Translations
 *.mo
