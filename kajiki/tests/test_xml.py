@@ -1019,8 +1019,9 @@ class TestBracketsInExpression(TestCase):
             assert 'Braced expression not terminated' in str(e), e
 
     def test_leading_opening_brace(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] == 6:
-            return  # skip this test in py 2.6, an other XMLTemplateCompileError is raised
+        if sys.version_info[:2] == (2, 6):
+            self.skipTest('Python 2.6 compiler raises a different kind of error')
+
         try:
             XMLTemplate('<x>${{"a", "b"}</x>')
             assert False, 'must raise'
