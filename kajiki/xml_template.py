@@ -532,25 +532,43 @@ class _TextCompiler(object):
 
     def _get_braced_expr(self):
         # see https://github.com/nandoflorestan/kajiki/pull/38
+        # Trying to get the position of a closing } in braced expressions
+        # So, self.source can be something like `1+1=${1+1} ahah`
+        # in this case this function gets called only once with self.pos equal to 6
+        # this function must return the result of self.expr('1+1') and must set self.pos to 9
         def py_expr(end=None):
             return self.source[self.pos:end]
         try:
             self.pos += len(py_expr()) - len(py_expr().lstrip())
-            compile(py_expr(), '', 'eval')
+            compile(py_expr(), 'find_}', 'eval')
         except SyntaxError as se:
-            end = self.pos + sum([se.offset] + [len(line) + 1
-                                                for idx, line in enumerate(py_expr().splitlines())
-                                                if idx < se.lineno - 1])
+            end = sum(
+                [self.pos, se.offset] +
+                [len(line) + 1
+                 for idx, line in enumerate(py_expr().splitlines())
+                 if idx < se.lineno - 1]
+            )
             if py_expr(end)[-1] != '}':
+                # for example unclosed strings
                 raise XMLTemplateCompileError(
                     "Kajiki can't compile the python expression `%s`" % py_expr()[:-1],
-                    doc=self.doc,
-                    filename=self.filename,
-                    linen=self.lineno,
-                )
+                    doc=self.doc, filename=self.filename, linen=self.lineno)
+            else:
+                # if the expression ends in a } then it may be valid
+                try:
+                    compile(py_expr(end-1), 'check_validity', 'eval')
+                except SyntaxError as se:
+                    # for example + operators with a single operand
+                    raise XMLTemplateCompileError(
+                        "Kajiki detected an invalid python expression `%s`" % py_expr()[:-1],
+                        doc=self.doc, filename=self.filename, linen=self.lineno)
+
             py_text = py_expr(end - 1)
             self.pos = end
             return self.expr(py_text)
+        else:
+            raise XMLTemplateCompileError("Braced expression not terminated",
+                                          doc=self.doc, filename=self.filename, linen=self.lineno)
 
 
 class _Parser(sax.ContentHandler):

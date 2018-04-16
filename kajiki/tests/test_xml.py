@@ -995,6 +995,36 @@ class TestBracketsInExpression(TestCase):
         perform('<x y="${ 1 + 1}"> ${  "hello"     +   "world"   }  </x>',
                 '<x y="2"> helloworld  </x>')
 
+    def test_raise_unclosed_string(self):
+        try:
+            XMLTemplate('<x>${"ciao}</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            # assert "can't compile" in str(e), e  # different between pypy and cpython
+            assert '"ciao' in str(e), e
+
+    def test_raise_plus_with_an_operand(self):
+        try:
+            XMLTemplate('<x>${"ciao" + }</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            assert 'detected an invalid python expression' in str(e), e
+            assert '"ciao" +' in str(e), e
+
+    def test_unclosed_braced(self):
+        try:
+            XMLTemplate('<x>${"ciao"</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            assert 'Braced expression not terminated' in str(e), e
+
+    def test_leading_opening_brace(self):
+        try:
+            XMLTemplate('<x>${{"a", "b"}</x>')
+            assert False, 'must raise'
+        except XMLTemplateCompileError as e:
+            assert 'Braced expression not terminated' in str(e), e
+
 
 class TestMultipleChildrenInDOM(TestCase):
     def test_ok(self):
