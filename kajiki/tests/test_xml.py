@@ -17,7 +17,7 @@ from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 from kajiki.ir import TranslatableTextNode
-from kajiki.xml_template import _Compiler, _Parser, XMLTemplateCompileError
+from kajiki.xml_template import _Compiler, _Parser, XMLTemplateCompileError, XMLTemplateParseError
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -1034,11 +1034,25 @@ class TestMultipleChildrenInDOM(TestCase):
     def test_ok(self):
         XMLTemplate('<xml><!--  a  --><x>${1+1}</x></xml>')
 
-    def test_raise(self):
+    def test_comment(self):
+        res = XMLTemplate('<!-- a --><x>${1+1}</x>')().render()
+        assert res == '<x>2</x>'
+
+    def test_multiple_nodes(self):
         try:
-            XMLTemplate('<!-- a --><x>${1+1}</x>')
-        except XMLTemplateCompileError as e:
-            assert 'more than one children' in str(e), e
+            XMLTemplate('<!-- a --><x>${1+1}</x><y>${1+1}</y>')
+        except XMLTemplateParseError as e:
+            assert 'junk after document element' in str(e), e
+        else:
+            assert False, 'should have raised'
+
+    def test_only_comment(self):
+        try:
+            XMLTemplate('<!-- a -->')
+        except XMLTemplateParseError as e:
+            assert 'no element found' in str(e), e
+        else:
+            assert False, 'should have raised'
 
 
 class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):

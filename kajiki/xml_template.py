@@ -17,7 +17,6 @@ else:
 
 from . import ir
 from . import template
-from .template import KajikiSyntaxError
 from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
 from .entities import html5, unescape
@@ -116,10 +115,12 @@ class _Compiler(object):
             registries of the compiler ``compile`` should
             never be called twice or might lead to unexpected results.
         """
-        if len(self.doc.childNodes) != 1:
-            raise XMLTemplateCompileError('more than one children in document',
+        templateNodes = [n for n in self.doc.childNodes if not isinstance(n, dom.Comment)]
+        if len(templateNodes) != 1:
+            raise XMLTemplateCompileError('expected a single root node in document',
                                           self.doc, self.filename, 0)
-        body = list(self._compile_node(self.doc.firstChild))
+
+        body = list(self._compile_node(templateNodes[0]))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
             if self.doc._dtd:
