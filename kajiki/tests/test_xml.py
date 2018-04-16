@@ -9,6 +9,7 @@ import traceback
 import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
+from nose import SkipTest
 
 from kajiki import i18n
 from kajiki.template import KajikiSyntaxError
@@ -16,7 +17,7 @@ from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 from kajiki.ir import TranslatableTextNode
-from kajiki.xml_template import _Compiler, _Parser, XMLTemplateCompileError
+from kajiki.xml_template import _Compiler, _Parser, XMLTemplateCompileError, XMLTemplateParseError
 
 DATA = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -1019,8 +1020,9 @@ class TestBracketsInExpression(TestCase):
             assert 'Braced expression not terminated' in str(e), e
 
     def test_leading_opening_brace(self):
-        if sys.version_info[0] == 2 and sys.version_info[1] == 6:
-            return  # skip this test in py 2.6, an other XMLTemplateCompileError is raised
+        if sys.version_info[:2] == (2, 6):
+            raise SkipTest('Python 2.6 compiler raises a different kind of error')
+
         try:
             XMLTemplate('<x>${{"a", "b"}</x>')
             assert False, 'must raise'
@@ -1032,11 +1034,25 @@ class TestMultipleChildrenInDOM(TestCase):
     def test_ok(self):
         XMLTemplate('<xml><!--  a  --><x>${1+1}</x></xml>')
 
-    def test_raise(self):
+    def test_comment(self):
+        res = XMLTemplate('<!-- a --><x>${1+1}</x>')().render()
+        assert res == '<!--  a  --><x>2</x>', res
+
+    def test_multiple_nodes(self):
         try:
-            XMLTemplate('<!-- a --><x>${1+1}</x>')
-        except XMLTemplateCompileError as e:
-            assert 'more than one children' in str(e), e
+            XMLTemplate('<!-- a --><x>${1+1}</x><y>${1+1}</y>')
+        except XMLTemplateParseError as e:
+            assert 'junk after document element' in str(e), e
+        else:
+            assert False, 'should have raised'
+
+    def test_only_comment(self):
+        try:
+            XMLTemplate('<!-- a -->')
+        except XMLTemplateParseError as e:
+            assert 'no element found' in str(e), e
+        else:
+            assert False, 'should have raised'
 
 
 class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):

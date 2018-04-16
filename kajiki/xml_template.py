@@ -18,7 +18,6 @@ else:
 
 from . import ir
 from . import template
-from .template import KajikiSyntaxError
 from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
 from .entities import html5, unescape
