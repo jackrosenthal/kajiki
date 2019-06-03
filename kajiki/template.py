@@ -4,7 +4,8 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import re
 import types
-from nine import IS_PYTHON2, basestring, str, iteritems
+from nine import basestring, str, iteritems
+from sys import version_info
 
 try:
     from functools import update_wrapper
@@ -392,7 +393,7 @@ class TplFunc(object):
         return
 
 
-if IS_PYTHON2:
+if version_info[0] < 3:
     def patch_code_file_lines(code, filename, firstlineno, lnotab):
         return types.CodeType(code.co_argcount,
                               code.co_nlocals,
@@ -408,9 +409,27 @@ if IS_PYTHON2:
                               lnotab,
                               code.co_freevars,
                               code.co_cellvars)
+elif version_info[1] < 8:
+    def patch_code_file_lines(code, filename, firstlineno, lnotab):
+        return types.CodeType(code.co_argcount,
+                            code.co_kwonlyargcount,
+                            code.co_nlocals,
+                            code.co_stacksize,
+                            code.co_flags,
+                            code.co_code,
+                            code.co_consts,
+                            code.co_names,
+                            code.co_varnames,
+                            filename,
+                            code.co_name,
+                            firstlineno,
+                            lnotab,
+                            code.co_freevars,
+                            code.co_cellvars)
 else:
     def patch_code_file_lines(code, filename, firstlineno, lnotab):
         return types.CodeType(code.co_argcount,
+                            code.co_posonlyargcount,
                             code.co_kwonlyargcount,
                             code.co_nlocals,
                             code.co_stacksize,
