@@ -409,7 +409,7 @@ if version_info[0] < 3:
                               lnotab,
                               code.co_freevars,
                               code.co_cellvars)
-elif version_info[1] < 8:
+elif sys.version_info < (3, 8):
     def patch_code_file_lines(code, filename, firstlineno, lnotab):
         return types.CodeType(code.co_argcount,
                             code.co_kwonlyargcount,
