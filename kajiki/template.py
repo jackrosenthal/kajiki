@@ -5,6 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 import re
 import types
 from nine import IS_PYTHON2, basestring, str, iteritems
+from sys import version_info
 
 try:
     from functools import update_wrapper
@@ -410,21 +411,26 @@ if IS_PYTHON2:
                               code.co_cellvars)
 else:
     def patch_code_file_lines(code, filename, firstlineno, lnotab):
-        return types.CodeType(code.co_argcount,
-                            code.co_kwonlyargcount,
-                            code.co_nlocals,
-                            code.co_stacksize,
-                            code.co_flags,
-                            code.co_code,
-                            code.co_consts,
-                            code.co_names,
-                            code.co_varnames,
-                            filename,
-                            code.co_name,
-                            firstlineno,
-                            lnotab,
-                            code.co_freevars,
-                            code.co_cellvars)
+        code_args = [code.co_argcount]
+        if version_info >= (3, 8):
+            code_args.append(code.co_posonlyargcount)
+        code_args.extend([
+            code.co_kwonlyargcount,
+            code.co_nlocals,
+            code.co_stacksize,
+            code.co_flags,
+            code.co_code,
+            code.co_consts,
+            code.co_names,
+            code.co_varnames,
+            filename,
+            code.co_name,
+            firstlineno,
+            lnotab,
+            code.co_freevars,
+            code.co_cellvars,
+        ])
+        return types.CodeType(*code_args)
 
 
 class KajikiSyntaxError(Exception):
