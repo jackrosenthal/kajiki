@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+0.8.0 (2019-06-03)
+------------------
+
+* Fixed support for Python 3.8
+* Dropped support for Python 2.6 and 3.3
+
 0.7.2 (2018-04-16)
 ------------------
 
