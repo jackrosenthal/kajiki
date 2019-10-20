@@ -489,7 +489,7 @@ class TestImport(TestCase):
             """Fakes a FileLoader, but with source in a lookup table.
 
             It differs from MockLoader because MockLoader doesn't
-            create the template on load, it's already preinstanciate
+            create the template on load, it's already pre-instantiated
             by the user of the MockLoader
             """
             def __init__(self, sources):
