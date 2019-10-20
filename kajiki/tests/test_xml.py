@@ -483,6 +483,37 @@ class TestImport(TestCase):
             '<p>The included template must also access Kajiki globals and '
             'the template context: Rick</p></body></html>' == rsp)
 
+    def test_include_html5(self):
+        '''Should not have DOCTYPE'''
+        class XMLSourceLoader(MockLoader):
+            """Fakes a FileLoader, but with source in a lookup table.
+
+            It differs from MockLoader because MockLoader doesn't
+            create the template on load, it's already preinstanciate
+            by the user of the MockLoader
+            """
+            def __init__(self, sources):
+                self.sources = sources
+                super(XMLSourceLoader, self).__init__({})
+
+            def _load(self, name, encoding='utf-8', *args, **kwargs):
+                return XMLTemplate(source=self.sources[name],
+                                   mode='html5',
+                                   *args, **kwargs)
+
+        loader = XMLSourceLoader({
+            'included.html': '<p>The included template must also '
+                'access Kajiki globals and the template context: '
+                '${value_of("name")}</p>\n',
+            'tpl.html': '<html><body><p>This is the body</p>\n'
+                '<py:include href="included.html"/></body></html>'
+        })
+        tpl = loader.import_('tpl.html')
+        rsp = tpl(dict(name='Rick')).render()
+        assert ('<!DOCTYPE html>\n<html><body><p>This is the body</p>\n'
+            '<p>The included template must also access Kajiki globals and '
+            'the template context: Rick</p></body></html>' == rsp), rsp
+
 
 class TestExtends(TestCase):
     def test_basic(self):

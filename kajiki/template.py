@@ -191,7 +191,14 @@ class _Template(object):
         return obj == self._switch_stack[-1]
 
     def _import(self, name, alias, gbls):
-        tpl_cls = self.loader.import_(name)
+        # Load template as a fragment to avoid extra <DOCTYPE> in included output.
+        # Due to loader cache, this has the side effect that if the same
+        # template is both included and used as a standalone page
+        # it might act as a fragment or not depending on the order it was loaded.
+        # But usually templates meant for inclusion are not standalone pages.
+        # Also there is no way to set a template as a fragment once loaded. 
+        # So we can only do it through the loader.
+        tpl_cls = self.loader.import_(name, is_fragment=True)
         if alias is None:
             alias = self.loader.default_alias_for(name)
         r = gbls[alias] = tpl_cls(gbls)
