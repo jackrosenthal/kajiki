@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.8.1 (2019-10-20)
+------------------
+
+* Fixed unexpected <DOCTYPE> when including templates
+
 0.8.0 (2019-06-03)
 ------------------
 
