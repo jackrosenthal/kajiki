@@ -669,6 +669,12 @@ class _Parser(sax.ContentHandler):
         # The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
         # a valid entity, better pass it along to sax and find out!"
         # (Since expat is nonvalidating, it never reads the external doctypes.)
+        if name and name[-1] != ';':
+            # In entities.html5 sometimes the entities are recorded
+            # with/without semicolon. That list is copied from cPython
+            # itself, and we don't want to maintain a separate diff.
+            # So just ensure we ask for entities always recorded with trailing semicolon.
+            name += ';'
         return self.characters(html5[name])
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover

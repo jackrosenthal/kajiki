@@ -225,8 +225,8 @@ class TestSimple(TestCase):
         perform(source, source)
 
     def test_html_entities(self):
-        source = "<div>Spam&nbsp;Spam &lt; Spam &gt; Spam</div>"
-        output = '<div>Spam Spam &lt; Spam &gt; Spam</div>'
+        source = "<div>Spam&nbsp;Spam &lt; Spam &gt; Spam &hellip;</div>"
+        output = '<div>Spam Spam &lt; Spam &gt; Spam \u2026</div>'
         assert chr(32) in output  # normal space
         assert chr(160) in output  # non breaking space
         perform(source, output)
