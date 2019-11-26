@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+0.8.2 (2019-11-26)
+------------------
+
+* Fixed some HTML entities not being properly recognised
+
 0.8.1 (2019-10-20)
 ------------------
 
