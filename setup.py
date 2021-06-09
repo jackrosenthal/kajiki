@@ -29,6 +29,10 @@ py_version = sys.version_info[:2]
 TEST_DEPENDENCIES = ['babel', 'nose']
 if py_version == (2, 6):
     TEST_DEPENDENCIES.extend(['importlib'])
+if py_version < (3, 2):
+    TEST_DEPENDENCIES.extend(['backports.tempfile'])
+if py_version < (3, 3):
+    TEST_DEPENDENCIES.extend(['mock'])
 
 
 setup(name='Kajiki',
@@ -75,6 +79,9 @@ setup(name='Kajiki',
       },
       test_suite='nose.collector',
       entry_points="""
+          [console_scripts]
+          kajiki = kajiki.__main__:main
+
           [babel.extractors]
           kajiki = kajiki.i18n:extract
 
