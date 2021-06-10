@@ -15,7 +15,9 @@ Notable in this module are:
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import codecs
+import io
 import re
+import tokenize
 from .ddict import defaultdict
 from itertools import chain
 from nine import iteritems, str
@@ -65,6 +67,13 @@ def TextTemplate(source=None, filename=None, autoescape=False,
     tree = _Parser(scanner, autoescape).parse()
     tree.filename = filename
     return kajiki.template.from_ir(tree)
+
+
+def _diff_pos(last_pos, new_pos):
+    """Compute the number of characters between line/column 2-tuples."""
+    if last_pos[0] == new_pos[0]:
+        return new_pos[1] - last_pos[1]
+    return new_pos[1]
 
 
 class _Scanner(object):
@@ -153,15 +162,30 @@ class _Scanner(object):
         return self.tag(tagname, body)
 
     def _get_braced_expr(self):
-        try:
-            compile(self.source[self.pos:], '', 'eval')
-        except SyntaxError as se:
-            end = self.pos + sum([se.offset] + [len(line) + 1
-                                                for idx, line in enumerate(self.source[self.pos:].splitlines())
-                                                if idx < se.lineno - 1])
-            text = self.source[self.pos:end - 1]
-            self.pos = end
-            return self.expr(text)
+        braces = 0
+
+        # We start at the brace right before the current scanner's
+        # position, as we don't want Python's tokenizer to complain
+        # when it sees the closing brace.  In other words, make it
+        # always start and finish with balanced braces.
+        src_io = io.StringIO(self.source[self.pos - 1:])
+        text_len = -1
+
+        last_end = (1, 0)
+        for token_type, token_string, token_start, token_end, token_line in (
+            tokenize.generate_tokens(src_io.readline)
+        ):
+            if token_string == '{':
+                braces += 1
+            if token_string == '}':
+                braces -= 1
+
+            text_len += _diff_pos(last_end, token_end)
+            last_end = token_end
+            if not braces:
+                text = self.source[self.pos:self.pos + text_len - 1]
+                self.pos += text_len
+                return self.expr(text)
 
 
 class _Parser(object):
