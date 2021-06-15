@@ -257,7 +257,7 @@ function as follows:
 .. code-block:: xml
 
     <div>
-       <py:import hef="lib.xml" alias="lib"/>
+       <py:import href="lib.xml" alias="lib"/>
        <ul>
           <li py:for="i in range(sz)">$i is ${lib.evenness(i)}</li>
        </ul>
