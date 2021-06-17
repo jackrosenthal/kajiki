@@ -11,7 +11,7 @@ from releaser.git_steps import *
 
 # These settings are used by multiple release steps below.
 config = dict(
-    github_user='nandoflorestan',  # TODO infer from .git/config
+    github_user='jackrosenthal',  # TODO infer from .git/config
     github_repository='kajiki',
     branch='master',  # Only release new versions in this git branch
     changes_file='CHANGES.rst',
