@@ -42,7 +42,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Kajiki'
-copyright = u'2010-2019, Rick Copeland, Nando Florestan and Alessandro Molina'
+copyright = u'2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
