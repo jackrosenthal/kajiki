@@ -9,7 +9,6 @@ import traceback
 import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
-from nose import SkipTest
 
 from kajiki import i18n
 from kajiki.template import KajikiSyntaxError
@@ -1051,9 +1050,6 @@ class TestBracketsInExpression(TestCase):
             assert 'Braced expression not terminated' in str(e), e
 
     def test_leading_opening_brace(self):
-        if sys.version_info[:2] == (2, 6):
-            raise SkipTest('Python 2.6 compiler raises a different kind of error')
-
         try:
             XMLTemplate('<x>${{"a", "b"}</x>')
             assert False, 'must raise'
