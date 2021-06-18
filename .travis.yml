@@ -20,7 +20,8 @@ jobs:
       install:
         pip install -e .[docs]
       script:
-        sphinx-build -a docs/ docs/_build/html
+        - sphinx-build -a docs/ docs/_build/html
+        - touch docs/_build/html/.nojekyll
       env:
         - DOCS_BUILD=t
 deploy:
