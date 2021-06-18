@@ -1,0 +1,373 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Migrating from Genshi &#8212; Kajiki 0.8.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Internationalization" href="i18n.html" />
+    <link rel="prev" title="Kajiki Text Templates" href="text-templates.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="migrating-from-genshi">
+<h1>Migrating from Genshi<a class="headerlink" href="#migrating-from-genshi" title="Permalink to this headline">¶</a></h1>
+<p>Kajiki uses syntax derived from the syntax of <a class="reference external" href="http://genshi.edgewall.org/">Genshi</a>.  In particular, the
+following directives are supported, with semantics intended to be nearly
+identical to those of <a class="reference external" href="http://genshi.edgewall.org/">Genshi</a>.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">py:def</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:choose</span></code> – renamed <code class="docutils literal notranslate"><span class="pre">py:with</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:when</span></code> – renamed <code class="docutils literal notranslate"><span class="pre">py:case</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:otherwise</span></code> – renamed <code class="docutils literal notranslate"><span class="pre">py:else</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:for</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:if</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:with</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:replace</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:content</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:attrs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:strip</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xi:include</span></code> – renamed <code class="docutils literal notranslate"><span class="pre">py:include</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>Note that, in particular, <code class="docutils literal notranslate"><span class="pre">py:match</span></code> is not supported.  But Kajiki
+supports the following additional directives:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">py:extends</span></code> - indicates that this is an extension template.  The parent
+template will be read in and used for layout, with any <code class="docutils literal notranslate"><span class="pre">py:block</span></code> directives in
+the child template overriding the <code class="docutils literal notranslate"><span class="pre">py:block</span></code> directives defined in the parent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">py:block</span></code> - used to name a replaceable ‘slot’ in a parent template, or to
+specify a slot override in a child template.  The <code class="docutils literal notranslate"><span class="pre">py:block</span></code> semantics are
+modeled after the <code class="docutils literal notranslate"><span class="pre">{%</span> <span class="pre">block</span> <span class="pre">%}</span></code> semantics of <a class="reference external" href="http://jinja.pocoo.org/2/documentation/">Jinja2</a>.</p></li>
+</ul>
+</div></blockquote>
+<p>Generally, migration consists of a few steps that can be simple or quite
+difficult based on your fondness of the <code class="docutils literal notranslate"><span class="pre">py:match</span></code> directive in Genshi.  In
+simple cases where you have one <code class="docutils literal notranslate"><span class="pre">master.html</span></code> template with a few <code class="docutils literal notranslate"><span class="pre">py:match</span></code>
+directives that is <code class="docutils literal notranslate"><span class="pre">xi:included</span></code> into all your page templates, the following
+steps should suffice:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Rename tags and attributes as indicated above;
+e.g. <code class="docutils literal notranslate"><span class="pre">xi:include</span></code> becomes <code class="docutils literal notranslate"><span class="pre">py:include</span></code>.</p></li>
+<li><p>Rewrite your <em>include</em> directives to use Kajiki’s module naming system
+and relative imports.</p></li>
+<li><p>In a simple case where you have only a few <code class="docutils literal notranslate"><span class="pre">py:match</span></code> directives, all of which
+are in a <code class="docutils literal notranslate"><span class="pre">master.html</span></code> template that is being included from child templates,
+I recommend that you rewrite the <code class="docutils literal notranslate"><span class="pre">master.html</span></code> as <code class="docutils literal notranslate"><span class="pre">layout.html</span></code>, defining
+named <code class="docutils literal notranslate"><span class="pre">py:block</span></code> regions that will be overridden in child templates.</p></li>
+<li><p>In your child templates, remove the <code class="docutils literal notranslate"><span class="pre">&lt;xi:include</span> <span class="pre">href=&quot;master.html&quot;&gt;</span></code> that
+probably lurks near the top.  Then add a <code class="docutils literal notranslate"><span class="pre">py:extends</span></code> directive to the
+top-level tag (usually <code class="docutils literal notranslate"><span class="pre">&lt;html&gt;</span></code>).  The tag the parts of the child template
+that are intended to override parts of the parent template with the
+<code class="docutils literal notranslate"><span class="pre">py:block</span></code> directive.</p></li>
+</ul>
+</div></blockquote>
+<p>Kajiki also provides some helper functions of Genshi:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">defined('some_variable')</span></code> (which returns True if ‘some_variable’ exists
+in the template context),</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">value_of('name',</span> <span class="pre">default_value)</span></code>, and</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Markup(some_string)</span></code> (which marks a string so it won’t be escaped in the
+output), though Kajiki prefers to call this <code class="docutils literal notranslate"><span class="pre">literal(some_string)</span></code>.</p></li>
+</ul>
+<section id="example-migration">
+<h2>Example Migration<a class="headerlink" href="#example-migration" title="Permalink to this headline">¶</a></h2>
+<p>Suppose you have a couple of Genshi templates, one of which called <code class="docutils literal notranslate"><span class="pre">master.html</span></code>
+and one of which is <code class="docutils literal notranslate"><span class="pre">index.html</span></code>.  (TurboGears developers may recognize these
+files as slightly modified versions of the default templates deposited in a TG
+quickstarted project.)  The contents of <code class="docutils literal notranslate"><span class="pre">master.html</span></code> are:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;</span>
+<span class="linenos"> 2</span><span class="cp">                      &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
+<span class="linenos"> 3</span><span class="p">&lt;</span><span class="nt">html</span> <span class="na">xmlns</span><span class="o">=</span><span class="s">&quot;http://www.w3.org/1999/xhtml&quot;</span>
+<span class="linenos"> 4</span>      <span class="na">xmlns:py</span><span class="o">=</span><span class="s">&quot;http://genshi.edgewall.org/&quot;</span>
+<span class="linenos"> 5</span>      <span class="na">xmlns:xi</span><span class="o">=</span><span class="s">&quot;http://www.w3.org/2001/XInclude&quot;</span>
+<span class="linenos"> 6</span>      <span class="na">py:strip</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">&gt;</span>
+<span class="linenos"> 7</span>    <span class="p">&lt;</span><span class="nt">xi:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;header.html&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos"> 8</span>    <span class="p">&lt;</span><span class="nt">xi:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;sidebars.html&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos"> 9</span>    <span class="p">&lt;</span><span class="nt">xi:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;footer.html&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">10</span><span class="p">&lt;</span><span class="nt">head</span> <span class="na">py:match</span><span class="o">=</span><span class="s">&quot;head&quot;</span> <span class="na">py:attrs</span><span class="o">=</span><span class="s">&quot;select(&#39;@*&#39;)&quot;</span><span class="p">&gt;</span>
+<span class="linenos">11</span>    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;text/html; charset=UTF-8&quot;</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">&quot;content-type&quot;</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;&#39;&#39;&quot;</span><span class="p">/&gt;</span>
+<span class="linenos">12</span>    <span class="p">&lt;</span><span class="nt">title</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;&#39;&#39;&quot;</span><span class="p">&gt;</span>Your title goes here<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+<span class="linenos">13</span>    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;select(&#39;*&#39;)&quot;</span><span class="p">/&gt;</span>
+<span class="linenos">14</span>    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="na">media</span><span class="o">=</span><span class="s">&quot;screen&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/css/style.css&#39;)}&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">15</span>    <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="na">media</span><span class="o">=</span><span class="s">&quot;screen&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/css/admin.css&#39;)}&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">16</span><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="p">&lt;</span><span class="nt">body</span> <span class="na">py:match</span><span class="o">=</span><span class="s">&quot;body&quot;</span> <span class="na">py:attrs</span><span class="o">=</span><span class="s">&quot;select(&#39;@*&#39;)&quot;</span><span class="p">&gt;</span>
+<span class="linenos">19</span>  ${header()}
+<span class="linenos">20</span>  <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;mainmenu&quot;</span><span class="p">&gt;</span>
+<span class="linenos">21</span>    <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;first&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;index&#39;]}&quot;</span><span class="p">&gt;</span>Welcome<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">22</span>        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/about&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;about&#39;]}&quot;</span><span class="p">&gt;</span>About<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">23</span>        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;tg.auth_stack_enabled&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/auth&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;auth&#39;]}&quot;</span><span class="p">&gt;</span>Authentication<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">24</span>        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/environ&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;environ&#39;]}&quot;</span><span class="p">&gt;</span>WSGI Environment<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">25</span>        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;http://groups.google.com/group/turbogears&quot;</span><span class="p">&gt;</span>Contact<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">26</span>    <span class="p">&lt;</span><span class="nt">span</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;tg.auth_stack_enabled&quot;</span> <span class="na">py:strip</span><span class="o">=</span><span class="s">&quot;True&quot;</span><span class="p">&gt;</span>
+<span class="linenos">27</span>        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;not request.identity&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;login&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;loginlogout&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/login&#39;)}&quot;</span><span class="p">&gt;</span>Login<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">28</span>        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;request.identity&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;login&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;loginlogout&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/logout_handler&#39;)}&quot;</span><span class="p">&gt;</span>Logout<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">29</span>        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;request.identity&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;admin&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;loginlogout&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/admin&#39;)}&quot;</span><span class="p">&gt;</span>Admin<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">30</span>    <span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<span class="linenos">31</span>  <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+<span class="linenos">32</span>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;content&quot;</span><span class="p">&gt;</span>
+<span class="linenos">33</span>    <span class="p">&lt;</span><span class="nt">py:if</span> <span class="na">test</span><span class="o">=</span><span class="s">&quot;defined(&#39;page&#39;)&quot;</span><span class="p">&gt;</span>
+<span class="linenos">34</span>    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;currentpage&quot;</span><span class="p">&gt;</span>
+<span class="linenos">35</span>     Now Viewing: <span class="p">&lt;</span><span class="nt">span</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;page&quot;</span><span class="p">/&gt;</span>
+<span class="linenos">36</span>     <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="linenos">37</span>    <span class="p">&lt;/</span><span class="nt">py:if</span><span class="p">&gt;</span>
+<span class="linenos">38</span>    <span class="p">&lt;</span><span class="nt">py:with</span> <span class="na">vars</span><span class="o">=</span><span class="s">&quot;flash=tg.flash_obj.render(&#39;flash&#39;, use_js=False)&quot;</span><span class="p">&gt;</span>
+<span class="linenos">39</span>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;flash&quot;</span> <span class="na">py:content</span><span class="o">=</span><span class="s">&quot;XML(flash)&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">40</span>    <span class="p">&lt;/</span><span class="nt">py:with</span><span class="p">&gt;</span>
+<span class="linenos">41</span>    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;select(&#39;*|text()&#39;)&quot;</span><span class="p">/&gt;</span>
+<span class="linenos">42</span>    <span class="c">&lt;!-- End of main_content --&gt;</span>
+<span class="linenos">43</span>    ${footer()}
+<span class="linenos">44</span>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="linenos">45</span><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="linenos">46</span><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>Likewise, the contents of <code class="docutils literal notranslate"><span class="pre">index.html</span></code> are as follows:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; </span>
+<span class="linenos"> 2</span><span class="cp">                      &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
+<span class="linenos"> 3</span><span class="p">&lt;</span><span class="nt">html</span> <span class="na">xmlns</span><span class="o">=</span><span class="s">&quot;http://www.w3.org/1999/xhtml&quot;</span>
+<span class="linenos"> 4</span>      <span class="na">xmlns:py</span><span class="o">=</span><span class="s">&quot;http://genshi.edgewall.org/&quot;</span>
+<span class="linenos"> 5</span>      <span class="na">xmlns:xi</span><span class="o">=</span><span class="s">&quot;http://www.w3.org/2001/XInclude&quot;</span><span class="p">&gt;</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>  <span class="p">&lt;</span><span class="nt">xi:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;master.html&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="linenos">10</span>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;text/html; charset=UTF-8&quot;</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">&quot;content-type&quot;</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;&#39;&#39;&quot;</span><span class="p">/&gt;</span>
+<span class="linenos">11</span>  <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Welcome to TurboGears 2.0, standing on the 
+<span class="linenos">12</span>  shoulders of giants, since 2007<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+<span class="linenos">13</span><span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="linenos">16</span>    ${sidebar_top()}
+<span class="linenos">17</span>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;getting_started&quot;</span><span class="p">&gt;</span>
+<span class="linenos">18</span>    <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>Presentation<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+<span class="linenos">19</span>    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>TurboGears 2 is rapid web application development toolkit designed to make your life easier.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="linenos">20</span>    <span class="p">&lt;</span><span class="nt">ol</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;getting_started_steps&quot;</span><span class="p">&gt;</span>
+<span class="linenos">21</span>      <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;getting_started&quot;</span><span class="p">&gt;</span>
+<span class="linenos">22</span>        <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Code your data model<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+<span class="linenos">23</span>        <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span> Design your data model, Create the database, and Add some bootstrap data.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="linenos">24</span>      <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">25</span>      <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;getting_started&quot;</span><span class="p">&gt;</span>
+<span class="linenos">26</span>        <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Design your URL architecture<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+<span class="linenos">27</span>        <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span> Decide your URLs, Program your controller methods, Design your 
+<span class="linenos">28</span>            templates, and place some static files (CSS and/or JavaScript). <span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="linenos">29</span>      <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">30</span>      <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;getting_started&quot;</span><span class="p">&gt;</span>
+<span class="linenos">31</span>        <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Distribute your app<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+<span class="linenos">32</span>        <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span> Test your source, Generate project documents, Build a distribution.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="linenos">33</span>      <span class="p">&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">34</span>    <span class="p">&lt;/</span><span class="nt">ol</span><span class="p">&gt;</span>
+<span class="linenos">35</span>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="linenos">36</span>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;clearingdiv&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">37</span>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;notice&quot;</span><span class="p">&gt;</span> Thank you for choosing TurboGears. 
+<span class="linenos">38</span>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="linenos">39</span><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="linenos">40</span><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>In order to perform our kajiki migration, we begin by creating two empty
+templates.  The first one will replace our <code class="docutils literal notranslate"><span class="pre">master.html</span></code>, and we will call it
+<code class="docutils literal notranslate"><span class="pre">layout.html</span></code>:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;</span>
+<span class="linenos"> 2</span><span class="cp">                      &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
+<span class="linenos"> 3</span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+<span class="linenos"> 4</span>    <span class="p">&lt;</span><span class="nt">py:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;header&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos"> 5</span>    <span class="p">&lt;</span><span class="nt">py:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;footer&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span>    <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="linenos"> 8</span>      <span class="p">&lt;</span><span class="nt">title</span> <span class="na">py:block</span><span class="o">=</span><span class="s">&quot;title&quot;</span><span class="p">&gt;</span>Your title goes here<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+<span class="linenos"> 9</span>      <span class="p">&lt;</span><span class="nt">py:block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;head_content&quot;</span><span class="p">&gt;</span>
+<span class="linenos">10</span>        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="na">media</span><span class="o">=</span><span class="s">&quot;screen&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/css/style.css&#39;)}&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">11</span>        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="na">media</span><span class="o">=</span><span class="s">&quot;screen&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/css/admin.css&#39;)}&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">12</span>      <span class="p">&lt;/</span><span class="nt">py:block</span><span class="p">&gt;</span>
+<span class="linenos">13</span>    <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span>    <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="linenos">16</span>      <span class="p">&lt;</span><span class="nt">py:block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;body_header&quot;</span><span class="p">&gt;&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>My Header<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;&lt;/</span><span class="nt">py:block</span><span class="p">&gt;</span>
+<span class="linenos">17</span>      <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">py:block</span><span class="o">=</span><span class="s">&quot;mainmenu&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;mainmenu&quot;</span><span class="p">&gt;</span>
+<span class="linenos">18</span>        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;first&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;index&#39;]}&quot;</span><span class="p">&gt;</span>Welcome<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">19</span>        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/about&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;about&#39;]}&quot;</span><span class="p">&gt;</span>About<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">20</span>        <span class="p">&lt;</span><span class="nt">li</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;tg.auth_stack_enabled&quot;</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/auth&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;auth&#39;]}&quot;</span><span class="p">&gt;</span>Authentication<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">21</span>        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;${tg.url(&#39;/environ&#39;)}&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;${(&#39;&#39;, &#39;active&#39;)[defined(&#39;page&#39;) and page==&#39;environ&#39;]}&quot;</span><span class="p">&gt;</span>WSGI Environment<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">22</span>        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;http://groups.google.com/group/turbogears&quot;</span><span class="p">&gt;</span>Contact<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+<span class="linenos">23</span>      <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+<span class="linenos">24</span>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;content&quot;</span><span class="p">&gt;</span>
+<span class="linenos">25</span>        <span class="p">&lt;</span><span class="nt">py:if</span> <span class="na">test</span><span class="o">=</span><span class="s">&quot;defined(&#39;page&#39;)&quot;</span><span class="p">&gt;</span>
+<span class="linenos">26</span>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;currentpage&quot;</span><span class="p">&gt;</span>
+<span class="linenos">27</span>            Now Viewing: <span class="p">&lt;</span><span class="nt">span</span> <span class="na">py:replace</span><span class="o">=</span><span class="s">&quot;page&quot;</span><span class="p">/&gt;</span>
+<span class="linenos">28</span>          <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="linenos">29</span>        <span class="p">&lt;/</span><span class="nt">py:if</span><span class="p">&gt;</span>
+<span class="linenos">30</span>        <span class="p">&lt;</span><span class="nt">py:with</span> <span class="na">vars</span><span class="o">=</span><span class="s">&quot;flash=tg.flash_obj.render(&#39;flash&#39;, use_js=False)&quot;</span><span class="p">&gt;</span>
+<span class="linenos">31</span>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">py:if</span><span class="o">=</span><span class="s">&quot;flash&quot;</span> <span class="na">py:content</span><span class="o">=</span><span class="s">&quot;XML(flash)&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">32</span>        <span class="p">&lt;/</span><span class="nt">py:with</span><span class="p">&gt;</span>
+<span class="linenos">33</span>        <span class="p">&lt;</span><span class="nt">py:block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;body_text&quot;</span><span class="p">&gt;</span>Your body text goes here<span class="p">&lt;/</span><span class="nt">py:block</span><span class="p">&gt;</span>
+<span class="linenos">34</span>        <span class="p">&lt;</span><span class="nt">py:block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;bodyfooter&quot;</span><span class="p">&gt;</span>${footer()}<span class="p">&lt;/</span><span class="nt">py:block</span><span class="p">&gt;</span>
+<span class="linenos">35</span>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="linenos">36</span>    <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="linenos">37</span><span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>Note the introduction of the <code class="docutils literal notranslate"><span class="pre">py:block</span></code> directive, and the disappearance of the
+<code class="docutils literal notranslate"><span class="pre">py:match</span></code> directives from <code class="docutils literal notranslate"><span class="pre">master.html</span></code>.  <code class="docutils literal notranslate"><span class="pre">py:block</span></code> mimics the behavior of
+Jinja2 “blocks”, providing a name to a construct in a parent template which can be
+replaced by the contents of <code class="docutils literal notranslate"><span class="pre">py:block</span></code> -named constructs in child templates.  For
+instance, the “title” slot in <code class="docutils literal notranslate"><span class="pre">layout.html</span></code>:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>      <span class="p">&lt;</span><span class="nt">title</span> <span class="na">py:block</span><span class="o">=</span><span class="s">&quot;title&quot;</span><span class="p">&gt;</span>Your title goes here<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>can be replaced by a similarly-named slot in the child document <code class="docutils literal notranslate"><span class="pre">index_kajiki.html</span></code>:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; </span>
+<span class="linenos">2</span><span class="cp">                      &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
+<span class="linenos">3</span><span class="p">&lt;</span><span class="nt">html</span> <span class="na">py:extends</span><span class="o">=</span><span class="s">&quot;layout&quot;</span><span class="p">&gt;</span>
+<span class="linenos">4</span>    <span class="p">&lt;</span><span class="nt">py:include</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;sidebars&quot;</span> <span class="p">/&gt;</span>
+<span class="linenos">5</span>
+<span class="linenos">6</span>    <span class="p">&lt;</span><span class="nt">title</span> <span class="na">py:block</span><span class="o">=</span><span class="s">&quot;title&quot;</span><span class="p">&gt;</span>Welcome to TurboGears 2.0, standing on the 
+<span class="linenos">7</span>      shoulders of giants, since 2007<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>We also provide a way of including the contents of the parent template’s slot in
+a child template’s slot using <code class="docutils literal notranslate"><span class="pre">${parent_block()}</span></code>.  The following slot in
+<code class="docutils literal notranslate"><span class="pre">layout.html</span></code>:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>      <span class="p">&lt;</span><span class="nt">py:block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;body_header&quot;</span><span class="p">&gt;&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>My Header<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;&lt;/</span><span class="nt">py:block</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>can be replaced in <code class="docutils literal notranslate"><span class="pre">include/index_kajiki.html</span></code> with:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span>    <span class="p">&lt;</span><span class="nt">py:block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;body_header&quot;</span><span class="p">&gt;</span>
+<span class="linenos">2</span>      ${parent_block()}
+<span class="linenos">3</span>      <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Some extra header data<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+<span class="linenos">4</span>    <span class="p">&lt;/</span><span class="nt">py:block</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>Yielding the following html once rendered:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span> <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>My Header<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+<span class="linenos">2</span> <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Some extra header data<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/marlin.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Kajiki</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Fast XML and text templates for Python</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jackrosenthal&repo=kajiki&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="templating-basics.html">Kajiki Templating Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml-templates.html">Kajiki XML Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text-templates.html">Kajiki Text Templates</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Migrating from Genshi</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example-migration">Example Migration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Internationalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Kajiki Runtime</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="text-templates.html" title="previous chapter">Kajiki Text Templates</a></li>
+      <li>Next: <a href="i18n.html" title="next chapter">Internationalization</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/migrating_from_genshi.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jackrosenthal/kajiki" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

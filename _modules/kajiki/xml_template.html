@@ -1,0 +1,1077 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kajiki.xml_template &#8212; Kajiki 0.8.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kajiki.xml_template</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">codecs</span> <span class="kn">import</span> <span class="nb">open</span>
+<span class="kn">from</span> <span class="nn">xml</span> <span class="kn">import</span> <span class="n">sax</span>
+<span class="kn">from</span> <span class="nn">xml.dom</span> <span class="kn">import</span> <span class="n">minidom</span> <span class="k">as</span> <span class="n">dom</span>
+<span class="kn">from</span> <span class="nn">xml.sax</span> <span class="kn">import</span> <span class="n">SAXParseException</span>
+
+<span class="kn">from</span> <span class="nn">nine</span> <span class="kn">import</span> <span class="n">IS_PYTHON2</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iteritems</span><span class="p">,</span> <span class="n">native_str</span>
+
+<span class="k">if</span> <span class="n">IS_PYTHON2</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cStringIO</span> <span class="kn">import</span> <span class="n">StringIO</span> <span class="k">as</span> <span class="n">BytesIO</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ir</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">.ddict</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">.doctype</span> <span class="kn">import</span> <span class="n">DocumentTypeDeclaration</span><span class="p">,</span> <span class="n">extract_dtd</span>
+<span class="kn">from</span> <span class="nn">.entities</span> <span class="kn">import</span> <span class="n">html5</span><span class="p">,</span> <span class="n">unescape</span>
+<span class="kn">from</span> <span class="nn">.html_utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">HTML_OPTIONAL_END_TAGS</span><span class="p">,</span> <span class="n">HTML_REQUIRED_END_TAGS</span><span class="p">,</span>
+                         <span class="n">HTML_CDATA_TAGS</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.markup_template</span> <span class="kn">import</span> <span class="n">QDIRECTIVES</span><span class="p">,</span> <span class="n">QDIRECTIVES_DICT</span>
+
+<span class="n">impl</span> <span class="o">=</span> <span class="n">dom</span><span class="o">.</span><span class="n">getDOMImplementation</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">XMLTemplate</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_fragment</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">autoblocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cdata_scripts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">strip_text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">base_globals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given XML source code of a Kajiki Templates parses and returns a template class.</span>
+
+<span class="sd">    The source code is parsed to its DOM representation by :class:`._Parser`,</span>
+<span class="sd">    which is then expanded to separate directives from tags by :class:`._DomTransformer`</span>
+<span class="sd">    and then compiled to the *Intermediate Representation* tree by :class:`._Compiler`.</span>
+
+<span class="sd">    The *Intermediate Representation* generates the Python code</span>
+<span class="sd">    which creates a new :class:`kajiki.template._Template` subclass through</span>
+<span class="sd">    :meth:`kajiki.template.Template`.</span>
+
+<span class="sd">    The generated code is then executed to return the newly created class.</span>
+
+<span class="sd">    Calling ``.render()`` on an instance of the generate class will then render the template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>  <span class="c1"># source is a unicode string</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;&lt;string&gt;&#39;</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">_Parser</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">_DomTransformer</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">strip_text</span><span class="o">=</span><span class="n">strip_text</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+    <span class="n">ir_</span> <span class="o">=</span> <span class="n">_Compiler</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">is_fragment</span><span class="o">=</span><span class="n">is_fragment</span><span class="p">,</span>
+                    <span class="n">autoblocks</span><span class="o">=</span><span class="n">autoblocks</span><span class="p">,</span> <span class="n">cdata_scripts</span><span class="o">=</span><span class="n">cdata_scripts</span><span class="p">)</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">from_ir</span><span class="p">(</span><span class="n">ir_</span><span class="p">,</span> <span class="n">base_globals</span><span class="o">=</span><span class="n">base_globals</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t</span>
+
+
+<span class="k">def</span> <span class="nf">annotate</span><span class="p">(</span><span class="n">gen</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_anno</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">inner</span>
+
+
+<div class="viewcode-block" id="_Compiler"><a class="viewcode-back" href="../../runtime.html#kajiki._Compiler">[docs]</a><span class="k">class</span> <span class="nc">_Compiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compiles a DOM tree into Intermediate Representation :class:`kajiki.ir.TemplateNode`.</span>
+
+<span class="sd">    Intermediate Representation is a tree of nodes that represent</span>
+<span class="sd">    Python Code that should be generated to execute the template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_fragment</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">autoblocks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cdata_scripts</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="n">doc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_fragment</span> <span class="o">=</span> <span class="n">is_fragment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="s1">&#39;__main__()&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function_lnos</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mod_py</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autoblocks</span> <span class="o">=</span> <span class="n">autoblocks</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cdata_scripts</span> <span class="o">=</span> <span class="n">cdata_scripts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_def</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_child</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># The rendering mode is either specified in the *mode* argument,</span>
+        <span class="c1"># or inferred from the DTD:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtd</span> <span class="o">=</span> <span class="n">DocumentTypeDeclaration</span><span class="o">.</span><span class="n">matching</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="o">.</span><span class="n">_dtd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtd</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtd</span><span class="o">.</span><span class="n">rendering_mode</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># The template might contain an unknown DTD</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;xml&#39;</span>  <span class="c1"># by default</span>
+
+<div class="viewcode-block" id="_Compiler.compile"><a class="viewcode-back" href="../../runtime.html#kajiki._Compiler.compile">[docs]</a>    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compile the document provided by :class:`._Parser`.</span>
+
+<span class="sd">        Returns as :class:`kajiki.ir.TemplateNode` instance representing</span>
+<span class="sd">        the whole tree of nodes as their intermediate representation.</span>
+
+<span class="sd">        The returned template will include at least a ``__main__``</span>
+<span class="sd">        function which is the document itself including a DOCTYPE and</span>
+<span class="sd">        any function declared through ``py:def`` or as a ``py:block``.</span>
+
+<span class="sd">        The ``TemplateNode`` will also include the module level</span>
+<span class="sd">        code specified through ``&lt;?py %``.</span>
+
+<span class="sd">        If the compiled document didn&#39;t specify a DOCTYPE provides</span>
+<span class="sd">        one at least for HTML5.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            As this alters the functions and mode wide code</span>
+<span class="sd">            registries of the compiler ``compile`` should</span>
+<span class="sd">            never be called twice or might lead to unexpected results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">templateNodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="o">.</span><span class="n">childNodes</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Comment</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">templateNodes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span><span class="s1">&#39;expected a single root node in document&#39;</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">body</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_node</span><span class="p">(</span><span class="n">templateNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="c1"># Never emit doctypes on fragments</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_fragment</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_child</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="o">.</span><span class="n">_dtd</span><span class="p">:</span>
+                <span class="n">dtd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="o">.</span><span class="n">_dtd</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;html5&#39;</span><span class="p">:</span>
+                <span class="n">dtd</span> <span class="o">=</span> <span class="s1">&#39;&lt;!DOCTYPE html&gt;&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dtd</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">dtd</span><span class="p">:</span>
+                <span class="n">dtd</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="n">dtd</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">dtd</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+                <span class="n">dtd</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">body</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="s1">&#39;__main__()&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">body</span>
+        <span class="n">defs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">):</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">DefNode</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_lnos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">defs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">TemplateNode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mod_py</span><span class="p">,</span> <span class="n">defs</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">node</span></div>
+
+    <span class="k">def</span> <span class="nf">_anno</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dom_node</span><span class="p">,</span> <span class="n">ir_node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">ir_node</span><span class="o">.</span><span class="n">lineno</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">ir_node</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span>
+        <span class="n">ir_node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">dom_node</span><span class="o">.</span><span class="n">lineno</span>
+
+    <span class="k">def</span> <span class="nf">_is_autoblock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">autoblocks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s1">&#39;py:autoblock&#39;</span><span class="p">):</span>
+            <span class="n">guard</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;py:autoblock&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">guard</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;false&#39;</span><span class="p">,</span> <span class="s1">&#39;true&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;py:autoblock is evaluated at compile time &#39;</span>
+                                 <span class="s1">&#39;and only accepts True/False constants&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">guard</span> <span class="o">==</span> <span class="s1">&#39;false&#39;</span><span class="p">:</span>
+                <span class="c1"># We throw away the attribute so it doesn&#39;t remain in rendered nodes.</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">removeAttribute</span><span class="p">(</span><span class="s1">&#39;py:autoblock&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_compile_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a DOM node to its intermediate representation.</span>
+
+<span class="sd">        Calls specific compile functions for special nodes and any</span>
+<span class="sd">        directive that was expanded by :meth:`._DomTransformer._expand_directives`.</span>
+<span class="sd">        For any plain XML node forward it to :meth:`._compile_xml`.</span>
+
+<span class="sd">        Automatically converts any ``autoblock`` node to a ``py:block`` directive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Comment</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_comment</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_text</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">ProcessingInstruction</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_pi</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_autoblock</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="c1"># Set the name of the block equal to the tag itself.</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_block</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;py:&#39;</span><span class="p">):</span>
+            <span class="c1"># Handle directives</span>
+            <span class="n">compiler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_compile_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compile_xml</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">compiler</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_xml</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compile plain XML nodes.</span>
+
+<span class="sd">        When compiling a node also take care of directives that</span>
+<span class="sd">        only modify the node itself (``py:strip``, ``py:attrs``</span>
+<span class="sd">        and ``py:content``) as all directives wrapping the node</span>
+<span class="sd">        and its children have already been handled by :meth:`._compile_node`.</span>
+
+<span class="sd">        The provided intermediate representations include</span>
+<span class="sd">        the node itself, its attributes and its content.</span>
+
+<span class="sd">        Attributes of the node are handled through :class:`._TextCompiler`</span>
+<span class="sd">        to ensure ${expr} expressions are handled in attributes too.</span>
+
+<span class="sd">        In case the node has children (and no py:content)</span>
+<span class="sd">        compile the children too.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">guard</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s1">&#39;py:strip&#39;</span><span class="p">):</span>
+            <span class="n">guard</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;py:strip&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">guard</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>  <span class="c1"># py:strip=&quot;&quot; means yes, do strip the tag</span>
+                <span class="n">guard</span> <span class="o">=</span> <span class="s1">&#39;False&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">guard</span> <span class="o">=</span> <span class="s1">&#39;not (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">guard</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">removeAttribute</span><span class="p">(</span><span class="s1">&#39;py:strip&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">tc</span> <span class="o">=</span> <span class="n">_TextCompiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span>
+                               <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">,</span> <span class="n">in_html_attr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">compiler_instance</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;py:content&#39;</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;py:content&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;py:attrs&#39;</span><span class="p">:</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;py:attrs&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">AttrNode</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">guard</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">AttrsNode</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">guard</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExprNode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&lt;/</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cdata_scripts</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">HTML_CDATA_TAGS</span><span class="p">:</span>
+                    <span class="c1"># Special behaviour for &lt;script&gt;, &lt;style&gt; tags:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;xml&#39;</span><span class="p">:</span>  <span class="c1"># Start escaping</span>
+                        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;/*&lt;![CDATA[*/&#39;</span><span class="p">)</span>
+                    <span class="c1"># Need to unescape the contents of these tags</span>
+                    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+                        <span class="c1"># CDATA for scripts and styles are automatically managed.</span>
+                        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="s1">&#39;_cdata&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                            <span class="k">continue</span>
+                        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_text</span><span class="p">(</span><span class="n">child</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">escaped</span><span class="p">:</span>  <span class="c1"># If user declared CDATA no escaping happened.</span>
+                                <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">unescape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                            <span class="k">yield</span> <span class="n">x</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;xml&#39;</span><span class="p">:</span>  <span class="c1"># Finish escaping</span>
+                        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;/*]]&gt;*/&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">cn</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+                        <span class="c1"># Keep CDATA sections around if declared by user</span>
+                        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cn</span><span class="p">,</span> <span class="s1">&#39;_cdata&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="n">cn</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                            <span class="k">continue</span>
+                        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_node</span><span class="p">(</span><span class="n">cn</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="n">x</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">)</span>
+                        <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">HTML_OPTIONAL_END_TAGS</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&lt;/</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">HTML_REQUIRED_END_TAGS</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&gt;&lt;/</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">HTML_OPTIONAL_END_TAGS</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&gt;&lt;/</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;/&gt;&#39;</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:replace nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExprNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_pi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert &lt;?py and &lt;?python nodes to their intermediate representation.</span>
+
+<span class="sd">        Any code identified by :class:`.ir.PythonNode` as ``module_level``</span>
+<span class="sd">        (it starts with % character) will be registered in compiler registry</span>
+<span class="sd">        of module wide code to be provided to be template.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">PythonNode</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">module_level</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mod_py</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">node</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:import nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s1">&#39;alias&#39;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ImportNode</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;alias&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ImportNode</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_extends</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:extends nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_child</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExtendNode</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">x</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_include</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:include nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">IncludeNode</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:block nodes to their intermediate representation.</span>
+
+<span class="sd">        Any compiled block will be registered in the compiler functions</span>
+<span class="sd">        registry to be provided to the template.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;_kj_block_&#39;</span> <span class="o">+</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">decl</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">body</span><span class="p">:</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="p">[</span><span class="n">ir</span><span class="o">.</span><span class="n">PassNode</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">decl</span><span class="p">]</span> <span class="o">=</span> <span class="n">body</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_child</span><span class="p">:</span>
+            <span class="n">parent_block</span> <span class="o">=</span> <span class="s1">&#39;parent.&#39;</span> <span class="o">+</span> <span class="n">fname</span>
+            <span class="n">body</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">ir</span><span class="o">.</span><span class="n">PythonNode</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;parent_block=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">parent_block</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExprNode</span><span class="p">(</span><span class="n">decl</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:def nodes to their intermediate representation.</span>
+
+<span class="sd">        Any compiled definition will be registered in the compiler functions</span>
+<span class="sd">        registry to be provided to the template.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_in_def</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_def</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_def</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_def</span> <span class="o">=</span> <span class="n">old_in_def</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_def</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">InnerDefNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;function&#39;</span><span class="p">),</span> <span class="o">*</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;function&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">body</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:call nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">):</span>
+            <span class="n">defn</span> <span class="o">=</span> <span class="s1">&#39;$caller(&#39;</span> <span class="o">+</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;args&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">defn</span> <span class="o">=</span> <span class="s1">&#39;$caller()&#39;</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">CallNode</span><span class="p">(</span>
+            <span class="n">defn</span><span class="p">,</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;function&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%c</span><span class="s1">aller&#39;</span><span class="p">,</span> <span class="s1">&#39;$caller&#39;</span><span class="p">),</span>
+            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compile text nodes to their intermediate representation&quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parentNode</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">parentNode</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">HTML_CDATA_TAGS</span><span class="p">:</span>
+            <span class="c1"># script and style should always be untranslatable.</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;node_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span>
+
+        <span class="n">tc</span> <span class="o">=</span> <span class="n">_TextCompiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">compiler_instance</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tc</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">x</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert comments to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;!&#39;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;&lt;!-- </span><span class="si">%s</span><span class="s1"> --&gt;&#39;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:for nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ForNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;each&#39;</span><span class="p">),</span>
+                         <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:with nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">WithNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;vars&#39;</span><span class="p">),</span>
+                          <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:switch nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Filter out empty text nodes and report unsupported nodes</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">CaseNode</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">ElseNode</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                    <span class="s1">&#39;py:switch directive can only contain py:case and py:else nodes &#39;</span>
+                    <span class="s1">&#39;and cannot be placed on a tag.&#39;</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">lineno</span>
+                <span class="p">)</span>
+            <span class="n">body</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">SwitchNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">),</span> <span class="o">*</span><span class="n">body</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:case nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">CaseNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">),</span>
+                          <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_if</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:if nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">IfNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">),</span>
+                        <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_else</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert py:else nodes to their intermediate representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">parentNode</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;py:nop&#39;</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">parentNode</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s1">&#39;py:switch&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">previousSibling</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;py:if&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                <span class="s1">&#39;py:else directive must be inside a py:switch or directly after py:if &#39;</span>
+                <span class="s1">&#39;without text or spaces in between&#39;</span><span class="p">,</span>
+                <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">lineno</span>
+            <span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ElseNode</span><span class="p">(</span>
+            <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+
+    <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_nop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_node</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">x</span></div>
+
+
+<span class="k">def</span> <span class="nf">make_text_node</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">guard</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Return a TranslatableTextNode if the text is not empty,</span>
+<span class="sd">    otherwise a regular TextNode.</span>
+
+<span class="sd">    This avoid spending the cost of translating empty nodes.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">TranslatableTextNode</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">guard</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_TextCompiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Separates expressions such as ${some_var} from the ordinary text</span>
+<span class="sd">    around them in the template source and generates :class:`.ir.ExprNode`</span>
+<span class="sd">    instances and :class:`.ir.TextNode` instances accordingly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span>
+                 <span class="n">node_type</span><span class="o">=</span><span class="n">make_text_node</span><span class="p">,</span> <span class="n">in_html_attr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">compiler_instance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orig_lineno</span> <span class="o">=</span> <span class="n">lineno</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_type</span> <span class="o">=</span> <span class="n">node_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_html_attr</span> <span class="o">=</span> <span class="n">in_html_attr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compiler_instance</span> <span class="o">=</span> <span class="n">compiler_instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiler_instance</span><span class="o">.</span><span class="n">doc</span>
+
+    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_type</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_lineno</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+=</span> <span class="n">text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">node</span>
+
+    <span class="k">def</span> <span class="nf">expr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="c1"># *safe* being True here avoids escaping twice, since</span>
+        <span class="c1"># HTML attributes are always escaped in the end.</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExprNode</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_html_attr</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_lineno</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+=</span> <span class="n">text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">node</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">real_lineno</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_lineno</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lineno</span>
+
+    <span class="n">_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    \$(?:</span>
+<span class="s1">        (?P&lt;expr_named&gt;[_a-z][_a-z0-9.]*) | # $foo.bar</span>
+<span class="s1">        {(?P&lt;expr_braced&gt;) | # ${....</span>
+<span class="s1">        \$ # $$ -&gt; $</span>
+<span class="s1">    )&#39;&#39;&#39;</span>
+    <span class="n">_re_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="n">_pattern</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span>
+        <span class="k">for</span> <span class="n">mo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_pattern</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">source</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">:</span><span class="n">start</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">start</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">groups</span><span class="p">[</span><span class="s1">&#39;expr_braced&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_braced_expr</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">groups</span><span class="p">[</span><span class="s1">&#39;expr_named&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">expr</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="s1">&#39;expr_named&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># handle $$ and $ followed by anything that is neither a valid</span>
+                <span class="c1"># variable name or braced expression</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s1">&#39;$&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">source</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">:])</span>
+
+    <span class="k">def</span> <span class="nf">_get_braced_expr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># see https://github.com/nandoflorestan/kajiki/pull/38</span>
+        <span class="c1"># Trying to get the position of a closing } in braced expressions</span>
+        <span class="c1"># So, self.source can be something like `1+1=${1+1} ahah`</span>
+        <span class="c1"># in this case this function gets called only once with self.pos equal to 6</span>
+        <span class="c1"># this function must return the result of self.expr(&#39;1+1&#39;) and must set self.pos to 9</span>
+        <span class="k">def</span> <span class="nf">py_expr</span><span class="p">(</span><span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">py_expr</span><span class="p">())</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">py_expr</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
+            <span class="nb">compile</span><span class="p">(</span><span class="n">py_expr</span><span class="p">(),</span> <span class="s1">&#39;find_}&#39;</span><span class="p">,</span> <span class="s1">&#39;eval&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">se</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">se</span><span class="o">.</span><span class="n">offset</span><span class="p">]</span> <span class="o">+</span>
+                <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                 <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">py_expr</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+                 <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">se</span><span class="o">.</span><span class="n">lineno</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">py_expr</span><span class="p">(</span><span class="n">end</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;}&#39;</span><span class="p">:</span>
+                <span class="c1"># for example unclosed strings</span>
+                <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                    <span class="s2">&quot;Kajiki can&#39;t compile the python expression `</span><span class="si">%s</span><span class="s2">`&quot;</span> <span class="o">%</span> <span class="n">py_expr</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># if the expression ends in a } then it may be valid</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">compile</span><span class="p">(</span><span class="n">py_expr</span><span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;check_validity&#39;</span><span class="p">,</span> <span class="s1">&#39;eval&#39;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">se</span><span class="p">:</span>
+                    <span class="c1"># for example + operators with a single operand</span>
+                    <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                        <span class="s2">&quot;Kajiki detected an invalid python expression `</span><span class="si">%s</span><span class="s2">`&quot;</span> <span class="o">%</span> <span class="n">py_expr</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">)</span>
+
+            <span class="n">py_text</span> <span class="o">=</span> <span class="n">py_expr</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">end</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">expr</span><span class="p">(</span><span class="n">py_text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span><span class="s2">&quot;Braced expression not terminated&quot;</span><span class="p">,</span>
+                                          <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lineno</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="_Parser"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser">[docs]</a><span class="k">class</span> <span class="nc">_Parser</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">ContentHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an XML template into a Tree of DOM Nodes.</span>
+
+<span class="sd">    Nodes should then be passed to a `_Compiler` to be</span>
+<span class="sd">    converted into the intermediate representation and</span>
+<span class="sd">    then to Python Code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DTD</span> <span class="o">=</span> <span class="s1">&#39;&lt;!DOCTYPE kajiki SYSTEM &quot;kajiki.dtd&quot;&gt;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;XML defines only a few entities; HTML defines many more.</span>
+<span class="sd">        The XML parser errors out when it finds HTML entities, unless the</span>
+<span class="sd">        template contains a reference to an external DTD (in which case</span>
+<span class="sd">        skippedEntity() gets called, this is what we want). In other words,</span>
+<span class="sd">        we want to trick expat into parsing XML + HTML entities for us.</span>
+<span class="sd">        We wouldn&#39;t force our users to declare everyday HTML entities!</span>
+
+<span class="sd">        So, for the parsing stage, we detect the doctype in the template and</span>
+<span class="sd">        replace it with our own; then in the compiling stage we put the</span>
+<span class="sd">        user&#39;s doctype back in. The XML parser is thus tricked and nobody</span>
+<span class="sd">        needs to know this implementation detail of Kajiki.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sax</span><span class="o">.</span><span class="n">ContentHandler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The template source must be a unicode string.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span> <span class="o">=</span> <span class="n">dom</span><span class="o">.</span><span class="n">Document</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="c1"># Store the original DTD in the document for the compiler to use later</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">_dtd</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">extract_dtd</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="c1"># Use our own DTD just for XML parsing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">source</span><span class="p">[:</span><span class="n">position</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">DTD</span> <span class="o">+</span> <span class="n">source</span><span class="p">[</span><span class="n">position</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_stack</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="_Parser.parse"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse an XML/HTML document to its DOM representation.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span> <span class="o">=</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">sax</span><span class="o">.</span><span class="n">make_parser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">setFeature</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">feature_external_pes</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">setFeature</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">feature_external_ges</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">setFeature</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">feature_namespaces</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">setProperty</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">property_lexical_handler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">setContentHandler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">sax</span><span class="o">.</span><span class="n">xmlreader</span><span class="o">.</span><span class="n">InputSource</span><span class="p">()</span>
+        <span class="c1"># Sweet XMLReader.parse() documentation says:</span>
+        <span class="c1"># &quot;As a limitation, the current implementation only accepts byte</span>
+        <span class="c1"># streams; processing of character streams is for further study.&quot;</span>
+        <span class="c1"># So if source is unicode, we pre-encode it:</span>
+        <span class="c1"># TODO Is this dance really necessary? Can&#39;t I just call a function?</span>
+        <span class="n">byts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="n">source</span><span class="o">.</span><span class="n">setEncoding</span><span class="p">(</span><span class="n">native_str</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="n">source</span><span class="o">.</span><span class="n">setByteStream</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">byts</span><span class="p">))</span>
+        <span class="n">source</span><span class="o">.</span><span class="n">setSystemId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SAXParseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">XMLTemplateParseError</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getMessage</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">,</span>
+                                        <span class="n">e</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">(),</span> <span class="n">e</span><span class="o">.</span><span class="n">getColumnNumber</span><span class="p">())</span>
+            <span class="n">exc</span><span class="o">.</span><span class="n">__cause__</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">exc</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span></div>
+
+    <span class="c1"># ContentHandler implementation</span>
+<div class="viewcode-block" id="_Parser.startDocument"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startDocument">[docs]</a>    <span class="k">def</span> <span class="nf">startDocument</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.startElement"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElement">[docs]</a>    <span class="k">def</span> <span class="nf">startElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="n">el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">el</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.endElement"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endElement">[docs]</a>    <span class="k">def</span> <span class="nf">endElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">popped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">name</span> <span class="o">==</span> <span class="n">popped</span><span class="o">.</span><span class="n">tagName</span></div>
+
+<div class="viewcode-block" id="_Parser.characters"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.characters">[docs]</a>    <span class="k">def</span> <span class="nf">characters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">should_escape</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_stack</span>
+        <span class="k">if</span> <span class="n">should_escape</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">sax</span><span class="o">.</span><span class="n">saxutils</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">escaped</span> <span class="o">=</span> <span class="n">should_escape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.processingInstruction"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.processingInstruction">[docs]</a>    <span class="k">def</span> <span class="nf">processingInstruction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createProcessingInstruction</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.skippedEntity"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.skippedEntity">[docs]</a>    <span class="k">def</span> <span class="nf">skippedEntity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="c1"># Deals with an HTML entity such as &amp;nbsp; (XML itself defines very few entities.)</span>
+
+        <span class="c1"># The presence of a SYSTEM doctype makes expat say &quot;hey, that MIGHT be</span>
+        <span class="c1"># a valid entity, better pass it along to sax and find out!&quot;</span>
+        <span class="c1"># (Since expat is nonvalidating, it never reads the external doctypes.)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;;&#39;</span><span class="p">:</span>
+            <span class="c1"># In entities.html5 sometimes the entities are recorded</span>
+            <span class="c1"># with/without semicolon. That list is copied from cPython</span>
+            <span class="c1"># itself, and we don&#39;t want to maintain a separate diff.</span>
+            <span class="c1"># So just ensure we ask for entities always recorded with trailing semicolon.</span>
+            <span class="n">name</span> <span class="o">+=</span> <span class="s1">&#39;;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">characters</span><span class="p">(</span><span class="n">html5</span><span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="_Parser.startElementNS"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElementNS">[docs]</a>    <span class="k">def</span> <span class="nf">startElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;startElementNS&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.endElementNS"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endElementNS">[docs]</a>    <span class="k">def</span> <span class="nf">endElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;startElementNS&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.startPrefixMapping"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startPrefixMapping">[docs]</a>    <span class="k">def</span> <span class="nf">startPrefixMapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;startPrefixMapping&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_Parser.endPrefixMapping"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endPrefixMapping">[docs]</a>    <span class="k">def</span> <span class="nf">endPrefixMapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;endPrefixMapping&#39;</span><span class="p">)</span></div>
+
+    <span class="c1"># LexicalHandler implementation</span>
+    <span class="k">def</span> <span class="nf">comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createComment</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">startCDATA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="s1">&#39;&lt;![CDATA[&#39;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">_cdata</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">endCDATA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="s1">&#39;]]&gt;&#39;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">_cdata</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">startDTD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">pubid</span><span class="p">,</span> <span class="n">sysid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">doctype</span> <span class="o">=</span> <span class="n">impl</span><span class="o">.</span><span class="n">createDocumentType</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pubid</span><span class="p">,</span> <span class="n">sysid</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">endDTD</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="_DomTransformer"><a class="viewcode-back" href="../../runtime.html#kajiki._DomTransformer">[docs]</a><span class="k">class</span> <span class="nc">_DomTransformer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Applies standard Kajiki transformations to a parsed document.</span>
+
+<span class="sd">    Given a document generated by :class:`.Parser` it applies some</span>
+<span class="sd">    node transformations that are necessary before applying the</span>
+<span class="sd">    compilation steps to achieve result we usually expect.</span>
+
+<span class="sd">    This includes things like squashing consecutive text nodes</span>
+<span class="sd">    and expanding ``py:`` directives.</span>
+
+<span class="sd">    The Transformer mutates the original document.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">strip_text</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transformed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="n">doc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strip_text</span> <span class="o">=</span> <span class="n">strip_text</span>
+
+<div class="viewcode-block" id="_DomTransformer.transform"><a class="viewcode-back" href="../../runtime.html#kajiki._DomTransformer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Applies all the DOM transformations to the document.</span>
+
+<span class="sd">        Calling this twice will do nothing as the result is persisted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transformed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_directives</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge_text_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_nodes_leading_and_trailing_spaces</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_text</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_text_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_merge_text_nodes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Merges consecutive TextNodes into a single TextNode.</span>
+
+<span class="sd">        Nodes are replaced with a new node whose data contains the</span>
+<span class="sd">        concatenation of all replaced nodes data.</span>
+<span class="sd">        Any other node (including CDATA TextNodes) splits runs of TextNodes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Document</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_merge_text_nodes</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">firstChild</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">tree</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">basestring</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tree</span>
+
+        <span class="c1"># Squash all successive text nodes into a single one.</span>
+        <span class="n">merge_node</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="s1">&#39;_cdata&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">merge_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">merge_node</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">ownerDocument</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">merge_node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">lineno</span>
+                    <span class="n">merge_node</span><span class="o">.</span><span class="n">escaped</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">escaped</span>
+                    <span class="n">tree</span><span class="o">.</span><span class="n">replaceChild</span><span class="p">(</span><span class="n">newChild</span><span class="o">=</span><span class="n">merge_node</span><span class="p">,</span> <span class="n">oldChild</span><span class="o">=</span><span class="n">child</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">merge_node</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">merge_node</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span>
+                    <span class="n">tree</span><span class="o">.</span><span class="n">removeChild</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">merge_node</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Apply squashing to all children of current node.</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">):</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_merge_text_nodes</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_extract_nodes_leading_and_trailing_spaces</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the leading and traling spaces of TextNodes to separate nodes.</span>
+
+<span class="sd">        This is explicitly intended to make i18n easier, as we don&#39;t want people having</span>
+<span class="sd">        to pay attention to spaces at being and end of text when translating it. So those</span>
+<span class="sd">        are always extracted and only the meaningful part is preserved for translation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="s1">&#39;_cdata&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                        <span class="c1"># Already a totally empty node, do nothing...</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">lstripped_data</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lstripped_data</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                        <span class="c1"># There is text to strip at begin, create a new text node with empty space</span>
+                        <span class="n">empty_text_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">lstripped_data</span><span class="p">)</span>
+                        <span class="n">empty_text</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">empty_text_len</span><span class="p">]</span>
+                        <span class="n">begin_node</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">ownerDocument</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">empty_text</span><span class="p">)</span>
+                        <span class="n">begin_node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">lineno</span>
+                        <span class="n">begin_node</span><span class="o">.</span><span class="n">escaped</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">escaped</span>
+                        <span class="n">tree</span><span class="o">.</span><span class="n">insertBefore</span><span class="p">(</span><span class="n">newChild</span><span class="o">=</span><span class="n">begin_node</span><span class="p">,</span> <span class="n">refChild</span><span class="o">=</span><span class="n">child</span><span class="p">)</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="n">empty_text_len</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">lstripped_data</span>
+
+                    <span class="n">rstripped_data</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rstripped_data</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                        <span class="c1"># There is text to strip at end, create a new text node with empty space</span>
+                        <span class="n">empty_text_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">rstripped_data</span><span class="p">)</span>
+                        <span class="n">empty_text</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="n">empty_text_len</span><span class="p">:]</span>
+                        <span class="n">end_node</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">ownerDocument</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">empty_text</span><span class="p">)</span>
+                        <span class="n">end_node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="n">empty_text_len</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="n">end_node</span><span class="o">.</span><span class="n">escaped</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">escaped</span>
+                        <span class="n">tree</span><span class="o">.</span><span class="n">replaceChild</span><span class="p">(</span><span class="n">newChild</span><span class="o">=</span><span class="n">end_node</span><span class="p">,</span> <span class="n">oldChild</span><span class="o">=</span><span class="n">child</span><span class="p">)</span>
+                        <span class="n">tree</span><span class="o">.</span><span class="n">insertBefore</span><span class="p">(</span><span class="n">newChild</span><span class="o">=</span><span class="n">child</span><span class="p">,</span> <span class="n">refChild</span><span class="o">=</span><span class="n">end_node</span><span class="p">)</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">rstripped_data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_extract_nodes_leading_and_trailing_spaces</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_strip_text_nodes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Strips empty characters in all text nodes.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="s1">&#39;_cdata&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="c1"># Move lineno forward the amount of lines we are going to strip.</span>
+                    <span class="n">lstripped_data</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+                    <span class="n">child</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">lstripped_data</span><span class="p">)]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">child</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_strip_text_nodes</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_expand_directives</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Expands directives attached to nodes into separate nodes.</span>
+
+<span class="sd">        This will convert all instances of::</span>
+
+<span class="sd">            &lt;div py:if=&quot;check&quot;&gt;</span>
+<span class="sd">            &lt;/div&gt;</span>
+
+<span class="sd">        into::</span>
+
+<span class="sd">            &lt;py:if test=&quot;check&quot;&gt;</span>
+<span class="sd">                &lt;div&gt;</span>
+<span class="sd">                &lt;/div&gt;</span>
+<span class="sd">            &lt;/py:if&gt;</span>
+
+<span class="sd">        This ensures that whenever a template is processed there is no</span>
+<span class="sd">        different between the two formats as the Compiler will always</span>
+<span class="sd">        receive the latter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Document</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_expand_directives</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">firstChild</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">tree</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">basestring</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tree</span>
+        <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">QDIRECTIVES_DICT</span><span class="p">:</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="n">QDIRECTIVES_DICT</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">tagName</span><span class="p">]))</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="o">=</span> <span class="s1">&#39;py:nop&#39;</span>
+        <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="o">!=</span> <span class="s1">&#39;py:nop&#39;</span> <span class="ow">and</span> <span class="n">tree</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s1">&#39;py:extends&#39;</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;py:extends&#39;</span><span class="p">)</span>
+            <span class="n">el</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">ownerDocument</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;py:extends&#39;</span><span class="p">)</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">lineno</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">removeAttribute</span><span class="p">(</span><span class="s1">&#39;py:extends&#39;</span><span class="p">)</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">directive</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">QDIRECTIVES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="n">directive</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="n">directive</span><span class="p">)</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">removeAttribute</span><span class="p">(</span><span class="n">directive</span><span class="p">)</span>
+            <span class="c1"># nsmap = (parent is not None) and parent.nsmap or tree.nsmap</span>
+            <span class="n">el</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">ownerDocument</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">directive</span><span class="p">)</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">lineno</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="p">:</span>
+                <span class="n">el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="c1"># el.setsourceline = tree.sourceline</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">replaceChild</span><span class="p">(</span><span class="n">newChild</span><span class="o">=</span><span class="n">el</span><span class="p">,</span> <span class="n">oldChild</span><span class="o">=</span><span class="n">tree</span><span class="p">)</span>
+            <span class="n">el</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_expand_directives</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">el</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_expand_directives</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tree</span></div>
+
+
+<span class="k">class</span> <span class="nc">XMLTemplateError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all Parse/Compile errors.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">coln</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">] </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_snippet</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linenum</span> <span class="o">=</span> <span class="n">linen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colnum</span> <span class="o">=</span> <span class="n">coln</span>
+
+    <span class="k">def</span> <span class="nf">_get_source_snippet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
+        <span class="n">SURROUNDING</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">linen</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SURROUNDING</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1"> --&gt; </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">SURROUNDING</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_source_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">linen</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">source</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="n">linen</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+
+
+<span class="k">class</span> <span class="nc">XMLTemplateCompileError</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error for failed template constraints.</span>
+
+<span class="sd">    This is used to signal directives in contexts where</span>
+<span class="sd">    they are invalid or any kajiki template constraint</span>
+<span class="sd">    that fails in the provided template code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">XMLTemplateCompileError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">msg</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="s1">&#39;_source&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">XMLTemplateParseError</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error while parsing template XML.</span>
+
+<span class="sd">    Signals an invalid XML error in the provided template code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/marlin.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Kajiki</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Fast XML and text templates for Python</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jackrosenthal&repo=kajiki&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../templating-basics.html">Kajiki Templating Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../xml-templates.html">Kajiki XML Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text-templates.html">Kajiki Text Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../migrating_from_genshi.html">Migrating from Genshi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../i18n.html">Internationalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../runtime.html">Kajiki Runtime</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jackrosenthal/kajiki" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

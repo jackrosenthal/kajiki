@@ -1,0 +1,853 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Kajiki Runtime &#8212; Kajiki 0.8.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Internationalization" href="i18n.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-kajiki">
+<span id="kajiki-runtime"></span><h1>Kajiki Runtime<a class="headerlink" href="#module-kajiki" title="Permalink to this headline">¶</a></h1>
+<p>It’s sometimes good to have a mental model of the Python code that Kajiki
+creates in order to generate your templates.  This document uses several
+examples taken from the text templating language to illustrate the semantics of
+Kajiki templates.  If in doubt, you can always view the Python text generated for
+a template by examining the py_text attribute of the generated Template class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template.XMLTemplate">
+<span class="sig-prename descclassname"><span class="pre">xml_template.</span></span><span class="sig-name descname"><span class="pre">XMLTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_globals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.xml_template.XMLTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given XML source code of a Kajiki Templates parses and returns a template class.</p>
+<p>The source code is parsed to its DOM representation by <a class="reference internal" href="#kajiki.xml_template._Parser" title="kajiki.xml_template._Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Parser</span></code></a>,
+which is then expanded to separate directives from tags by <a class="reference internal" href="#kajiki.xml_template._DomTransformer" title="kajiki.xml_template._DomTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">_DomTransformer</span></code></a>
+and then compiled to the <em>Intermediate Representation</em> tree by <a class="reference internal" href="#kajiki.xml_template._Compiler" title="kajiki.xml_template._Compiler"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Compiler</span></code></a>.</p>
+<p>The <em>Intermediate Representation</em> generates the Python code
+which creates a new <a class="reference internal" href="#kajiki.template._Template" title="kajiki.template._Template"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.template._Template</span></code></a> subclass through
+<a class="reference internal" href="#kajiki.template.Template" title="kajiki.template.Template"><code class="xref py py-meth docutils literal notranslate"><span class="pre">kajiki.template.Template()</span></code></a>.</p>
+<p>The generated code is then executed to return the newly created class.</p>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">.render()</span></code> on an instance of the generate class will then render the template.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="kajiki.ir.TemplateNode">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">kajiki.ir.</span></span><span class="sig-name descname"><span class="pre">TemplateNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/ir.html#TemplateNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.ir.TemplateNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the root Intermediate Representation node of a template.</p>
+<p>Iterating over this will generate the Python code for the class
+that provides all the functions that are part of the template including
+the <code class="docutils literal notranslate"><span class="pre">__main__</span></code> function that represents the template code itself.</p>
+<p>The generated class will then be passed to <a class="reference internal" href="#kajiki.template.Template" title="kajiki.template.Template"><code class="xref py py-meth docutils literal notranslate"><span class="pre">kajiki.template.Template()</span></code></a> to
+create a <a class="reference internal" href="#kajiki.template._Template" title="kajiki.template._Template"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.template._Template</span></code></a> subclass that has the
+<code class="docutils literal notranslate"><span class="pre">render</span></code> method to render the template.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.template.Template">
+<span class="sig-prename descclassname"><span class="pre">template.</span></span><span class="sig-name descname"><span class="pre">Template</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.template.Template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new <a class="reference internal" href="#kajiki.template._Template" title="kajiki.template._Template"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Template</span></code></a> subclass from an entity with <code class="docutils literal notranslate"><span class="pre">exposed</span></code> functions.</p>
+<p>Kajiki uses classes as containers of the exposed functions for convenience,
+but any object that can have the functions as attributes works.</p>
+<p>To be a valid template the original entity must provide at least a <code class="docutils literal notranslate"><span class="pre">__main__</span></code>
+function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Example</span><span class="p">:</span>
+    <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">__main__</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="s1">&#39;Hi&#39;</span>
+
+<span class="n">t</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="n">Example</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+<span class="s1">&#39;Hi&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="kajiki.template._Template">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">kajiki.template.</span></span><span class="sig-name descname"><span class="pre">_Template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base Class for all compiled Kajiki Templates.</p>
+<p>All kajiki templates created from a <a class="reference internal" href="#kajiki.ir.TemplateNode" title="kajiki.ir.TemplateNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.ir.TemplateNode</span></code></a> will
+be subclasses of this class.</p>
+<p>As the template body code runs inside <code class="docutils literal notranslate"><span class="pre">__main__</span></code> method of this
+class, the instance of this class is always available as <code class="docutils literal notranslate"><span class="pre">self</span></code>
+inside the template code.</p>
+<p>This class also makes available some global object inside the
+template code itself:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">local</span></code> which is the instance of the template</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">defined</span></code> which checks if the given variable is defined
+inside the template scope.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Markup</span></code> which marks the passed object as markup code and
+prevents escaping for its content.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__kj__</span></code> which is a special object used by generated code
+providing features like keeping track of py:with stack or
+or the gettext function used to translate text.</p></li>
+</ul>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.template._Template.defined">
+<span class="sig-name descname"><span class="pre">defined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template.defined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template.defined" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a variable was provided to the template or not</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.template._Template.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the template to a string.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="kajiki.xml_template._Compiler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_Compiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Compiler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Compiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compiles a DOM tree into Intermediate Representation <a class="reference internal" href="#kajiki.ir.TemplateNode" title="kajiki.ir.TemplateNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.ir.TemplateNode</span></code></a>.</p>
+<p>Intermediate Representation is a tree of nodes that represent
+Python Code that should be generated to execute the template.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Compiler.compile">
+<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Compiler.compile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Compiler.compile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile the document provided by <a class="reference internal" href="#kajiki.xml_template._Parser" title="kajiki.xml_template._Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Parser</span></code></a>.</p>
+<p>Returns as <a class="reference internal" href="#kajiki.ir.TemplateNode" title="kajiki.ir.TemplateNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.ir.TemplateNode</span></code></a> instance representing
+the whole tree of nodes as their intermediate representation.</p>
+<p>The returned template will include at least a <code class="docutils literal notranslate"><span class="pre">__main__</span></code>
+function which is the document itself including a DOCTYPE and
+any function declared through <code class="docutils literal notranslate"><span class="pre">py:def</span></code> or as a <code class="docutils literal notranslate"><span class="pre">py:block</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">TemplateNode</span></code> will also include the module level
+code specified through <code class="docutils literal notranslate"><span class="pre">&lt;?py</span> <span class="pre">%</span></code>.</p>
+<p>If the compiled document didn’t specify a DOCTYPE provides
+one at least for HTML5.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As this alters the functions and mode wide code
+registries of the compiler <code class="docutils literal notranslate"><span class="pre">compile</span></code> should
+never be called twice or might lead to unexpected results.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an XML template into a Tree of DOM Nodes.</p>
+<p>Nodes should then be passed to a <cite>_Compiler</cite> to be
+converted into the intermediate representation and
+then to Python Code.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.characters">
+<span class="sig-name descname"><span class="pre">characters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.characters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.characters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive notification of character data.</p>
+<p>The Parser will call this method to report each chunk of
+character data. SAX parsers may return all contiguous
+character data in a single chunk, or they may split it into
+several chunks; however, all of the characters in any single
+event must come from the same external entity so that the
+Locator provides useful information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.endElement">
+<span class="sig-name descname"><span class="pre">endElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signals the end of an element in non-namespace mode.</p>
+<p>The name parameter contains the name of the element type, just
+as with the startElement event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.endElementNS">
+<span class="sig-name descname"><span class="pre">endElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElementNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signals the end of an element in namespace mode.</p>
+<p>The name parameter contains the name of the element type, just
+as with the startElementNS event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.endPrefixMapping">
+<span class="sig-name descname"><span class="pre">endPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endPrefixMapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>End the scope of a prefix-URI mapping.</p>
+<p>See startPrefixMapping for details. This event will always
+occur after the corresponding endElement event, but the order
+of endPrefixMapping events is not otherwise guaranteed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an XML/HTML document to its DOM representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.processingInstruction">
+<span class="sig-name descname"><span class="pre">processingInstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.processingInstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.processingInstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive notification of a processing instruction.</p>
+<p>The Parser will invoke this method once for each processing
+instruction found: note that processing instructions may occur
+before or after the main document element.</p>
+<p>A SAX parser should never report an XML declaration (XML 1.0,
+section 2.8) or a text declaration (XML 1.0, section 4.3.1)
+using this method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.skippedEntity">
+<span class="sig-name descname"><span class="pre">skippedEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.skippedEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.skippedEntity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive notification of a skipped entity.</p>
+<p>The Parser will invoke this method once for each entity
+skipped. Non-validating processors may skip entities if they
+have not seen the declarations (because, for example, the
+entity was declared in an external DTD subset). All processors
+may skip external entities, depending on the values of the
+<a class="reference external" href="http://xml.org/sax/features/external-general-entities">http://xml.org/sax/features/external-general-entities</a> and the
+<a class="reference external" href="http://xml.org/sax/features/external-parameter-entities">http://xml.org/sax/features/external-parameter-entities</a>
+properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.startDocument">
+<span class="sig-name descname"><span class="pre">startDocument</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startDocument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Receive notification of the beginning of a document.</p>
+<p>The SAX parser will invoke this method only once, before any
+other methods in this interface or in DTDHandler (except for
+setDocumentLocator).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.startElement">
+<span class="sig-name descname"><span class="pre">startElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signals the start of an element in non-namespace mode.</p>
+<p>The name parameter contains the raw XML 1.0 name of the
+element type as a string and the attrs parameter holds an
+instance of the Attributes class containing the attributes of
+the element.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.startElementNS">
+<span class="sig-name descname"><span class="pre">startElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElementNS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signals the start of an element in namespace mode.</p>
+<p>The name parameter contains the name of the element type as a
+(uri, localname) tuple, the qname parameter the raw XML 1.0
+name used in the source document, and the attrs parameter
+holds an instance of the Attributes class containing the
+attributes of the element.</p>
+<p>The uri part of the name tuple is None for elements which have
+no namespace.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._Parser.startPrefixMapping">
+<span class="sig-name descname"><span class="pre">startPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startPrefixMapping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Begin the scope of a prefix-URI Namespace mapping.</p>
+<p>The information from this event is not necessary for normal
+Namespace processing: the SAX XML reader will automatically
+replace prefixes for element and attribute names when the
+<a class="reference external" href="http://xml.org/sax/features/namespaces">http://xml.org/sax/features/namespaces</a> feature is true (the
+default).</p>
+<p>There are cases, however, when applications need to use
+prefixes in character data or in attribute values, where they
+cannot safely be expanded automatically; the
+start/endPrefixMapping event supplies the information to the
+application to expand prefixes in those contexts itself, if
+necessary.</p>
+<p>Note that start/endPrefixMapping events are not guaranteed to
+be properly nested relative to each-other: all
+startPrefixMapping events will occur before the corresponding
+startElement event, and all endPrefixMapping events will occur
+after the corresponding endElement event, but their order is
+not guaranteed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="kajiki.xml_template._DomTransformer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_DomTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_DomTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._DomTransformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies standard Kajiki transformations to a parsed document.</p>
+<p>Given a document generated by <code class="xref py py-class docutils literal notranslate"><span class="pre">Parser</span></code> it applies some
+node transformations that are necessary before applying the
+compilation steps to achieve result we usually expect.</p>
+<p>This includes things like squashing consecutive text nodes
+and expanding <code class="docutils literal notranslate"><span class="pre">py:</span></code> directives.</p>
+<p>The Transformer mutates the original document.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="kajiki.xml_template._DomTransformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_DomTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._DomTransformer.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies all the DOM transformations to the document.</p>
+<p>Calling this twice will do nothing as the result is persisted.</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="basic-expressions">
+<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this headline">¶</a></h2>
+<p>Let’s start with a hello world template:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Hello, World!
+</pre></div>
+</div>
+<p>This converts to the equivalent Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;Hello, World!</span><span class="se">\n</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>Slightly more verbose “hello_name.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Hello, $name!
+</pre></div>
+</div>
+<p>This converts to the equivalent Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+     <span class="k">yield</span> <span class="s1">&#39;Hello, &#39;</span>
+     <span class="k">yield</span> <span class="n">name</span>
+     <span class="k">yield</span> <span class="s1">&#39;!</span><span class="se">\n</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>By default, the $-syntax picks up any identifiers following it, as well as any
+periods.  If you want something more explicit, use the extended expression form
+as in “hello_arithmetic.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Hello, 2 + 2 is ${2+2}!
+</pre></div>
+</div>
+<p>This converts to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;Hello, 2 + 2 is &#39;</span>
+    <span class="k">yield</span> <span class="mi">2</span><span class="o">+</span><span class="mi">2</span>
+    <span class="k">yield</span> <span class="s1">&#39;!&#39;</span>
+</pre></div>
+</div>
+<p>If you wish to include a literal $, simply prefix it with a backslash.</p>
+</section>
+<section id="control-flow">
+<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this headline">¶</a></h2>
+<p>Kajiki provides several tags that affect the rendering of a template.  The
+following template “control_flow.txt” illustrates:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A{%for i in range(5)%}
+    {%if i &lt; 2%}Low{%elif i &lt; 4%}Mid{%else%}High{%end%}$i
+    {%switch i % 2%}
+        {%case 0%}
+            even
+        {%default%}
+            odd
+        {%end%}{%end%}{%end%}
+</pre></div>
+</div>
+<p>This yields the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;A</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="c1"># from the {%for... line</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        &#39;</span> <span class="c1"># from the newline and initial indent of next line</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;Low&#39;</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;Mid&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;High&#39;</span>
+        <span class="k">yield</span> <span class="n">i</span>
+        <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        &#39;</span> <span class="c1"># from the {%if... newline and next indent</span>
+        <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">push_switch</span><span class="p">(</span><span class="n">i</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># whitespace after {%switch is always stripped</span>
+        <span class="k">if</span> <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">case</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">            even</span><span class="se">\n</span><span class="s1">        &#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">            odd</span><span class="se">\n</span><span class="s1">        &#39;</span>
+        <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">pop_switch</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Which would in turn generate the following text:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A
+    Low0
+
+        even
+
+    Low1
+
+        odd
+
+    Mid2
+
+        even
+
+    Mid3
+
+        odd
+
+    High4
+
+        even
+</pre></div>
+</div>
+<p>If you want to strip whitespace before or after a tag, just replace
+<code class="docutils literal notranslate"><span class="pre">{%</span></code> with <code class="docutils literal notranslate"><span class="pre">{%-</span></code> (for stripping leading whitespace) or <code class="docutils literal notranslate"><span class="pre">%}</span></code> with
+<code class="docutils literal notranslate"><span class="pre">-%}</span></code> (for stripping trailing whitespace).  If you would like to remove
+newlines, just end a line with a backslash.  Here is the equivalent template
+with whitespace removed, “control_flow_ws.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A{%-for i in range(5) -%}\
+    {%-if i &lt; 2%}Low{%elif i &lt; 4%}Mid{%else%}High{%end%}$i
+    {%-switch i % 2%}\
+        {%-case 0%}\
+            even
+        {%-default%}\
+            odd
+        {%-end%}\
+    {%-end%}\
+{%-end%}\
+</pre></div>
+</div>
+<p>This would generate the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;A&#39;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;Low&#39;</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;Mid&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;High&#39;</span>
+        <span class="k">yield</span> <span class="n">i</span>
+        <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">push_switch</span><span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">case</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="s1">&#39;even</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s1">&#39;odd</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">pop_switch</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Which would generate the following text:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ALow0
+even
+Low1
+odd
+Mid2
+even
+Mid3
+odd
+High4
+even
+</pre></div>
+</div>
+<p>which is probably closer to what you wanted.  There is also a shorthand syntax
+that allows for line-oriented control flow as seen in
+“control_flow_ws_short.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A\
+%for i in range(5)
+    %if i &lt; 2
+        Low\
+    %elif i &lt; 4
+        Mid\
+    %else
+        High\
+    {%-end%}$i
+    %switch i % 2
+        %case 0
+            even
+        %default
+            odd
+        %end
+    %end
+%end
+</pre></div>
+</div>
+<p>This syntax yields exactly the same results as “control_flow_ws.txt” above.</p>
+</section>
+<section id="python-blocks">
+<h2>Python Blocks<a class="headerlink" href="#python-blocks" title="Permalink to this headline">¶</a></h2>
+<p>You can insert literal Python code into your template using the following syntax
+in “simple_py_block.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{%py%}\
+    yield &#39;Prefix&#39;
+{%end%}\
+Body
+</pre></div>
+</div>
+<p>or alternatively:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%py
+    yield &#39;Prefix&#39;
+%end
+Body
+</pre></div>
+</div>
+<p>or even more succinctly:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%py yield &#39;Prefix&#39;
+Body
+</pre></div>
+</div>
+<p>all of which will generate the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;Prefix&#39;</span>
+    <span class="k">yield</span> <span class="s1">&#39;Body&#39;</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Note in particular that the Python block can have any indentation, as long as it</dt><dd><p>is consistent (the amount of leading whitespace in the first non-empty line of
+the block is stripped from all lines within the block).  You can insert
+module-level Python (imports, etc.) by using the %py% directive (or {%py%%} as in
+“module_py_block.txt”:</p>
+</dd>
+</dl>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%py%
+    import sys
+    import re
+%end
+Hello
+%py% import os
+%end
+</pre></div>
+</div>
+<p>This yields the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;Hello&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="functions-and-imports">
+<h2>Functions and Imports<a class="headerlink" href="#functions-and-imports" title="Permalink to this headline">¶</a></h2>
+<p>Kajiki provides for code reuse via the %def and %import directives.  First, let’s
+see %def in action in “simple_function.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%def evenness(n)
+    %if n % 2 == 0
+        even\
+    %else
+        odd\
+    %end
+%end
+%for i in range(5)
+$i is ${evenness(i)}
+%end
+</pre></div>
+</div>
+<p>This compiles to the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">evenness</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="s1">&#39;even&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="s1">&#39;odd&#39;</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">i</span>
+        <span class="k">yield</span> <span class="s1">&#39; is &#39;</span>
+        <span class="k">yield</span> <span class="n">evenness</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The %import directive allows you to package up your functions for reuse in
+another template file (or even in a Python package).  For instance, consider the
+following file “import_test.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%import &quot;simple_function.txt&quot; as simple_function
+%for i in range(5)
+$i is ${simple_function.evenness(i)}
+%end
+</pre></div>
+</div>
+<p>This would then compile to the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="n">simple_function</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s2">&quot;simple_function.txt&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">i</span>
+        <span class="k">yield</span> <span class="s1">&#39; is &#39;</span>
+        <span class="k">yield</span> <span class="n">simple_function</span><span class="o">.</span><span class="n">evenness</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that when using the %import directive, any “body” in the imported template
+is ignored and only functions are imported.  If you actually wanted to insert the
+body of the imported template, you would simply call the imported template as a
+function itself (e.g. ${simple_function()}).</p>
+<p>Sometimes it is convenient to pass the contents of a tag to a function.  In this
+case, you can use the %call directive as shown in “call.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%def quote(caller, speaker)
+    %for i in range(5)
+Quoth $speaker, &quot;${caller(i)}.&quot;
+    %end
+%end
+%call(n) quote(&#39;the raven&#39;)
+Nevermore $n\
+%end
+</pre></div>
+</div>
+<p>This results in the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">quote</span><span class="p">(</span><span class="n">caller</span><span class="p">,</span> <span class="n">speaker</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="s1">&#39;Quoth &#39;</span>
+        <span class="k">yield</span> <span class="n">speaker</span>
+        <span class="k">yield</span> <span class="s1">&#39;, &quot;&#39;</span>
+        <span class="k">yield</span> <span class="n">caller</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="s1">&#39;.&quot;&#39;</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">_fpt_lambda</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="s1">&#39;Nevermore &#39;</span>
+        <span class="k">yield</span> <span class="n">n</span>
+    <span class="k">yield</span> <span class="n">quote</span><span class="p">(</span><span class="n">_fpt_lambda</span><span class="p">,</span> <span class="s1">&#39;the raven&#39;</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">_fpt_lambda</span>
+</pre></div>
+</div>
+<p>Which in turn yields the following output:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Quoth the raven, &quot;Nevermore 0.&quot;
+Quoth the raven, &quot;Nevermore 1.&quot;
+Quoth the raven, &quot;Nevermore 2.&quot;
+Quoth the raven, &quot;Nevermore 3.&quot;
+Quoth the raven, &quot;Nevermore 4.&quot;
+</pre></div>
+</div>
+</section>
+<section id="includes">
+<h2>Includes<a class="headerlink" href="#includes" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes you just want to pull the text of another template into your template
+verbatim.  For this, you use the %include directive as in “include_example.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>This is my story:
+%include &quot;call.txt&quot;
+Isn&#39;t it good?
+</pre></div>
+</div>
+<p>which yields the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>@kajiki.expose
+def __call__():
+    yield &#39;This is my story:\n&#39;
+    yield _fpt.import(&quot;simple_function.txt&quot;)()
+    yield &#39;Isn&#39;t it good?\n&#39;
+</pre></div>
+</div>
+<p>Which of course yields:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>This is my story:
+Quoth the raven, &quot;Nevermore 0.&quot;
+Quoth the raven, &quot;Nevermore 1.&quot;
+Quoth the raven, &quot;Nevermore 2.&quot;
+Quoth the raven, &quot;Nevermore 3.&quot;
+Quoth the raven, &quot;Nevermore 4.&quot;
+Isn&#39;t it good?
+</pre></div>
+</div>
+</section>
+<section id="inheritance">
+<h2>Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h2>
+<p>Kajiki supports a concept of inheritance whereby child templates can extend
+parent templates, replacing their methods and “blocks” (to be defined below).
+For instance, consider the following template “parent.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%def greet(name)
+Hello, $name!\
+%end
+%def sign(name)
+Sincerely,
+$name\
+%end
+${greet(to)}
+
+%block body
+It was good seeing you last Friday.  Thanks for the gift!
+%end
+
+${sign(from)}
+</pre></div>
+</div>
+<p>This would generate the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="s1">&#39;Hello, &#39;</span>
+    <span class="k">yield</span> <span class="n">name</span>
+    <span class="k">yield</span> <span class="s1">&#39;!&#39;</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">sign</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="s1">&#39;Sincerely,</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">yield</span> <span class="n">name</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">_fpt_block_body</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="s1">&#39;It was good seeing you last Friday! Thanks for the gift!</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="n">greet</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+    <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpt_block_body</span><span class="p">()</span>
+    <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+    <span class="k">yield</span> <span class="n">sign</span><span class="p">(</span><span class="n">from</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the corresponding “child.txt”:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%extends &quot;parent.txt&quot;
+%def greet(name)
+Dear $name:\
+%end
+%block body
+${parent_block()}\\
+
+And don&#39;t forget you owe me money!
+%end
+</pre></div>
+</div>
+<p>This would then yield the following Python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="s1">&#39;Dear &#39;</span>
+    <span class="k">yield</span> <span class="n">name</span>
+    <span class="k">yield</span> <span class="s1">&#39;:&#39;</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="nf">_fpt_block_body</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="n">parent</span><span class="o">.</span><span class="n">_fpt_block_body</span><span class="p">()</span>
+    <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+    <span class="k">yield</span> <span class="s1">&#39;And don</span><span class="se">\&#39;</span><span class="s1">t forget you owe me money!</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+<span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
+<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s1">&#39;parent.txt&#39;</span><span class="p">))</span><span class="o">.</span><span class="fm">__call__</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The final text would be (assuming context had to=’Mark’ and from=’Rick’:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Dear Mark:
+
+It was good seeing you last Friday! Thanks for the gift!
+
+And don&#39;t forget you owe me money!
+
+Sincerely,
+Rick
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/marlin.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Kajiki</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Fast XML and text templates for Python</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jackrosenthal&repo=kajiki&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="templating-basics.html">Kajiki Templating Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml-templates.html">Kajiki XML Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text-templates.html">Kajiki Text Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migrating_from_genshi.html">Migrating from Genshi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Internationalization</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Kajiki Runtime</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-expressions">Basic Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#control-flow">Control Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-blocks">Python Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions-and-imports">Functions and Imports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#includes">Includes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inheritance">Inheritance</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="i18n.html" title="previous chapter">Internationalization</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/runtime.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jackrosenthal/kajiki" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

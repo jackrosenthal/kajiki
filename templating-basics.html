@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Kajiki Templating Basics &#8212; Kajiki 0.8.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Kajiki XML Templates" href="xml-templates.html" />
+    <link rel="prev" title="Kajiki: Fast Templates for Python" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="kajiki-templating-basics">
+<h1>Kajiki Templating Basics<a class="headerlink" href="#kajiki-templating-basics" title="Permalink to this headline">¶</a></h1>
+<p>Kajiki provides two templating engines, one which is useful for generating
+markup (HTML or XML most likely), and one of which is useful for generating
+plain text.  This document describes the aspects of the two engines that are
+similar and the basic API for using them.</p>
+<section id="synopsis">
+<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p>A Kajiki <em>xml template</em> is a well-formed XML document that may include one or
+more custom tags and attributes prefixed by the namespace ‘py:’.  XML templates
+also may contain python expressions that will be evaluated at template expansion
+time as well as processing instructions that may contain Python code.  XML
+templates should be used when generating XML or HTML, as they provide awareness
+of well-formedness rules and proper escaping.</p>
+<p>The following is an example of a simple Kajki markup template:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?python</span>
+<span class="cp">  title = &quot;A Kajiki Template&quot;</span>
+<span class="cp">  fruits = [&quot;apple&quot;, &quot;orange&quot;, &quot;kiwi&quot;]</span>
+<span class="cp">?&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title</span> <span class="na">py:content=</span><span class="s">&quot;title&quot;</span><span class="nt">&gt;</span>This is replaced.<span class="nt">&lt;/title&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;p&gt;</span>These are some of my favorite fruits:<span class="nt">&lt;/p&gt;</span>
+    <span class="nt">&lt;ul&gt;</span>
+      <span class="nt">&lt;li</span> <span class="na">py:for=</span><span class="s">&quot;fruit in fruits&quot;</span><span class="nt">&gt;</span>
+        I like ${fruit}s
+      <span class="nt">&lt;/li&gt;</span>
+    <span class="nt">&lt;/ul&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+</div>
+<p>This template would generate output similar to this (in X(H)ML mode):</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>A Kajiki Template<span class="nt">&lt;/title&gt;</span>
+  <span class="nt">&lt;/head&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;p&gt;</span>These are some of my favorite fruits:<span class="nt">&lt;/p&gt;</span>
+    <span class="nt">&lt;ul&gt;</span>
+      <span class="nt">&lt;li&gt;</span>I like apples<span class="nt">&lt;/li&gt;</span>
+      <span class="nt">&lt;li&gt;</span>I like oranges<span class="nt">&lt;/li&gt;</span>
+      <span class="nt">&lt;li&gt;</span>I like kiwis<span class="nt">&lt;/li&gt;</span>
+    <span class="nt">&lt;/ul&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</pre></div>
+</div>
+<p>or this (in HTML mode):</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>A Kajiki Template<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>These are some of my favorite fruits:
+    <span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>I like apples
+      <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>I like oranges
+      <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;</span>I like kiwis
+    <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><em>Text templates</em>, on the other hand, are plain text documents that can contain</dt><dd><p>embedded Python directives and expressions.  Text templates should be used when
+generating non-markup text format such as email.  Here is a simple text template:</p>
+</dd>
+</dl>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Dear $name,
+These are some of my favorite fruits:
+%for fruit in fruts
+  * $fruit
+%end
+</pre></div>
+</div>
+<p>This would generate something similar to the following:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Dear Rick,
+These are some of my favorite fruits:
+  * Apples
+  * Bananas
+  * Pears
+</pre></div>
+</div>
+</section>
+<section id="python-api">
+<h2>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h2>
+<p>In order to actually use Kajiki in generating text (either via the XML or the
+text-based languages), the pattern is as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Obtain an XMLTemplate or TextTemplate subclass containing the template source.  This can either be done directly or via a template loader.</p></li>
+<li><p>Instantiate the template with one constructor argument, a dict containing all the values that should be made available as global variables to the template.</p></li>
+<li><p>Render the template instance using its render() method (for rendering to a single string) or iterating through it (for “stream”) rendering.</p></li>
+</ol>
+</div></blockquote>
+<p>For instance:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;h1&gt;Hello, $name!&lt;/h1&gt;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;&lt;h1&gt;Hello, world!&lt;/h1&gt;&#39;</span>
+</pre></div>
+</div>
+<p>Using text templates is similar:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;Hello, $name!&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;Hello, world!&#39;</span>
+</pre></div>
+</div>
+<p>You can also use a template loader to indirectly generate the template classes.
+Using a template loader gives two main advantages over directly instantiating
+templates:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Compiled templates are cached and only re-parsed when the template changes.</p></li>
+<li><p>Several template tags such as <cite>extends</cite>, <cite>import</cite>, and <cite>include</cite> that require knowlege of other templates become enabled.</p></li>
+</ul>
+</div></blockquote>
+<p>Using a template loader would look similar to the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loader</span> <span class="o">=</span> <span class="n">PackageLoader</span><span class="p">()</span>
+<span class="n">Template</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s1">&#39;my.package.text.template&#39;</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="template-expressions-and-code-blocks">
+<h2>Template Expressions and Code Blocks<a class="headerlink" href="#template-expressions-and-code-blocks" title="Permalink to this headline">¶</a></h2>
+<p>Python expressions can be used in “plain text” areas of templates, including, in
+XML templates, tag attributes.  They are also used in some directive arguments.
+Whenever a Python expression is used in a “plain text” area, it must be prefixed
+by a dollar sign ($) and possibly enclosed in curly braces.  If the expression
+starts with a letter and contains only letters, digits, dots, and underscores,
+then the curly braces may be omitted.  In all other cases, they are required.
+For example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;em&gt;${items[0].capitalize()}&lt;/em&gt;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;first&#39;</span><span class="p">,</span> <span class="s1">&#39;second&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;&lt;em&gt;First&lt;/em&gt;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;Maxint is $sys.maxsize&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">sys</span><span class="o">=</span><span class="n">sys</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;Maxint is 9223372036854775807&#39;</span>
+</pre></div>
+</div>
+<section id="escaping">
+<h3>Escaping<a class="headerlink" href="#escaping" title="Permalink to this headline">¶</a></h3>
+<p>If you need a literal dollar sign where Kajiki would normally detect an
+expression, you can simply double the dollar sign:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;em&gt;$foo&lt;/em&gt;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="gt">Traceback (most recent call last):</span>
+   <span class="c">...</span>
+<span class="gr">NameError</span>: <span class="n">global name &#39;foo&#39; is not defined</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;em&gt;$$foo&lt;/em&gt;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;&lt;em&gt;$foo&lt;/em&gt;&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="code-blocks">
+<h3>Code Blocks<a class="headerlink" href="#code-blocks" title="Permalink to this headline">¶</a></h3>
+<p>Templates also support full Python syntax, using the &lt;?py ?&gt; processing
+instruction:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span>&lt;div&gt;
+    &lt;?py import sys&gt;
+    Maxint is $sys.maxint
+&lt;/div&gt;
+</pre></div>
+</div>
+<p>This will produce the following output:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;div&gt;</span>
+    Maxint is 9223372036854775807
+<span class="nt">&lt;/div&gt;</span>
+</pre></div>
+</div>
+<p>In text blocks, the %py (or {%py%} directive accomplishes the same goal:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%py import sys
+Maxint is $sys.maxint
+</pre></div>
+</div>
+<p>This will produce:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Maxint is 9223372036854775807
+</pre></div>
+</div>
+<p>In both of the above cases, the Python code runs in the ‘local scope’ of the
+template’s main rendering function, so any variables defined there will not be
+accessible in functions or blocks defined elsewhere in the template.  To force
+the python block to run at ‘module-level’ in XML templates,  simply prefix the
+first line of the Python with a percent (%) sign:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;div</span>
+<span class="gp">... </span><span class="s1">&gt;&lt;?py </span><span class="si">%i</span><span class="s1">mport os</span>
+<span class="gp">... </span><span class="s1">?&gt;&lt;py:def function=&quot;test()&quot;</span>
+<span class="gp">... </span><span class="s1">&gt;${os.path.join(&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)}&lt;/py:def</span>
+<span class="gp">... </span><span class="s1">&gt;${test()}&lt;/div&gt;&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;&lt;div&gt;a/b/c&lt;/div&gt;&#39;</span>
+</pre></div>
+</div>
+<p>In text templates, replace the %py directive with %py%:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;%py</span><span class="si">% i</span><span class="s1">mport os</span>
+<span class="gp">... </span><span class="si">%d</span><span class="s1">ef test()</span>
+<span class="gp">... </span><span class="s1">${os.path.join(&#39;a&#39;,&#39;b&#39;,&#39;c&#39;)}</span><span class="se">\\</span><span class="s1"></span>
+<span class="gp">... </span><span class="si">%e</span><span class="s1">nd</span>
+<span class="gp">... </span><span class="s1">${test()}&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="go">&#39;a/b/c&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="built-in-functions-and-variables">
+<h3>Built-in Functions and Variables<a class="headerlink" href="#built-in-functions-and-variables" title="Permalink to this headline">¶</a></h3>
+<p>All templates have access to the following functions and variables:</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="literal">
+<span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#literal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap some user-generated text so that it doesn’t get escaped along with
+everything else.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="local">
+<span class="sig-name descname"><span class="pre">local</span></span><a class="headerlink" href="#local" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current template being defined</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="self">
+<span class="sig-name descname"><span class="pre">self</span></span><a class="headerlink" href="#self" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current template being defined, or, if used in the context of a parent
+template that is being extended, the final (“child-most”) template in the
+inheritance hierarchy.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>The parent template (via py:extends) of the template being defined</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="child">
+<span class="sig-name descname"><span class="pre">child</span></span><a class="headerlink" href="#child" title="Permalink to this definition">¶</a></dt>
+<dd><p>The child template (via py:extends) of the template being defined</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="template-directives">
+<h2>Template Directives<a class="headerlink" href="#template-directives" title="Permalink to this headline">¶</a></h2>
+<p>Template directives provide control flow and inheritance functionality for
+templates.  As their syntax depends on whether you’re using XML or text
+templates, please refer to <a class="reference internal" href="xml-templates.html"><span class="doc">Kajiki XML Templates</span></a> or <a class="reference internal" href="text-templates.html"><span class="doc">Kajiki Text Templates</span></a>
+for more information.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/marlin.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Kajiki</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Fast XML and text templates for Python</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jackrosenthal&repo=kajiki&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Kajiki Templating Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#synopsis">Synopsis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-api">Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#template-expressions-and-code-blocks">Template Expressions and Code Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#template-directives">Template Directives</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xml-templates.html">Kajiki XML Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text-templates.html">Kajiki Text Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migrating_from_genshi.html">Migrating from Genshi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Internationalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Kajiki Runtime</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Kajiki: Fast Templates for Python</a></li>
+      <li>Next: <a href="xml-templates.html" title="next chapter">Kajiki XML Templates</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/templating-basics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jackrosenthal/kajiki" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

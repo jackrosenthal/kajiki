@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Kajiki: Fast Templates for Python &#8212; Kajiki 0.8.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Kajiki Templating Basics" href="templating-basics.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="kajiki-fast-templates-for-python">
+<h1>Kajiki: Fast Templates for Python<a class="headerlink" href="#kajiki-fast-templates-for-python" title="Permalink to this headline">¶</a></h1>
+<section id="kajiki-provides-fast-well-formed-xml-templates">
+<h2>Kajiki provides fast well-formed XML templates<a class="headerlink" href="#kajiki-provides-fast-well-formed-xml-templates" title="Permalink to this headline">¶</a></h2>
+<a class="reference external image-reference" href="https://travis-ci.com/jackrosenthal/kajiki"><img alt="https://travis-ci.com/jackrosenthal/kajiki.svg?branch=master" src="https://travis-ci.com/jackrosenthal/kajiki.svg?branch=master" /></a>
+<p>Because Kajiki’s input is XML, it can ensure that your HTML/XML output is
+well-formed. The Genshi-like syntax, based on XML attributes or tags, is simply
+beautiful and easily understood (or ignored) by web designers.
+But instead of the slow performance of <a class="reference external" href="https://pypi.python.org/pypi/Genshi">Genshi</a>, Kajiki compiles
+templates to Python code that renders with blazing-fast speed, so Kajiki can
+compete with the speed of <a class="reference external" href="https://pypi.python.org/pypi/Jinja2">Jinja</a>, <a class="reference external" href="https://pypi.python.org/pypi/Mako">Mako</a>, <a class="reference external" href="https://pypi.python.org/pypi/Chameleon">Chameleon</a> and others.
+Also, one of Genshi’s misfeatures – py:match – is replaced with blocks which
+work like Jinja’s blocks.</p>
+<p>By combining the best ideas out there – XML input,
+Genshi’s syntax and features, Jinja’s template inheritance and final
+compilation to Python –, Kajiki is ready to become
+the most widely used templating engine for web development in Python.
+And more features are coming soon; stay tuned!</p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">kajiki</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;html&gt;</span>
+<span class="gp">... </span><span class="s1">    &lt;head&gt;&lt;title&gt;$title&lt;/title&gt;&lt;/head&gt;</span>
+<span class="gp">... </span><span class="s1">    &lt;body&gt;</span>
+<span class="gp">... </span><span class="s1">        &lt;h1&gt;$title&lt;/h1&gt;</span>
+<span class="gp">... </span><span class="s1">        &lt;ul&gt;</span>
+<span class="gp">... </span><span class="s1">            &lt;li py:for=&quot;x in range(repetitions)&quot;&gt;$title&lt;/li&gt;</span>
+<span class="gp">... </span><span class="s1">        &lt;/ul&gt;</span>
+<span class="gp">... </span><span class="s1">    &lt;/body&gt;</span>
+<span class="gp">... </span><span class="s1">&lt;/html&gt;&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Kajiki is teh awesome!&#39;</span><span class="p">,</span> <span class="n">repetitions</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+<span class="go">&lt;html&gt;</span>
+<span class="go">    &lt;head&gt;&lt;title&gt;Kajiki is teh awesome!&lt;/title&gt;&lt;/head&gt;</span>
+<span class="go">    &lt;body&gt;</span>
+<span class="go">        &lt;h1&gt;Kajiki is teh awesome!&lt;/h1&gt;</span>
+<span class="go">        &lt;ul&gt;</span>
+<span class="go">            &lt;li&gt;Kajiki is teh awesome!&lt;/li&gt;&lt;li&gt;Kajiki is teh awesome!&lt;/li&gt;&lt;li&gt;Kajiki is teh awesome!&lt;/li&gt;</span>
+<span class="go">        &lt;/ul&gt;</span>
+<span class="go">    &lt;/body&gt;</span>
+<span class="go">&lt;/html&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="links">
+<h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://docs.kajiki.io/">Documentation</a></p>
+<p>Kajiki is licensed under an MIT-style <a class="reference external" href="https://github.com/jackrosenthal/kajiki/blob/master/LICENSE.rst">license</a>.</p>
+<p>The git repository and <a class="reference external" href="https://github.com/jackrosenthal/kajiki/issues">issue tracker</a> are at <a class="reference external" href="https://github.com/jackrosenthal/kajiki">GitHub</a>. Previously the project
+used <a class="reference external" href="http://sourceforge.net/p/kajiki/">SourceForge</a> for the hg repository, issue tracker and forums.</p>
+<p>We use <a class="reference external" href="https://travis-ci.com/jackrosenthal/kajiki">Travis</a> for continuous integration.</p>
+</section>
+</section>
+<section id="documentation-contents">
+<h1>Documentation contents<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="templating-basics.html">Kajiki Templating Basics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="templating-basics.html#synopsis">Synopsis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="templating-basics.html#python-api">Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="templating-basics.html#template-expressions-and-code-blocks">Template Expressions and Code Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="templating-basics.html#template-directives">Template Directives</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xml-templates.html">Kajiki XML Templates</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#output-modes">Output Modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#basic-expressions">Basic Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#control-flow">Control Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#content-generation">Content Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#inheritance-py-extends-py-block">Inheritance (py:extends, py:block)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#built-in-functions">Built-in functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#tips-on-writing-your-templates">Tips on writing your templates</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="text-templates.html">Kajiki Text Templates</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="text-templates.html#basic-expressions">Basic Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="text-templates.html#control-flow">Control Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="text-templates.html#inheritance-extends-block">Inheritance (%extends, %block)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migrating_from_genshi.html">Migrating from Genshi</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="migrating_from_genshi.html#example-migration">Example Migration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Internationalization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#extraction">Extraction</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Kajiki Runtime</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runtime.html#basic-expressions">Basic Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime.html#control-flow">Control Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime.html#python-blocks">Python Blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime.html#functions-and-imports">Functions and Imports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime.html#includes">Includes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime.html#inheritance">Inheritance</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/marlin.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Kajiki</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Fast XML and text templates for Python</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jackrosenthal&repo=kajiki&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="templating-basics.html">Kajiki Templating Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml-templates.html">Kajiki XML Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text-templates.html">Kajiki Text Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migrating_from_genshi.html">Migrating from Genshi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Internationalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Kajiki Runtime</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="templating-basics.html" title="next chapter">Kajiki Templating Basics</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jackrosenthal/kajiki" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kajiki.template &#8212; Kajiki 0.8.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for kajiki.template</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
+                        <span class="n">unicode_literals</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">nine</span> <span class="kn">import</span> <span class="n">IS_PYTHON2</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iteritems</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">version_info</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">update_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span>
+                       <span class="n">assigned</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
+                       <span class="n">updated</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;__dict__&#39;</span><span class="p">,)):</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">assigned</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">updated</span><span class="p">:</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+<span class="kn">import</span> <span class="nn">kajiki</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">literal</span>
+<span class="kn">from</span> <span class="nn">.html_utils</span> <span class="kn">import</span> <span class="n">HTML_EMPTY_ATTRS</span>
+<span class="kn">from</span> <span class="nn">.ir</span> <span class="kn">import</span> <span class="n">generate_python</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">lnotab</span>
+<span class="kn">from</span> <span class="nn">kajiki</span> <span class="kn">import</span> <span class="n">i18n</span>
+
+
+<span class="k">class</span> <span class="nc">_obj</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">kw</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="_Template"><a class="viewcode-back" href="../../runtime.html#kajiki._Template">[docs]</a><span class="k">class</span> <span class="nc">_Template</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base Class for all compiled Kajiki Templates.</span>
+
+<span class="sd">    All kajiki templates created from a :class:`kajiki.ir.TemplateNode` will</span>
+<span class="sd">    be subclasses of this class.</span>
+
+<span class="sd">    As the template body code runs inside ``__main__`` method of this</span>
+<span class="sd">    class, the instance of this class is always available as ``self``</span>
+<span class="sd">    inside the template code.</span>
+
+<span class="sd">    This class also makes available some global object inside the</span>
+<span class="sd">    template code itself:</span>
+
+<span class="sd">        - ``local`` which is the instance of the template</span>
+<span class="sd">        - ``defined`` which checks if the given variable is defined</span>
+<span class="sd">          inside the template scope.</span>
+<span class="sd">        - ``Markup`` which marks the passed object as markup code and</span>
+<span class="sd">          prevents escaping for its content.</span>
+<span class="sd">        - ``__kj__`` which is a special object used by generated code</span>
+<span class="sd">          providing features like keeping track of py:with stack or</span>
+<span class="sd">          or the gettext function used to translate text.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__methods__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">loader</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">base_globals</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="n">base_globals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_globals</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">local</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">defined</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">,</span>
+            <span class="n">literal</span><span class="o">=</span><span class="n">literal</span><span class="p">,</span> <span class="n">Markup</span><span class="o">=</span><span class="n">literal</span><span class="p">,</span> <span class="n">gettext</span><span class="o">=</span><span class="n">i18n</span><span class="o">.</span><span class="n">gettext</span><span class="p">,</span>
+            <span class="n">__builtins__</span><span class="o">=</span><span class="n">__builtins__</span><span class="p">,</span> <span class="n">__kj__</span><span class="o">=</span><span class="n">kajiki</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">base_globals</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__methods__</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">bind_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__kj__</span> <span class="o">=</span> <span class="n">_obj</span><span class="p">(</span>
+            <span class="n">extend</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_extend</span><span class="p">,</span>
+            <span class="n">push_switch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_push_switch</span><span class="p">,</span>
+            <span class="n">pop_switch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pop_switch</span><span class="p">,</span>
+            <span class="n">case</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_case</span><span class="p">,</span>
+            <span class="n">import_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_import</span><span class="p">,</span>
+            <span class="n">escape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_escape</span><span class="p">,</span>
+            <span class="n">gettext</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gettext</span><span class="p">,</span>
+            <span class="n">render_attrs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_render_attrs</span><span class="p">,</span>
+            <span class="n">push_with</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_push_with</span><span class="p">,</span>
+            <span class="n">pop_with</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pop_with</span><span class="p">,</span>
+            <span class="n">collect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_collect</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_with_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;gettext&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;value_of&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">get</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;We convert the chunk to string because it can be of any type</span>
+<span class="sd">        -- after all, the template supports expressions such as ${x+y}.</span>
+<span class="sd">        Here, ``chunk`` can be the computed expression result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__main__</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_Template.render"><a class="viewcode-back" href="../../runtime.html#kajiki._Template.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Render the template to a string.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_gettext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Used by the code generated by the template to translate static text&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;gettext&#39;</span><span class="p">](</span><span class="n">s</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_push_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locals_</span><span class="p">,</span> <span class="nb">vars</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enter a ``py:with`` block.</span>
+
+<span class="sd">        When a ``py:with`` block is encountered, previous values</span>
+<span class="sd">        of the variables assigned inside the ``py:with`` statement are</span>
+<span class="sd">        pushed on top of a stack by :class:`kajiki.ir.WithNode` so that</span>
+<span class="sd">        when the node is exited the previous values can be recovered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_with_stack</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">locals_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_pop_with</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Exists a ``py:with`` block.</span>
+
+<span class="sd">        When a ``py:with`` block is exited the values stack is popped</span>
+<span class="sd">        and the head returned to :class:`kajiki.ir.WithNode` so that</span>
+<span class="sd">        it can set any previously existing variable to its old value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Called when a child template extends a parent template</span>
+<span class="sd">        the first thing it does is asking the loader of the</span>
+<span class="sd">        child template to load the parent template</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="n">p_inst</span> <span class="o">=</span> <span class="n">parent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="p">)</span>
+        <span class="n">p_globals</span> <span class="o">=</span> <span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span>
+        <span class="c1"># Find overrides</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">p_globals</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="c1"># Find inherited funcs</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">):</span>
+                    <span class="sd">&#39;&#39;&#39;Capture the &#39;k&#39; variable in a closure&#39;&#39;&#39;</span>
+                    <span class="k">def</span> <span class="nf">trampoline</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+                        <span class="k">global</span> <span class="n">parent</span>
+                        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">k</span><span class="p">)(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">trampoline</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">(</span><span class="n">_</span><span class="p">())</span><span class="o">.</span><span class="n">bind_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="n">p_globals</span><span class="p">[</span><span class="s1">&#39;child&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">p_globals</span><span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_inst</span>
+        <span class="n">p_globals</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;parent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_inst</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="n">p_inst</span>
+
+    <span class="k">def</span> <span class="nf">_push_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enter a ``py:switch`` block.</span>
+
+<span class="sd">        Pushes provided value on the stack used</span>
+<span class="sd">        to check ``py:case`` statements against.</span>
+
+<span class="sd">        Calling :meth:`._pop_switch` will exit the switch block.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pop_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Exit current ``py:switch`` block.</span>
+
+<span class="sd">        Pops current value from the stack used</span>
+<span class="sd">        to check ``py:case`` statements against.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check against current ``py:switch`` value.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">obj</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">gbls</span><span class="p">):</span>
+        <span class="c1"># Load template as a fragment to avoid extra &lt;DOCTYPE&gt; in included output.</span>
+        <span class="c1"># Due to loader cache, this has the side effect that if the same</span>
+        <span class="c1"># template is both included and used as a standalone page</span>
+        <span class="c1"># it might act as a fragment or not depending on the order it was loaded.</span>
+        <span class="c1"># But usually templates meant for inclusion are not standalone pages.</span>
+        <span class="c1"># Also there is no way to set a template as a fragment once loaded. </span>
+        <span class="c1"># So we can only do it through the loader.</span>
+        <span class="n">tpl_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_fragment</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">alias</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">alias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">default_alias_for</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">gbls</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">tpl_cls</span><span class="p">(</span><span class="n">gbls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+    <span class="k">def</span> <span class="nf">_escape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the given HTML with ampersands, carets and quotes encoded.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">flattener</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__html__&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">__html__</span><span class="p">()</span>
+        <span class="n">uval</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_escape</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">uval</span><span class="p">):</span>  <span class="c1"># Scan the string before working.</span>
+            <span class="c1"># stdlib escape() is inconsistent between Python 2 and Python 3.</span>
+            <span class="c1"># In 3, html.escape() translates the single quote to &#39;&amp;#39;&#39;</span>
+            <span class="c1"># In 2.6 and 2.7, cgi.escape() does not touch the single quote.</span>
+            <span class="c1"># Preserve our tests and Kajiki behaviour across Python versions:</span>
+            <span class="k">return</span> <span class="n">uval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;amp;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;lt;&#39;</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;quot;&#39;</span><span class="p">)</span>
+            <span class="c1"># .replace(&quot;&#39;&quot;, &#39;&amp;#39;&#39;))</span>
+            <span class="c1"># Above we do NOT escape the single quote; we don&#39;t need it because</span>
+            <span class="c1"># all HTML attributes are double-quoted in our output.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">uval</span>
+    <span class="n">_re_escape</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&amp;|&lt;|&gt;|&quot;&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_render_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Render tag attributes in key=&quot;value&quot; format.</span>
+
+<span class="sd">        A :class:`kajiki.ir.AttrsNode` will generate</span>
+<span class="sd">        code that in fact leads to this function to generate</span>
+<span class="sd">        the html for tag attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">):</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">attrs</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">HTML_EMPTY_ATTRS</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">HTML_EMPTY_ATTRS</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="s1">&#39; </span><span class="si">%s</span><span class="s1">=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_escape</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">it</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">it</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">part</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">flattener</span><span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="o">.</span><span class="n">accumulate_str</span><span class="p">()))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">annotate_lnotab</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">py_to_tpl</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">meth</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__methods__</span><span class="p">:</span>
+            <span class="n">meth</span><span class="o">.</span><span class="n">annotate_lnotab</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">py_to_tpl</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">py_to_tpl</span><span class="p">))</span>
+
+<div class="viewcode-block" id="_Template.defined"><a class="viewcode-back" href="../../runtime.html#kajiki._Template.defined">[docs]</a>    <span class="k">def</span> <span class="nf">defined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if a variable was provided to the template or not&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">Template</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a new :class:`._Template` subclass from an entity with ``exposed`` functions.</span>
+
+<span class="sd">    Kajiki uses classes as containers of the exposed functions for convenience,</span>
+<span class="sd">    but any object that can have the functions as attributes works.</span>
+
+<span class="sd">    To be a valid template the original entity must provide at least a ``__main__``</span>
+<span class="sd">    function::</span>
+
+<span class="sd">        class Example:</span>
+<span class="sd">            @kajiki.expose</span>
+<span class="sd">            def __main__():</span>
+<span class="sd">                yield &#39;Hi&#39;</span>
+
+<span class="sd">        t = kajiki.Template(Example)</span>
+<span class="sd">        output = t().render()</span>
+
+<span class="sd">        print(output)</span>
+<span class="sd">        &#39;Hi&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dct</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">methods</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;__methods__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;exposed&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__func__&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">))))</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">(</span><span class="n">_Template</span><span class="p">,),</span> <span class="n">dct</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">from_ir</span><span class="p">(</span><span class="n">ir_node</span><span class="p">,</span> <span class="n">base_globals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a template class from Intermediate Representation TemplateNode.</span>
+
+<span class="sd">    This actually creates the class defined by the TemplateNode by executing</span>
+<span class="sd">    its code and returns a subclass of it.</span>
+<span class="sd">    The returned class is a subclass of :class:`kajiki.template._Template`.</span>
+
+<span class="sd">    It is possible to use `base_globals` to set context values</span>
+<span class="sd">    or replace default ones</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">base_globals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">base_globals</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">py_lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">generate_python</span><span class="p">(</span><span class="n">ir_node</span><span class="p">))</span>
+    <span class="n">py_text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">py_lines</span><span class="p">))</span>
+    <span class="n">py_linenos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">last_lineno</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">py_lines</span><span class="p">):</span>
+        <span class="n">lno</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">last_lineno</span><span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="n">_lineno</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">py_linenos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lno</span><span class="p">))</span>
+        <span class="n">last_lineno</span> <span class="o">=</span> <span class="n">lno</span>
+    <span class="n">dct</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kajiki</span><span class="o">=</span><span class="n">kajiki</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">exec</span><span class="p">(</span><span class="n">py_text</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">SyntaxError</span><span class="p">,</span> <span class="ne">IndentationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma no cover</span>
+        <span class="k">raise</span> <span class="n">KajikiSyntaxError</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">py_text</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+    <span class="n">tpl</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span>
+    <span class="n">tpl</span><span class="o">.</span><span class="n">base_globals</span> <span class="o">=</span> <span class="n">base_globals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">tpl</span><span class="o">.</span><span class="n">base_globals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
+    <span class="n">tpl</span><span class="o">.</span><span class="n">py_text</span> <span class="o">=</span> <span class="n">py_text</span>
+    <span class="n">tpl</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">ir_node</span><span class="o">.</span><span class="n">filename</span>
+    <span class="n">tpl</span><span class="o">.</span><span class="n">annotate_lnotab</span><span class="p">(</span><span class="n">py_linenos</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tpl</span>
+
+
+<span class="k">class</span> <span class="nc">TplFunc</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A template function attached to a _Template.</span>
+
+<span class="sd">    By default template functions (ie: __main__) depends</span>
+<span class="sd">    on variables like ``self``, ``local`` and so on which</span>
+<span class="sd">    are provided by :class:`._Template`.</span>
+
+<span class="sd">    This is used by :meth:`.Template` to create a new</span>
+<span class="sd">    ``_Template`` with the attached functions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">inst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_func</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span> <span class="o">=</span> <span class="n">inst</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">bind_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">TplFunc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="p">,</span> <span class="n">inst</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&lt;bound tpl_function </span><span class="si">%r</span><span class="s1"> of </span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&lt;unbound tpl_function </span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_globals</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_bind_globals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">globals</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Return a function which has the globals dict set to &#39;globals&#39;</span>
+<span class="sd">        and which flattens the result of self._func&#39;.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span><span class="p">,</span>
+            <span class="nb">globals</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__closure__</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">update_wrapper</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">flattener</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)),</span>
+            <span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">annotate_lnotab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">py_to_tpl</span><span class="p">,</span> <span class="n">py_to_tpl_dct</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">py_to_tpl</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span>
+        <span class="n">new_lnotab_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bc_off</span><span class="p">,</span> <span class="n">py_lno</span> <span class="ow">in</span> <span class="n">lnotab</span><span class="o">.</span><span class="n">lnotab_numbers</span><span class="p">(</span>
+                <span class="n">code</span><span class="o">.</span><span class="n">co_lnotab</span><span class="p">,</span> <span class="n">code</span><span class="o">.</span><span class="n">co_firstlineno</span><span class="p">):</span>
+            <span class="n">tpl_lno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">py_lno</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tpl_lno</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR LOOKING UP LINE #</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">py_lno</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">new_lnotab_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">bc_off</span><span class="p">,</span> <span class="n">tpl_lno</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">new_lnotab_numbers</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">new_firstlineno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_firstlineno</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">new_lnotab</span> <span class="o">=</span> <span class="n">lnotab</span><span class="o">.</span><span class="n">lnotab_string</span><span class="p">(</span><span class="n">new_lnotab_numbers</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">)</span>
+        <span class="n">new_code</span> <span class="o">=</span> <span class="n">patch_code_file_lines</span><span class="p">(</span>
+            <span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">,</span> <span class="n">new_lnotab</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span> <span class="o">=</span> <span class="n">new_code</span>
+        <span class="k">return</span>
+
+
+<span class="k">if</span> <span class="n">IS_PYTHON2</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firstlineno</span><span class="p">,</span> <span class="n">lnotab</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
+                              <span class="n">filename</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">),</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
+                              <span class="n">firstlineno</span><span class="p">,</span>
+                              <span class="n">lnotab</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
+                              <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firstlineno</span><span class="p">,</span> <span class="n">lnotab</span><span class="p">):</span>
+        <span class="n">code_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+            <span class="n">code_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span><span class="p">)</span>
+        <span class="n">code_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
+            <span class="n">firstlineno</span><span class="p">,</span>
+            <span class="n">lnotab</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
+        <span class="p">])</span>
+        <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="o">*</span><span class="n">code_args</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">KajikiSyntaxError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">coln</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">KajikiSyntaxError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">] </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_snippet</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linenum</span> <span class="o">=</span> <span class="n">linen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colnum</span> <span class="o">=</span> <span class="n">coln</span>
+
+    <span class="k">def</span> <span class="nf">_get_source_snippet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
+        <span class="n">SURROUNDING</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">linen</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SURROUNDING</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1"> --&gt; </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">SURROUNDING</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_source_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">linen</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">source</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="n">linen</span><span class="p">]</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/marlin.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Kajiki</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Fast XML and text templates for Python</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jackrosenthal&repo=kajiki&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../templating-basics.html">Kajiki Templating Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../xml-templates.html">Kajiki XML Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../text-templates.html">Kajiki Text Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../migrating_from_genshi.html">Migrating from Genshi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../i18n.html">Internationalization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../runtime.html">Kajiki Runtime</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jackrosenthal/kajiki" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
