@@ -1,6 +1,19 @@
 CHANGES
 =======
 
+0.8.3 (2021-06-18)
+------------------
+
+* Fixed compatibility for Python 3.10
+* Switched the test runner to pytest
+* Added the ``kajiki`` command line interface
+* Documentation typo corrections
+
+.. note::
+
+   Kajiki 0.8.3 will be the last release to support Python 2.7.
+   Kajiki 0.9 will require Python 3.4+.
+
 0.8.2 (2019-11-26)
 ------------------
 
