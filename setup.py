@@ -26,9 +26,7 @@ def content_of(*files):
 import sys
 py_version = sys.version_info[:2]
 
-TEST_DEPENDENCIES = ['babel', 'nose']
-if py_version == (2, 6):
-    TEST_DEPENDENCIES.extend(['importlib'])
+TEST_DEPENDENCIES = ['babel', 'pytest']
 if py_version < (3, 2):
     TEST_DEPENDENCIES.extend(['backports.tempfile'])
 if py_version < (3, 3):
@@ -74,11 +72,11 @@ setup(name='Kajiki',
       include_package_data=True,
       zip_safe=False,
       install_requires=['nine'],
+      python_requires='>=2.7',
       extras_require = {
           'testing': TEST_DEPENDENCIES,
           'docs': ['sphinx'],
       },
-      test_suite='nose.collector',
       entry_points="""
           [console_scripts]
           kajiki = kajiki.__main__:main
