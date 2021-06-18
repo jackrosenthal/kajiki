@@ -42,7 +42,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Kajiki'
-copyright = u'2010-2019, Rick Copeland, Nando Florestan and Alessandro Molina'
+copyright = u'2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -92,12 +92,20 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = dict(
+    description='Fast XML and text templates for Python',
+    logo='marlin.png',
+    logo_name=True,
+    github_banner=True,
+    github_button=True,
+    github_user='jackrosenthal',
+    github_repo='kajiki',
+)
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
