@@ -19,6 +19,7 @@ Documentation contents
    text-templates.rst
    migrating_from_genshi.rst
    i18n.rst
+   cli.rst
    runtime.rst
 
 Indices and tables
