@@ -33,7 +33,7 @@ if py_version < (3, 3):
     TEST_DEPENDENCIES.extend(['mock'])
 
 
-setup(name='Kajiki',
+setup(name='kajiki',
       version=__release__,
       description='Fast XML-based template engine with Genshi syntax and '
                   'Jinja blocks',
