@@ -23,16 +23,16 @@ config = dict(
 
 # You can customize your release process below.
 # Comment out any steps you don't desire and add your own steps.
-Releaser(config,
-    Shell('python setup.py test'),  # First of all ensure tests pass
+Releaser(
+    config,
+    Shell('pytest'),  # First of all ensure tests pass
     # CheckRstFiles,  # Documentation: recursively verify ALL .rst files, or:
-    CheckRstFiles('CHANGES.rst', 'LICENSE.rst'),  # just a few.
+    # CheckRstFiles('CHANGES.rst', 'LICENSE.rst'),  # just a few.
     # TODO IMPLEMENT CompileAndVerifyTranslations,
     # TODO IMPLEMENT BuildSphinxDocumentation,
     # TODO IMPLEMENT Tell the user to upload the built docs (give URL)
     EnsureGitClean,   # There are no uncommitted changes in tracked files.
     EnsureGitBranch,  # I must be in the branch specified in config
-    InteractivelyApproveDistribution,  # Generate sdist, let user verify it
     InteractivelyEnsureChangesDocumented,     # Did you update CHANGES.rst?
     CheckTravis,  # We run this late, so travis-ci has more time to build
 
@@ -41,8 +41,10 @@ Releaser(config,
     # TODO IMPLEMENT CHANGES file: add heading for current version (below dev)
     GitCommitVersionNumber,
     GitTag,  # Locally tag the current commit with the new version number
-    PypiRegister,  # Creates the new release at http://pypi.python.org
-    PypiUpload,  # Uploads a source distribution to http://pypi.python.org
+    InteractivelyApproveDistribution,  # Generate sdist, let user verify it
+    InteractivelyApproveWheel,  # Generate wheel, let user verify it
+    PypiUpload,  # Make and upload a source .tar.gz to https://pypi.org
+    PypiUploadWheel,  # Make and upload source wheel to https://pypi.org
 
     # ===========  Post-release: set development version and push  ============
     SetFutureVersion,  # Writes incremented version, now with 'dev' suffix
