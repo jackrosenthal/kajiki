@@ -21,6 +21,7 @@ Documentation contents
    i18n.rst
    cli.rst
    runtime.rst
+   changes.rst
 
 Indices and tables
 ==================
