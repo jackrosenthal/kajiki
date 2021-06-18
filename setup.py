@@ -75,7 +75,8 @@ setup(name='Kajiki',
       zip_safe=False,
       install_requires=['nine'],
       extras_require = {
-        'testing': TEST_DEPENDENCIES,
+          'testing': TEST_DEPENDENCIES,
+          'docs': ['sphinx'],
       },
       test_suite='nose.collector',
       entry_points="""

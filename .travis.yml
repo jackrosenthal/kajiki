@@ -1,6 +1,7 @@
 language: python
 python:
-  - "3.8-dev"
+  - "3.9"
+  - "3.8"
   - "3.7"
   - "3.6"
   - "3.5"
@@ -12,3 +13,23 @@ python:
 install: pip install -e .[testing]
 # command to run tests
 script:  python setup.py test
+jobs:
+  include:
+    - name: docs
+      python: "3.9"
+      install:
+        pip install -e .[docs]
+      script:
+        sphinx-build -a docs/ docs/_build/html
+      env:
+        - DOCS_BUILD=t
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: docs/_build/html
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  fqdn: docs.kajiki.io
+  on:
+    branch: master
+    condition: $DOCS_BUILD = t
