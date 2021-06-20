@@ -8,7 +8,7 @@ from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
 
-from nine import iteritems, native_str
+from nine import native_str
 
 from . import ir
 from . import template
@@ -130,7 +130,7 @@ class _Compiler(object):
                 body.insert(0, dtd)
         self.functions['__main__()'] = body
         defs = []
-        for k, v in iteritems(self.functions):
+        for k, v in self.functions.items():
             node = ir.DefNode(k, *v)
             node.lineno = self.function_lnos.get(k)
             defs.append(node)
