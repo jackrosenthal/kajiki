@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from nine import basestring, itervalues
+from nine import itervalues
 import os
 import pkg_resources
 
@@ -43,7 +43,7 @@ class FileLoader(Loader):
                  **template_options):
         super(FileLoader, self).__init__()
         from kajiki import XMLTemplate, TextTemplate
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             self.path = path.split(';')
         else:
             self.path = path

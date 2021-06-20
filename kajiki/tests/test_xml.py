@@ -10,7 +10,6 @@ from unittest import TestCase, main
 
 from kajiki import i18n
 from kajiki.template import KajikiSyntaxError
-from nine import chr, str
 import kajiki
 from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
 from kajiki.ir import TranslatableTextNode
