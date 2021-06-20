@@ -18,16 +18,10 @@ import codecs
 import collections
 import io
 import re
+import shlex
 import tokenize
 from itertools import chain
 from nine import iteritems, str
-
-from shlex import split as shlex_split  # Prior to Python 2.7.3, the
-from sys import version_info            # *shlex* module did not support
-if version_info < (2, 7, 3):            # Unicode input. Work around:
-    _shlex_split = shlex_split
-    shlex_split = lambda txt: _shlex_split(txt.encode('utf-8'))
-del version_info
 
 import kajiki
 from . import ir
@@ -290,14 +284,14 @@ class _Parser(object):
         return ir.ElseNode(*body[:-1])
 
     def _parse_extends(self, token):
-        parts = shlex_split(token.body)
+        parts = shlex.split(token.body)
         fn = parts[0]
         assert len(parts) == 1
         self._is_child = True
         return ir.ExtendNode(fn)
 
     def _parse_import(self, token):
-        parts = shlex_split(token.body)
+        parts = shlex.split(token.body)
         fn = parts[0]
         if len(parts) > 1:
             assert parts[1] == 'as'
@@ -306,7 +300,7 @@ class _Parser(object):
             return ir.ImportNode(fn)
 
     def _parse_include(self, token):
-        parts = shlex_split(token.body)
+        parts = shlex.split(token.body)
         fn = parts[0]
         assert len(parts) == 1
         return ir.IncludeNode(fn)
