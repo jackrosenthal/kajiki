@@ -48,8 +48,6 @@ expand 300, 300 to 255, 255, 45, 45,
             but to 255,   0, 45, 255, 0, 45.
 '''
 
-from __future__ import (absolute_import, division, print_function)
-
 
 def lnotab(pairs, first_lineno=0):
     """Yields byte integers representing the pairs of integers passed in."""

@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
 HTML_EMPTY_ATTRS = set([
     'checked',
     'disabled',

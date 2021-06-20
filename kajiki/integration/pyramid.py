@@ -29,8 +29,6 @@ languages, passing an asset specification to the ``renderer`` argument::
 .. _`Pyramid`: http://docs.pylonshq.com/
 '''
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 from os import stat
 from paste.deploy.converters import asbool
 from zope.interface import implementer
