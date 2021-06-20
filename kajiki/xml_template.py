@@ -9,8 +9,6 @@ from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
 
-from nine import native_str
-
 from . import ir
 from . import template
 from .doctype import DocumentTypeDeclaration, extract_dtd
@@ -612,7 +610,7 @@ class _Parser(sax.ContentHandler):
         # So if source is unicode, we pre-encode it:
         # TODO Is this dance really necessary? Can't I just call a function?
         byts = self._source.encode('utf-8')
-        source.setEncoding(native_str('utf-8'))
+        source.setEncoding('utf-8')
         source.setByteStream(io.BytesIO(byts))
         source.setSystemId(self._filename)
 
