@@ -19,7 +19,6 @@ import re
 import shlex
 import tokenize
 from itertools import chain
-from nine import iteritems
 
 import kajiki
 from . import ir
@@ -194,7 +193,7 @@ class _Parser(object):
     def parse(self):
         body = list(self._parse_body())
         self.functions['__main__()'] = body[:-1]
-        defs = [ir.DefNode(k, *v) for k, v in iteritems(self.functions)]
+        defs = [ir.DefNode(k, *v) for k, v in self.functions.items()]
         return ir.TemplateNode(self.mod_py, defs)
 
     def text(self, token):
