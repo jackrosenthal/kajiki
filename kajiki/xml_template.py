@@ -8,7 +8,7 @@ from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
 
-from nine import basestring, str, iteritems, native_str
+from nine import iteritems, native_str
 
 from . import ir
 from . import template
@@ -756,7 +756,7 @@ class _DomTransformer(object):
         if isinstance(tree, dom.Document):
             cls._merge_text_nodes(tree.firstChild)
             return tree
-        if not isinstance(getattr(tree, 'tagName', None), basestring):
+        if not isinstance(getattr(tree, 'tagName', None), str):
             return tree
 
         # Squash all successive text nodes into a single one.
@@ -860,7 +860,7 @@ class _DomTransformer(object):
         if isinstance(tree, dom.Document):
             cls._expand_directives(tree.firstChild, tree)
             return tree
-        if not isinstance(getattr(tree, 'tagName', None), basestring):
+        if not isinstance(getattr(tree, 'tagName', None), str):
             return tree
         if tree.tagName in QDIRECTIVES_DICT:
             tree.setAttribute(

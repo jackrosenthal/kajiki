@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from unittest import TestCase, main
-from nine import str
 from kajiki.doctype import DocumentTypeDeclaration, extract_dtd
 
 

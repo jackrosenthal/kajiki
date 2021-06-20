@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from nine import str, nine, itervalues
+from nine import nine, itervalues
 from nine.decorator import reify
 
 
