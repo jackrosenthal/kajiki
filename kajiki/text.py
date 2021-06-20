@@ -15,10 +15,10 @@ Notable in this module are:
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import codecs
+import collections
 import io
 import re
 import tokenize
-from .ddict import defaultdict
 from itertools import chain
 from nine import iteritems, str
 
@@ -191,7 +191,7 @@ class _Scanner(object):
 class _Parser(object):
     def __init__(self, tokenizer, autoescape=False):
         self.tokenizer = tokenizer
-        self.functions = defaultdict(list)
+        self.functions = collections.defaultdict(list)
         self.functions['__main__()'] = []
         self.mod_py = []  # module-level python blocks
         self.iterator = iter(self.tokenizer)
