@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 from unittest import TestCase, main
 from nine import str
 from kajiki.doctype import DocumentTypeDeclaration, extract_dtd
