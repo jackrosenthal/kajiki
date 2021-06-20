@@ -3,7 +3,7 @@
 import functools
 import re
 import types
-from nine import basestring, str, iteritems
+from nine import iteritems
 from sys import version_info
 
 import kajiki
@@ -121,7 +121,7 @@ class _Template(object):
         the first thing it does is asking the loader of the
         child template to load the parent template
         """
-        if isinstance(parent, basestring):
+        if isinstance(parent, str):
             parent = self.loader.import_(parent)
         p_inst = parent(self._context)
         p_globals = p_inst.__globals__

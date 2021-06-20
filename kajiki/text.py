@@ -19,7 +19,7 @@ import re
 import shlex
 import tokenize
 from itertools import chain
-from nine import iteritems, str
+from nine import iteritems
 
 import kajiki
 from . import ir
