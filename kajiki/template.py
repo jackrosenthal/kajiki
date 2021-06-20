@@ -3,7 +3,6 @@
 import functools
 import re
 import types
-from nine import iteritems
 from sys import version_info
 
 import kajiki
@@ -16,7 +15,7 @@ from kajiki import i18n
 
 class _obj(object):
     def __init__(self, **kw):
-        for k, v in iteritems(kw):
+        for k, v in kw.items():
             setattr(self, k, v)
 
 
@@ -126,14 +125,14 @@ class _Template(object):
         p_inst = parent(self._context)
         p_globals = p_inst.__globals__
         # Find overrides
-        for k, v in iteritems(self.__globals__):
+        for k, v in self.__globals__.items():
             if k == '__main__':
                 continue
             if not isinstance(v, TplFunc):
                 continue
             p_globals[k] = v
         # Find inherited funcs
-        for k, v in iteritems(p_inst.__globals__):
+        for k, v in p_inst.__globals__.items():
             if k == '__main__':
                 continue
             if not isinstance(v, TplFunc):
