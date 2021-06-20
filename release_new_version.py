@@ -3,8 +3,6 @@
 
 '''Script that releases a new version of the software.'''
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 from releaser import Releaser          # easy_install -UZ releaser
 from releaser.steps import *
 from releaser.git_steps import *

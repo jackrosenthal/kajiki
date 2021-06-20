@@ -2,8 +2,6 @@
 
 '''python3.3/html/entities.py, plus HTMLParser.decode(), for Python 2 compat'''
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 import re
 
 

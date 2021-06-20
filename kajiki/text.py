@@ -12,8 +12,6 @@ Notable in this module are:
 * _Parser._parse_<tagname> - consumes the body of a tag and returns an ir.Node.
 '''
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 import codecs
 import collections
 import io
