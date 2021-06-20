@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from nine import nine, itervalues
+from nine import nine
 from nine.decorator import reify
 
 
@@ -70,7 +70,7 @@ class DocumentTypeDeclaration(object):
         '''Looks up the known DTDs and returns the instance that matches the
         provided dtd_string.
         '''
-        for dtd in itervalues(cls.by_uri):
+        for dtd in cls.by_uri.values():
             if dtd.regex.match(dtd_string):
                 return dtd
         else:
