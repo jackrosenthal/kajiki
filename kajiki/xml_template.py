@@ -2,6 +2,7 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import collections
 import re
 from codecs import open
 from itertools import chain
@@ -18,7 +19,6 @@ else:
 
 from . import ir
 from . import template
-from .ddict import defaultdict
 from .doctype import DocumentTypeDeclaration, extract_dtd
 from .entities import html5, unescape
 from .html_utils import (HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS,
@@ -77,7 +77,7 @@ class _Compiler(object):
         self.filename = filename
         self.doc = doc
         self.is_fragment = is_fragment
-        self.functions = defaultdict(list)
+        self.functions = collections.defaultdict(list)
         self.functions['__main__()'] = []
         self.function_lnos = {}
         self.mod_py = []
