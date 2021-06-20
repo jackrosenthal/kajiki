@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import re
-from nine import nine
 from nine.decorator import reify
 
 
-@nine
 class DocumentTypeDeclaration(object):
     """Represents a http://en.wikipedia.org/wiki/Document_Type_Declaration
 

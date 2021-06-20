@@ -4,7 +4,6 @@ from itertools import chain
 import re
 
 from .util import gen_name, flattener, window
-from nine import nine
 
 
 def generate_python(ir):
@@ -442,7 +441,6 @@ def optimize(iter_node):
         yield last_node
 
 
-@nine
 class PyLine(object):
     def __init__(self, filename, lineno, text, indent=0):
         self._filename = filename
