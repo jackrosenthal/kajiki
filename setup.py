@@ -23,16 +23,6 @@ def content_of(*files):
     return '\n'.join(content)
 
 
-import sys
-py_version = sys.version_info[:2]
-
-TEST_DEPENDENCIES = ['babel', 'pytest']
-if py_version < (3, 2):
-    TEST_DEPENDENCIES.extend(['backports.tempfile'])
-if py_version < (3, 3):
-    TEST_DEPENDENCIES.extend(['mock'])
-
-
 setup(name='kajiki',
       version=__release__,
       description='Fast XML-based template engine with Genshi syntax and '
@@ -45,8 +35,6 @@ setup(name='kajiki',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
@@ -74,9 +62,9 @@ setup(name='kajiki',
       include_package_data=True,
       zip_safe=False,
       install_requires=['nine'],
-      python_requires='>=2.7',
+      python_requires='>=3.4',
       extras_require = {
-          'testing': TEST_DEPENDENCIES,
+          'testing': ['babel', 'pytest'],
           'docs': ['sphinx'],
       },
       entry_points="""
