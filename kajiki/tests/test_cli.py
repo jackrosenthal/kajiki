@@ -5,20 +5,11 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import io
 import unittest
+import os
 import site
 import sys
-import os
-
-if sys.version_info[:2] < (3, 2):
-    import backports.tempfile as tempfile
-else:
-    import tempfile
-
-if sys.version_info[:2] < (3, 3):
-    # Third-party before Python 3.3
-    import mock
-else:
-    import unittest.mock as mock
+import tempfile
+import unittest.mock as mock
 
 import kajiki.loader
 from kajiki.__main__ import main
