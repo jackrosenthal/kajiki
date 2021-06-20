@@ -3,6 +3,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import collections
+import io
 import re
 from codecs import open
 from itertools import chain
@@ -10,12 +11,7 @@ from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
 
-from nine import IS_PYTHON2, basestring, str, iteritems, native_str
-
-if IS_PYTHON2:
-    from cStringIO import StringIO as BytesIO
-else:
-    from io import BytesIO
+from nine import basestring, str, iteritems, native_str
 
 from . import ir
 from . import template
@@ -619,7 +615,7 @@ class _Parser(sax.ContentHandler):
         # TODO Is this dance really necessary? Can't I just call a function?
         byts = self._source.encode('utf-8')
         source.setEncoding(native_str('utf-8'))
-        source.setByteStream(BytesIO(byts))
+        source.setByteStream(io.BytesIO(byts))
         source.setSystemId(self._filename)
 
         try:
