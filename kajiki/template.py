@@ -1,21 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import functools
 import re
 import types
 from nine import basestring, str, iteritems
 from sys import version_info
-
-try:
-    from functools import update_wrapper
-except:
-    def update_wrapper(wrapper, wrapped,
-                       assigned=('__module__', '__name__', '__doc__'),
-                       updated = ('__dict__',)):
-        for attr in assigned:
-            setattr(wrapper, attr, getattr(wrapped, attr))
-        for attr in updated:
-            getattr(wrapper, attr).update(getattr(wrapped, attr))
-        return wrapper
 
 import kajiki
 from .util import flattener, literal
@@ -372,7 +361,7 @@ class TplFunc(object):
             self._func.__defaults__,
             self._func.__closure__
         )
-        return update_wrapper(
+        return functools.update_wrapper(
             lambda *a, **kw: flattener(func(*a, **kw)),
             func)
 
