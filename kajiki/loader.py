@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from nine import itervalues
 import os
 import pkg_resources
 
@@ -33,7 +32,7 @@ class MockLoader(Loader):
     def __init__(self, modules):
         super(MockLoader, self).__init__()
         self.modules.update(modules)
-        for v in itervalues(self.modules):
+        for v in self.modules.values():
             v.loader = self
 
 
