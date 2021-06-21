@@ -163,16 +163,14 @@ class _Scanner(object):
         text_len = -1
 
         last_end = (1, 0)
-        for token_type, token_string, token_start, token_end, token_line in (
-            tokenize.generate_tokens(src_io.readline)
-        ):
-            if token_string == '{':
+        for token in tokenize.generate_tokens(src_io.readline):
+            if token.string == "{":
                 braces += 1
-            if token_string == '}':
+            if token.string == "}":
                 braces -= 1
 
-            text_len += _diff_pos(last_end, token_end)
-            last_end = token_end
+            text_len += _diff_pos(last_end, token.end)
+            last_end = token.end
             if not braces:
                 text = self.source[self.pos:self.pos + text_len - 1]
                 self.pos += text_len
