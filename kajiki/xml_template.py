@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import collections
+import html
 import io
 import re
 from codecs import open
@@ -11,7 +12,6 @@ from xml.sax import SAXParseException
 from . import ir
 from . import template
 from .doctype import DocumentTypeDeclaration, extract_dtd
-from .entities import html5, unescape
 from .html_utils import (HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS,
                          HTML_CDATA_TAGS)
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
@@ -246,7 +246,7 @@ class _Compiler(object):
                         assert isinstance(child, dom.Text)
                         for x in self._compile_text(child):
                             if child.escaped:  # If user declared CDATA no escaping happened.
-                                x.text = unescape(x.text)
+                                x.text = html.unescape(x.text)
                             yield x
                     if self.mode == 'xml':  # Finish escaping
                         yield ir.TextNode('/*]]>*/')
@@ -670,7 +670,7 @@ class _Parser(sax.ContentHandler):
             # itself, and we don't want to maintain a separate diff.
             # So just ensure we ask for entities always recorded with trailing semicolon.
             name += ';'
-        return self.characters(html5[name])
+        return self.characters(html.entities.html5[name])
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover
         raise NotImplementedError('startElementNS')
