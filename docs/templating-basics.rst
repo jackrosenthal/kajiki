@@ -1,7 +1,3 @@
-.. testsetup:: *
-
-   import kajiki
-
 Kajiki Templating Basics
 =================================
 
@@ -109,6 +105,7 @@ text-based languages), the pattern is as follows:
 
 For instance:
 
+>>> import kajiki
 >>> Template = kajiki.XMLTemplate('<h1>Hello, $name!</h1>')
 >>> t = Template(dict(name='world'))
 >>> t.render()
