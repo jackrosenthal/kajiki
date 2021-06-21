@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 HTML_EMPTY_ATTRS = set([
     'checked',
     'disabled',
