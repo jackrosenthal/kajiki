@@ -1,7 +1,3 @@
-.. testsetup:: *
-
-   import kajiki
-
 ==================================
 Kajiki Text Templates
 ==================================
@@ -20,6 +16,7 @@ Basic Expressions
 
 Let's start with a hello world template:
 
+>>> import kajiki
 >>> Template = kajiki.TextTemplate('Hello, $name!')
 >>> print(Template(dict(name='world')).render())
 Hello, world!
