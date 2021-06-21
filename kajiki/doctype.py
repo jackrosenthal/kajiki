@@ -8,22 +8,23 @@ class DocumentTypeDeclaration(object):
 
     This is used to lookup DTDs details by its string, DTDs can
     be registered in :attr:`.by_uri` and can then be looked up
-    using :meth:`.matching` method::
+    using :meth:`.matching` method:
 
-        >>> from kajiki.doctype import DocumentTypeDeclaration
-        >>> dtd = DocumentTypeDeclaration("html4transitional",
-        ...                               "-//W3C//DTD HTML 4.01 Transitional//EN",
-        ...                               "http://www.w3.org/TR/html4/loose.dtd",
-        ...                               rendering_mode='html')
-        >>> print dtd.uri
-        http://www.w3.org/TR/html4/loose.dtd
-        >>> DocumentTypeDeclaration.by_uri["http://www.w3.org/TR/html4/loose.dtd"] = dtd
-        >>> match = DocumentTypeDeclaration.matching(
-        ...     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
-        ...     '"http://www.w3.org/TR/html4/loose.dtd">'
-        ... )
-        >>> print match.name
-        'html4transitional'
+    >>> from kajiki.doctype import DocumentTypeDeclaration
+    >>> dtd = DocumentTypeDeclaration("html4transitional",
+    ...                               "-//W3C//DTD HTML 4.01 Transitional//EN",
+    ...                               "http://www.w3.org/TR/html4/loose.dtd",
+    ...                               rendering_mode='html')
+    >>> dtd.uri
+    'http://www.w3.org/TR/html4/loose.dtd'
+    >>> DocumentTypeDeclaration.by_uri[
+    ...     "http://www.w3.org/TR/html4/loose.dtd"] = dtd
+    >>> match = DocumentTypeDeclaration.matching(
+    ...     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
+    ...     '"http://www.w3.org/TR/html4/loose.dtd">'
+    ... )
+    >>> match.name
+    'html4transitional'
 
     DocumentTypeDeclaration is used by :class:`kajiki.xml_template._Compiler`
     to detect the document doctype and tune generated template (for example
@@ -126,23 +127,25 @@ def extract_dtd(markup):
 
     Tries to find any DTD in the string *markup* and returns a tuple
     (dtd_string, position, markup_without_the_DTD). Note the first of
-    these values might be an empty string::
+    these values might be an empty string:
 
-        >>> markup = '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        ...             "http://www.w3.org/TR/html4/loose.dtd">
-        ...     <html>
-        ...     <head>
-        ...     ...
-        ...     </head>
-        ...     <body>
-        ...     ...
-        ...     </body>
-        ...     </html>'''
-        >>> import kajiki.doctype
-        >>> dtd, dtd_pos, html = kajiki.doctype.extract_dtd(markup)
-        >>> print dtd
-        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-            "http://www.w3.org/TR/html4/loose.dtd">
+    >>> markup = (
+    ...     '<!DOCTYPE HTML PUBLIC '
+    ...     '"-//W3C//DTD HTML 4.01 Transitional//EN" '
+    ...     '"http://www.w3.org/TR/html4/loose.dtd">'
+    ...     '''<html>
+    ...     <head>
+    ...     ...
+    ...     </head>
+    ...     <body>
+    ...     ...
+    ...     </body>
+    ...     </html>''')
+    >>> import kajiki.doctype
+    >>> dtd, dtd_pos, html = kajiki.doctype.extract_dtd(markup)
+    >>> print(dtd)  # doctest: +NORMALIZE_WHITESPACE
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
     """
     match = DocumentTypeDeclaration.REGEX.search(markup)
     if not match:
