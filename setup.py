@@ -60,7 +60,6 @@ setup(name='kajiki',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=['nine'],
       python_requires='>=3.4',
       extras_require = {
           'testing': ['babel', 'pytest'],

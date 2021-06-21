@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-from nine.decorator import reify
 
 
 class DocumentTypeDeclaration(object):
@@ -43,6 +42,15 @@ class DocumentTypeDeclaration(object):
         self.kind = kind
         self._cached_str = None
 
+        self.regex = re.compile(
+            str(self)
+            .replace(" ", r"\s+")
+            .replace(".", r"\.")
+            .replace("[", r"\[")
+            .replace("]", r"\]"),
+            flags=re.IGNORECASE,
+        )
+
     def __str__(self):
         if not self._cached_str:
             alist = ['<!DOCTYPE']
@@ -55,11 +63,6 @@ class DocumentTypeDeclaration(object):
                 alist.append('"' + self.uri + '"')
             self._cached_str = ' '.join(alist) + '>'
         return self._cached_str
-
-    @reify
-    def regex(self):
-        return re.compile(str(self).replace(' ', r'\s+').replace('.', r'\.')
-            .replace('[', r'\[').replace(']', r'\]'), flags=re.IGNORECASE)
 
     by_uri = dict()  # We store the public DTDs here.
 
