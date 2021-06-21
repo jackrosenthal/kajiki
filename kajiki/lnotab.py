@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''Comment copied from Python/compile.c:
 
 All about a_lnotab.
