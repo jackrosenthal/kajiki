@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Command-line interface to Kajiki to render a single template."""
 
 import argparse

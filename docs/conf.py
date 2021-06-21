@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Kajiki documentation build configuration file, created by
 # sphinx-quickstart on Wed Jul  7 22:31:03 2010.
 #

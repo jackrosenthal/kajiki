@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 DIRECTIVES = [
     ('def', 'function'),
     ('call', 'function'),

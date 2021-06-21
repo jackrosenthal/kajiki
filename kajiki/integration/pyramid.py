@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''This module integrates the Kajiki_ templating language into the
 Pyramid_ web framework.
 

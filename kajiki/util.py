@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from collections import deque
 from random import randint
 from threading import local

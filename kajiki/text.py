@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 '''Text template compiler.
 
 Notable in this module are:

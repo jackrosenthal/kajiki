@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from .util import expose, flattener
 from .template import Template
 from .loader import MockLoader, FileLoader, PackageLoader

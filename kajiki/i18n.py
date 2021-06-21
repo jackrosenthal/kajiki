@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from io import BytesIO
 from tokenize import TokenError
 
