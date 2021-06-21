@@ -39,8 +39,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Kajiki'
-copyright = u'2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal'
+project = 'Kajiki'
+copyright = '2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -185,8 +185,8 @@ htmlhelp_basename = 'Kajikidoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Kajiki.tex', u'Kajiki Documentation',
-   u'Rick Copeland', 'manual'),
+    ('index', 'Kajiki.tex', 'Kajiki Documentation',
+     'Rick Copeland', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -218,6 +218,5 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'kajiki', u'Kajiki Documentation',
-     [u'Rick Copeland'], 1)
+    ('index', 'kajiki', u'Kajiki Documentation', ['Rick Copeland'], 1)
 ]

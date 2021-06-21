@@ -1015,8 +1015,8 @@ class TestBracketsInExpression(TestCase):
         perform('<x>${\'{o{k}k  { \'}</x>', '<x>{o{k}k  { </x>')
 
     def test_complex(self):
-        perform(u"<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'} ${1+1}</div></xml>",
-                u"<xml><div>ciao {  } {a {} b {{{{} w}}rarsd{} 2</div></xml>")
+        perform("<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'} ${1+1}</div></xml>",
+                "<xml><div>ciao {  } {a {} b {{{{} w}}rarsd{} 2</div></xml>")
 
     def test_with_padding_space(self):
         perform('<x y="${ 1 + 1}"> ${  "hello"     +   "world"   }  </x>',
@@ -1081,7 +1081,7 @@ class TestMultipleChildrenInDOM(TestCase):
 class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
     def test_raise(self):
         try:
-            XMLTemplate(u'''<div py:strip="True"
+            XMLTemplate('''<div py:strip="True"
 ><py:def function="echo(x)">$x</py:def
 >${echo('hello'))}</div>''')
             assert False, 'should raise'
