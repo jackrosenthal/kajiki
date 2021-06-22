@@ -1,3 +1,4 @@
+import dis
 import functools
 import re
 import types
@@ -298,9 +299,12 @@ def from_ir(ir_node, base_globals=None):
     py_text = '\n'.join(map(str, py_lines))
     py_linenos = []
     last_lineno = 0
-    for i, l in enumerate(py_lines):
-        lno = max(last_lineno, l._lineno or 0)
-        py_linenos.append((i + 1, lno))
+    py_lineno = 1
+    for line in py_lines:
+        lno = max(last_lineno, line._lineno or 0)
+        for _ in range(str(line).count("\n") + 1):
+            py_linenos.append((py_lineno, lno))
+            py_lineno += 1
         last_lineno = lno
     dct = dict(kajiki=kajiki)
     try:
@@ -367,12 +371,8 @@ class TplFunc(object):
             return
         code = self._func.__code__
         new_lnotab_numbers = []
-        for bc_off, py_lno in lnotab.lnotab_numbers(
-                code.co_lnotab, code.co_firstlineno):
-            tpl_lno = py_to_tpl_dct.get(py_lno, None)
-            if tpl_lno is None:
-                print('ERROR LOOKING UP LINE #%d' % py_lno)
-                continue
+        for bc_off, py_lno in dis.findlinestarts(code):
+            tpl_lno = py_to_tpl_dct[py_lno]
             new_lnotab_numbers.append((bc_off, tpl_lno))
         if not new_lnotab_numbers:
             return

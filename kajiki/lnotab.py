@@ -38,6 +38,18 @@ corresponding to a bytecode address A should do something like this
             return lineno
         lineno += line_incr
 
+Note: this is no longer valid as of CPython 3.6.  After CPython 3.6,
+the line offset is signed, and this code should be used:
+
+    lineno = addr = 0
+    for addr_incr, line_incr in co_lnotab:
+        addr += addr_incr
+        if addr > A:
+            return lineno
+        if line_incr >= 0x80:
+            line_incr -= 0x100
+        lineno += line_incr
+
 In order for this to work, when the addr field increments by more than 255,
 the line # increment in each pair generated must be 0 until the remaining addr
 increment is < 256.  So, in the example above, assemble_lnotab (it used
@@ -55,40 +67,29 @@ def lnotab(pairs, first_lineno=0):
         byte_delta = byte_off - cur_byte
         line_delta = line_off - cur_line
         assert byte_delta >= 0
-        assert line_delta >= 0
         while byte_delta > 255:
             yield 255  # byte
             yield 0   # line
             byte_delta -= 255
         yield byte_delta
-        while line_delta > 255:
-            yield 255  # line
+        # The threshold of 0x80 is smaller than necessary on Python
+        # 3.4 and 3.5 (the value is treated as unsigned), but won't
+        # produce an incorrect lnotab.  On Python 3.6+, 0x80 is the
+        # correct value.
+        while line_delta >= 0x80:
+            yield 0x7F  # line
             yield 0   # byte
-            line_delta -= 255
+            line_delta -= 0x7F
+        while line_delta < -0x80:
+            yield 0x80  # line
+            yield 0   # byte
+            line_delta += 0x80
+        if line_delta < 0:
+            line_delta += 0x100
+            assert 0x80 <= line_delta <= 0xFF
         yield line_delta
         cur_byte, cur_line = byte_off, line_off
 
 
 def lnotab_string(pairs, first_lineno=0):
     return bytes(lnotab(pairs, first_lineno))
-
-
-def byte_pairs(lnotab):
-    """Yield pairs of integers from a string."""
-    for i in range(0, len(lnotab), 2):
-        yield lnotab[i], lnotab[i + 1]
-
-
-def lnotab_numbers(lnotab, first_lineno=0):
-    """Yields the byte, line offset pairs from a packed lnotab string."""
-    last_line = None
-    cur_byte, cur_line = 0, first_lineno
-    for byte_delta, line_delta in byte_pairs(lnotab):
-        if byte_delta:
-            if cur_line != last_line:
-                yield cur_byte, cur_line
-                last_line = cur_line
-            cur_byte += byte_delta
-        cur_line += line_delta
-    if cur_line != last_line:
-        yield cur_byte, cur_line
