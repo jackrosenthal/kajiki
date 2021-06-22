@@ -1,4 +1,4 @@
-'''Comment copied from Python/compile.c:
+"""Comment copied from Python/compile.c:
 
 All about a_lnotab.
 
@@ -56,7 +56,7 @@ increment is < 256.  So, in the example above, assemble_lnotab (it used
 to be called com_set_lineno) should not (as was actually done until 2.2)
 expand 300, 300 to 255, 255, 45, 45,
             but to 255,   0, 45, 255, 0, 45.
-'''
+"""
 
 
 def lnotab(pairs, first_lineno=0):
@@ -69,7 +69,7 @@ def lnotab(pairs, first_lineno=0):
         assert byte_delta >= 0
         while byte_delta > 255:
             yield 255  # byte
-            yield 0   # line
+            yield 0  # line
             byte_delta -= 255
         yield byte_delta
         # The threshold of 0x80 is smaller than necessary on Python
@@ -78,11 +78,11 @@ def lnotab(pairs, first_lineno=0):
         # correct value.
         while line_delta >= 0x80:
             yield 0x7F  # line
-            yield 0   # byte
+            yield 0  # byte
             line_delta -= 0x7F
         while line_delta < -0x80:
             yield 0x80  # line
-            yield 0   # byte
+            yield 0  # byte
             line_delta += 0x80
         if line_delta < 0:
             line_delta += 0x100

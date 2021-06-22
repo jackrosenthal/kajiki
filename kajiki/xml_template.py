@@ -10,16 +10,23 @@ from xml.sax import SAXParseException
 from . import ir
 from . import template
 from .doctype import DocumentTypeDeclaration, extract_dtd
-from .html_utils import (HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS,
-                         HTML_CDATA_TAGS)
+from .html_utils import HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS, HTML_CDATA_TAGS
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 
-impl = dom.getDOMImplementation(' ')
+impl = dom.getDOMImplementation(" ")
 
 
-def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
-                encoding='utf-8', autoblocks=None, cdata_scripts=True,
-                strip_text=False, base_globals=None):
+def XMLTemplate(
+    source=None,
+    filename=None,
+    mode=None,
+    is_fragment=False,
+    encoding="utf-8",
+    autoblocks=None,
+    cdata_scripts=True,
+    strip_text=False,
+    base_globals=None,
+):
     """Given XML source code of a Kajiki Templates parses and returns a template class.
 
     The source code is parsed to its DOM representation by :class:`._Parser`,
@@ -38,11 +45,17 @@ def XMLTemplate(source=None, filename=None, mode=None, is_fragment=False,
         with open(filename, encoding=encoding) as f:
             source = f.read()  # source is a unicode string
     if filename is None:
-        filename = '<string>'
+        filename = "<string>"
     doc = _Parser(filename, source).parse()
     doc = _DomTransformer(doc, strip_text=strip_text).transform()
-    ir_ = _Compiler(filename, doc, mode=mode, is_fragment=is_fragment,
-                    autoblocks=autoblocks, cdata_scripts=cdata_scripts).compile()
+    ir_ = _Compiler(
+        filename,
+        doc,
+        mode=mode,
+        is_fragment=is_fragment,
+        autoblocks=autoblocks,
+        cdata_scripts=cdata_scripts,
+    ).compile()
     t = template.from_ir(ir_, base_globals=base_globals)
     return t
 
@@ -52,6 +65,7 @@ def annotate(gen):
         for x in gen(self, node, *args, **kwargs):
             self._anno(node, x)
             yield x
+
     return inner
 
 
@@ -61,13 +75,21 @@ class _Compiler(object):
     Intermediate Representation is a tree of nodes that represent
     Python Code that should be generated to execute the template.
     """
-    def __init__(self, filename, doc, mode=None, is_fragment=False,
-                 autoblocks=None, cdata_scripts=True):
+
+    def __init__(
+        self,
+        filename,
+        doc,
+        mode=None,
+        is_fragment=False,
+        autoblocks=None,
+        cdata_scripts=True,
+    ):
         self.filename = filename
         self.doc = doc
         self.is_fragment = is_fragment
         self.functions = collections.defaultdict(list)
-        self.functions['__main__()'] = []
+        self.functions["__main__()"] = []
         self.function_lnos = {}
         self.mod_py = []
         self.autoblocks = autoblocks or []
@@ -82,7 +104,7 @@ class _Compiler(object):
         elif self._dtd:
             self.mode = self._dtd.rendering_mode
         else:  # The template might contain an unknown DTD
-            self.mode = 'xml'  # by default
+            self.mode = "xml"  # by default
 
     def compile(self):
         """Compile the document provided by :class:`._Parser`.
@@ -105,26 +127,29 @@ class _Compiler(object):
             registries of the compiler ``compile`` should
             never be called twice or might lead to unexpected results.
         """
-        templateNodes = [n for n in self.doc.childNodes if not isinstance(n, dom.Comment)]
+        templateNodes = [
+            n for n in self.doc.childNodes if not isinstance(n, dom.Comment)
+        ]
         if len(templateNodes) != 1:
-            raise XMLTemplateCompileError('expected a single root node in document',
-                                          self.doc, self.filename, 0)
+            raise XMLTemplateCompileError(
+                "expected a single root node in document", self.doc, self.filename, 0
+            )
 
         body = list(self._compile_node(templateNodes[0]))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
             if self.doc._dtd:
                 dtd = self.doc._dtd
-            elif self.mode == 'html5':
-                dtd = '<!DOCTYPE html>'
+            elif self.mode == "html5":
+                dtd = "<!DOCTYPE html>"
             else:
                 dtd = None
             if dtd:
-                dtd = ir.TextNode(dtd.strip()+'\n')
+                dtd = ir.TextNode(dtd.strip() + "\n")
                 dtd.filename = self.filename
                 dtd.lineno = 1
                 body.insert(0, dtd)
-        self.functions['__main__()'] = body
+        self.functions["__main__()"] = body
         defs = []
         for k, v in self.functions.items():
             node = ir.DefNode(k, *v)
@@ -145,14 +170,16 @@ class _Compiler(object):
         if node.tagName not in self.autoblocks:
             return False
 
-        if node.hasAttribute('py:autoblock'):
-            guard = node.getAttribute('py:autoblock').lower()
-            if guard not in ('false', 'true'):
-                raise ValueError('py:autoblock is evaluated at compile time '
-                                 'and only accepts True/False constants')
-            if guard == 'false':
+        if node.hasAttribute("py:autoblock"):
+            guard = node.getAttribute("py:autoblock").lower()
+            if guard not in ("false", "true"):
+                raise ValueError(
+                    "py:autoblock is evaluated at compile time "
+                    "and only accepts True/False constants"
+                )
+            if guard == "false":
                 # We throw away the attribute so it doesn't remain in rendered nodes.
-                node.removeAttribute('py:autoblock')
+                node.removeAttribute("py:autoblock")
                 return False
 
         return True
@@ -174,13 +201,13 @@ class _Compiler(object):
             return self._compile_pi(node)
         elif self._is_autoblock(node):
             # Set the name of the block equal to the tag itself.
-            node.setAttribute('name', node.tagName)
+            node.setAttribute("name", node.tagName)
             return self._compile_block(node)
-        elif node.tagName.startswith('py:'):
+        elif node.tagName.startswith("py:"):
             # Handle directives
             compiler = getattr(
-                self, '_compile_%s' % node.tagName.split(':')[-1],
-                self._compile_xml)
+                self, "_compile_%s" % node.tagName.split(":")[-1], self._compile_xml
+            )
             return compiler(node)
         else:
             return self._compile_xml(node)
@@ -204,76 +231,86 @@ class _Compiler(object):
         compile the children too.
         """
         content = attrs = guard = None
-        if node.hasAttribute('py:strip'):
-            guard = node.getAttribute('py:strip')
-            if guard == '':  # py:strip="" means yes, do strip the tag
-                guard = 'False'
+        if node.hasAttribute("py:strip"):
+            guard = node.getAttribute("py:strip")
+            if guard == "":  # py:strip="" means yes, do strip the tag
+                guard = "False"
             else:
-                guard = 'not (%s)' % guard
-            node.removeAttribute('py:strip')
-        yield ir.TextNode('<%s' % node.tagName, guard)
+                guard = "not (%s)" % guard
+            node.removeAttribute("py:strip")
+        yield ir.TextNode("<%s" % node.tagName, guard)
         for k, v in sorted(node.attributes.items()):
-            tc = _TextCompiler(self.filename, v, node.lineno,
-                               ir.TextNode, in_html_attr=True, compiler_instance=self)
+            tc = _TextCompiler(
+                self.filename,
+                v,
+                node.lineno,
+                ir.TextNode,
+                in_html_attr=True,
+                compiler_instance=self,
+            )
             v = list(tc)
-            if k == 'py:content':
-                content = node.getAttribute('py:content')
+            if k == "py:content":
+                content = node.getAttribute("py:content")
                 continue
-            elif k == 'py:attrs':
-                attrs = node.getAttribute('py:attrs')
+            elif k == "py:attrs":
+                attrs = node.getAttribute("py:attrs")
                 continue
             yield ir.AttrNode(k, v, guard, self.mode)
         if attrs:
             yield ir.AttrsNode(attrs, guard, self.mode)
         if content:
-            yield ir.TextNode('>', guard)
+            yield ir.TextNode(">", guard)
             yield ir.ExprNode(content)
-            yield ir.TextNode('</%s>' % node.tagName, guard)
+            yield ir.TextNode("</%s>" % node.tagName, guard)
         else:
             if node.childNodes:
-                yield ir.TextNode('>', guard)
+                yield ir.TextNode(">", guard)
                 if self.cdata_scripts and node.tagName in HTML_CDATA_TAGS:
                     # Special behaviour for <script>, <style> tags:
-                    if self.mode == 'xml':  # Start escaping
-                        yield ir.TextNode('/*<![CDATA[*/')
+                    if self.mode == "xml":  # Start escaping
+                        yield ir.TextNode("/*<![CDATA[*/")
                     # Need to unescape the contents of these tags
                     for child in node.childNodes:
                         # CDATA for scripts and styles are automatically managed.
-                        if getattr(child, '_cdata', False):
+                        if getattr(child, "_cdata", False):
                             continue
                         assert isinstance(child, dom.Text)
                         for x in self._compile_text(child):
-                            if child.escaped:  # If user declared CDATA no escaping happened.
+                            if (
+                                child.escaped
+                            ):  # If user declared CDATA no escaping happened.
                                 x.text = html.unescape(x.text)
                             yield x
-                    if self.mode == 'xml':  # Finish escaping
-                        yield ir.TextNode('/*]]>*/')
+                    if self.mode == "xml":  # Finish escaping
+                        yield ir.TextNode("/*]]>*/")
                 else:
                     for cn in node.childNodes:
                         # Keep CDATA sections around if declared by user
-                        if getattr(cn, '_cdata', False):
+                        if getattr(cn, "_cdata", False):
                             yield ir.TextNode(cn.data)
                             continue
                         for x in self._compile_node(cn):
                             yield x
-                if not (self.mode.startswith('html')
-                        and node.tagName in HTML_OPTIONAL_END_TAGS):
-                    yield ir.TextNode('</%s>' % node.tagName, guard)
+                if not (
+                    self.mode.startswith("html")
+                    and node.tagName in HTML_OPTIONAL_END_TAGS
+                ):
+                    yield ir.TextNode("</%s>" % node.tagName, guard)
             elif node.tagName in HTML_REQUIRED_END_TAGS:
-                yield ir.TextNode('></%s>' % node.tagName, guard)
+                yield ir.TextNode("></%s>" % node.tagName, guard)
             else:
-                if self.mode.startswith('html'):
+                if self.mode.startswith("html"):
                     if node.tagName in HTML_OPTIONAL_END_TAGS:
-                        yield ir.TextNode('>', guard)
+                        yield ir.TextNode(">", guard)
                     else:
-                        yield ir.TextNode('></%s>' % node.tagName, guard)
+                        yield ir.TextNode("></%s>" % node.tagName, guard)
                 else:
-                    yield ir.TextNode('/>', guard)
+                    yield ir.TextNode("/>", guard)
 
     @annotate
     def _compile_replace(self, node):
         """Convert py:replace nodes to their intermediate representation."""
-        yield ir.ExprNode(node.getAttribute('value'))
+        yield ir.ExprNode(node.getAttribute("value"))
 
     @annotate
     def _compile_pi(self, node):
@@ -293,9 +330,9 @@ class _Compiler(object):
     @annotate
     def _compile_import(self, node):
         """Convert py:import nodes to their intermediate representation."""
-        href = node.getAttribute('href')
-        if node.hasAttribute('alias'):
-            yield ir.ImportNode(href, node.getAttribute('alias'))
+        href = node.getAttribute("href")
+        if node.hasAttribute("alias"):
+            yield ir.ImportNode(href, node.getAttribute("alias"))
         else:
             yield ir.ImportNode(href)
 
@@ -303,7 +340,7 @@ class _Compiler(object):
     def _compile_extends(self, node):
         """Convert py:extends nodes to their intermediate representation."""
         self.is_child = True
-        href = node.getAttribute('href')
+        href = node.getAttribute("href")
         yield ir.ExtendNode(href)
         for x in self._compile_nop(node):
             yield x
@@ -311,7 +348,7 @@ class _Compiler(object):
     @annotate
     def _compile_include(self, node):
         """Convert py:include nodes to their intermediate representation."""
-        href = node.getAttribute('href')
+        href = node.getAttribute("href")
         yield ir.IncludeNode(href)
 
     @annotate
@@ -321,16 +358,15 @@ class _Compiler(object):
         Any compiled block will be registered in the compiler functions
         registry to be provided to the template.
         """
-        fname = '_kj_block_' + node.getAttribute('name')
-        decl = fname + '()'
+        fname = "_kj_block_" + node.getAttribute("name")
+        decl = fname + "()"
         body = list(self._compile_nop(node))
         if not body:
             body = [ir.PassNode()]
         self.functions[decl] = body
         if self.is_child:
-            parent_block = 'parent.' + fname
-            body.insert(0,
-                ir.PythonNode(ir.TextNode('parent_block=%s' % parent_block)))
+            parent_block = "parent." + fname
+            body.insert(0, ir.PythonNode(ir.TextNode("parent_block=%s" % parent_block)))
         else:
             yield ir.ExprNode(decl)
 
@@ -345,21 +381,22 @@ class _Compiler(object):
         body = list(self._compile_nop(node))
         self.in_def = old_in_def
         if self.in_def:
-            yield ir.InnerDefNode(node.getAttribute('function'), *body)
+            yield ir.InnerDefNode(node.getAttribute("function"), *body)
         else:
-            self.functions[node.getAttribute('function')] = body
+            self.functions[node.getAttribute("function")] = body
 
     @annotate
     def _compile_call(self, node):
         """Convert py:call nodes to their intermediate representation."""
-        if node.childNodes[0].hasAttribute('args'):
-            defn = '$caller(' + node.childNodes[0].getAttribute('args') + ')'
+        if node.childNodes[0].hasAttribute("args"):
+            defn = "$caller(" + node.childNodes[0].getAttribute("args") + ")"
         else:
-            defn = '$caller()'
+            defn = "$caller()"
         yield ir.CallNode(
             defn,
-            node.getAttribute('function').replace('%caller', '$caller'),
-            *self._compile_nop(node))
+            node.getAttribute("function").replace("%caller", "$caller"),
+            *self._compile_nop(node)
+        )
 
     @annotate
     def _compile_text(self, node):
@@ -367,29 +404,29 @@ class _Compiler(object):
         kwargs = {}
         if node.parentNode and node.parentNode.tagName in HTML_CDATA_TAGS:
             # script and style should always be untranslatable.
-            kwargs['node_type'] = ir.TextNode
+            kwargs["node_type"] = ir.TextNode
 
-        tc = _TextCompiler(self.filename, node.data, node.lineno, compiler_instance=self, **kwargs)
+        tc = _TextCompiler(
+            self.filename, node.data, node.lineno, compiler_instance=self, **kwargs
+        )
         for x in tc:
             yield x
 
     @annotate
     def _compile_comment(self, node):
         """Convert comments to their intermediate representation."""
-        if not node.data.startswith('!'):
-            yield ir.TextNode('<!-- %s -->' % node.data)
+        if not node.data.startswith("!"):
+            yield ir.TextNode("<!-- %s -->" % node.data)
 
     @annotate
     def _compile_for(self, node):
         """Convert py:for nodes to their intermediate representation."""
-        yield ir.ForNode(node.getAttribute('each'),
-                         *list(self._compile_nop(node)))
+        yield ir.ForNode(node.getAttribute("each"), *list(self._compile_nop(node)))
 
     @annotate
     def _compile_with(self, node):
         """Convert py:with nodes to their intermediate representation."""
-        yield ir.WithNode(node.getAttribute('vars'),
-                          *list(self._compile_nop(node)))
+        yield ir.WithNode(node.getAttribute("vars"), *list(self._compile_nop(node)))
 
     @annotate
     def _compile_switch(self, node):
@@ -402,40 +439,43 @@ class _Compiler(object):
                 continue
             elif not isinstance(n, (ir.CaseNode, ir.ElseNode)):
                 raise XMLTemplateCompileError(
-                    'py:switch directive can only contain py:case and py:else nodes '
-                    'and cannot be placed on a tag.',
-                    doc=self.doc, filename=self.filename, linen=node.lineno
+                    "py:switch directive can only contain py:case and py:else nodes "
+                    "and cannot be placed on a tag.",
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=node.lineno,
                 )
             body.append(n)
 
-        yield ir.SwitchNode(node.getAttribute('test'), *body)
+        yield ir.SwitchNode(node.getAttribute("test"), *body)
 
     @annotate
     def _compile_case(self, node):
         """Convert py:case nodes to their intermediate representation."""
-        yield ir.CaseNode(node.getAttribute('value'),
-                          *list(self._compile_nop(node)))
+        yield ir.CaseNode(node.getAttribute("value"), *list(self._compile_nop(node)))
 
     @annotate
     def _compile_if(self, node):
         """Convert py:if nodes to their intermediate representation."""
-        yield ir.IfNode(node.getAttribute('test'),
-                        *list(self._compile_nop(node)))
+        yield ir.IfNode(node.getAttribute("test"), *list(self._compile_nop(node)))
 
     @annotate
     def _compile_else(self, node):
         """Convert py:else nodes to their intermediate representation."""
-        if (getattr(node.parentNode, 'tagName', '') != 'py:nop' and
-                not node.parentNode.hasAttribute('py:switch') and
-                getattr(node.previousSibling, 'tagName', '') != 'py:if'):
+        if (
+            getattr(node.parentNode, "tagName", "") != "py:nop"
+            and not node.parentNode.hasAttribute("py:switch")
+            and getattr(node.previousSibling, "tagName", "") != "py:if"
+        ):
             raise XMLTemplateCompileError(
-                'py:else directive must be inside a py:switch or directly after py:if '
-                'without text or spaces in between',
-                doc=self.doc, filename=self.filename, linen=node.lineno
+                "py:else directive must be inside a py:switch or directly after py:if "
+                "without text or spaces in between",
+                doc=self.doc,
+                filename=self.filename,
+                linen=node.lineno,
             )
 
-        yield ir.ElseNode(
-            *list(self._compile_nop(node)))
+        yield ir.ElseNode(*list(self._compile_nop(node)))
 
     @annotate
     def _compile_nop(self, node):
@@ -445,11 +485,11 @@ class _Compiler(object):
 
 
 def make_text_node(text, guard=None):
-    '''Return a TranslatableTextNode if the text is not empty,
+    """Return a TranslatableTextNode if the text is not empty,
     otherwise a regular TextNode.
 
     This avoid spending the cost of translating empty nodes.
-    '''
+    """
     if text.strip():
         return ir.TranslatableTextNode(text, guard)
     return ir.TextNode(text, guard)
@@ -460,8 +500,16 @@ class _TextCompiler(object):
     around them in the template source and generates :class:`.ir.ExprNode`
     instances and :class:`.ir.TextNode` instances accordingly.
     """
-    def __init__(self, filename, source, lineno,
-                 node_type=make_text_node, in_html_attr=False, compiler_instance=None):
+
+    def __init__(
+        self,
+        filename,
+        source,
+        lineno,
+        node_type=make_text_node,
+        in_html_attr=False,
+        compiler_instance=None,
+    ):
         self.filename = filename
         self.source = source
         self.orig_lineno = lineno
@@ -475,7 +523,7 @@ class _TextCompiler(object):
     def text(self, text):
         node = self.node_type(text)
         node.lineno = self.real_lineno
-        self.lineno += text.count('\n')
+        self.lineno += text.count("\n")
         return node
 
     def expr(self, text):
@@ -483,43 +531,42 @@ class _TextCompiler(object):
         # HTML attributes are always escaped in the end.
         node = ir.ExprNode(text, safe=self.in_html_attr)
         node.lineno = self.real_lineno
-        self.lineno += text.count('\n')
+        self.lineno += text.count("\n")
         return node
 
     @property
     def real_lineno(self):
         return self.orig_lineno + self.lineno
 
-    _pattern = r'''
+    _pattern = r"""
     \$(?:
         (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
         {(?P<expr_braced>) | # ${....
         \$ # $$ -> $
-    )'''
-    _re_pattern = re.compile(
-        _pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
+    )"""
+    _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
     def __iter__(self):
         source = self.source
         for mo in self._re_pattern.finditer(source):
             start = mo.start()
             if start > self.pos:
-                yield self.text(source[self.pos:start])
+                yield self.text(source[self.pos : start])
             self.pos = start
             groups = mo.groupdict()
-            if groups['expr_braced'] is not None:
+            if groups["expr_braced"] is not None:
                 self.pos = mo.end()
                 yield self._get_braced_expr()
-            elif groups['expr_named'] is not None:
+            elif groups["expr_named"] is not None:
                 self.pos = mo.end()
-                yield self.expr(groups['expr_named'])
+                yield self.expr(groups["expr_named"])
             else:
                 # handle $$ and $ followed by anything that is neither a valid
                 # variable name or braced expression
                 self.pos = mo.end()
-                yield self.text('$')
+                yield self.text("$")
         if self.pos != len(source):
-            yield self.text(source[self.pos:])
+            yield self.text(source[self.pos :])
 
     def _get_braced_expr(self):
         # see https://github.com/nandoflorestan/kajiki/pull/38
@@ -528,38 +575,52 @@ class _TextCompiler(object):
         # in this case this function gets called only once with self.pos equal to 6
         # this function must return the result of self.expr('1+1') and must set self.pos to 9
         def py_expr(end=None):
-            return self.source[self.pos:end]
+            return self.source[self.pos : end]
+
         try:
             self.pos += len(py_expr()) - len(py_expr().lstrip())
-            compile(py_expr(), 'find_}', 'eval')
+            compile(py_expr(), "find_}", "eval")
         except SyntaxError as se:
             end = sum(
-                [self.pos, se.offset] +
-                [len(line) + 1
-                 for idx, line in enumerate(py_expr().splitlines())
-                 if idx < se.lineno - 1]
+                [self.pos, se.offset]
+                + [
+                    len(line) + 1
+                    for idx, line in enumerate(py_expr().splitlines())
+                    if idx < se.lineno - 1
+                ]
             )
-            if py_expr(end)[-1] != '}':
+            if py_expr(end)[-1] != "}":
                 # for example unclosed strings
                 raise XMLTemplateCompileError(
                     "Kajiki can't compile the python expression `%s`" % py_expr()[:-1],
-                    doc=self.doc, filename=self.filename, linen=self.lineno)
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=self.lineno,
+                )
             else:
                 # if the expression ends in a } then it may be valid
                 try:
-                    compile(py_expr(end-1), 'check_validity', 'eval')
+                    compile(py_expr(end - 1), "check_validity", "eval")
                 except SyntaxError as se:
                     # for example + operators with a single operand
                     raise XMLTemplateCompileError(
-                        "Kajiki detected an invalid python expression `%s`" % py_expr()[:-1],
-                        doc=self.doc, filename=self.filename, linen=self.lineno)
+                        "Kajiki detected an invalid python expression `%s`"
+                        % py_expr()[:-1],
+                        doc=self.doc,
+                        filename=self.filename,
+                        linen=self.lineno,
+                    )
 
             py_text = py_expr(end - 1)
             self.pos = end
             return self.expr(py_text)
         else:
-            raise XMLTemplateCompileError("Braced expression not terminated",
-                                          doc=self.doc, filename=self.filename, linen=self.lineno)
+            raise XMLTemplateCompileError(
+                "Braced expression not terminated",
+                doc=self.doc,
+                filename=self.filename,
+                linen=self.lineno,
+            )
 
 
 class _Parser(sax.ContentHandler):
@@ -569,6 +630,7 @@ class _Parser(sax.ContentHandler):
     converted into the intermediate representation and
     then to Python Code.
     """
+
     DTD = '<!DOCTYPE kajiki SYSTEM "kajiki.dtd">'
 
     def __init__(self, filename, source):
@@ -586,7 +648,7 @@ class _Parser(sax.ContentHandler):
         """
         sax.ContentHandler.__init__(self)
         if not isinstance(source, str):
-            raise TypeError('The template source must be a unicode string.')
+            raise TypeError("The template source must be a unicode string.")
         self._els = []
         self._doc = dom.Document()
         self._filename = filename
@@ -610,16 +672,21 @@ class _Parser(sax.ContentHandler):
         # streams; processing of character streams is for further study."
         # So if source is unicode, we pre-encode it:
         # TODO Is this dance really necessary? Can't I just call a function?
-        byts = self._source.encode('utf-8')
-        source.setEncoding('utf-8')
+        byts = self._source.encode("utf-8")
+        source.setEncoding("utf-8")
         source.setByteStream(io.BytesIO(byts))
         source.setSystemId(self._filename)
 
         try:
             parser.parse(source)
         except SAXParseException as e:
-            exc = XMLTemplateParseError(e.getMessage(), self._source, self._filename,
-                                        e.getLineNumber(), e.getColumnNumber())
+            exc = XMLTemplateParseError(
+                e.getMessage(),
+                self._source,
+                self._filename,
+                e.getLineNumber(),
+                e.getColumnNumber(),
+            )
             exc.__cause__ = None
             raise exc
 
@@ -662,25 +729,25 @@ class _Parser(sax.ContentHandler):
         # The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
         # a valid entity, better pass it along to sax and find out!"
         # (Since expat is nonvalidating, it never reads the external doctypes.)
-        if name and name[-1] != ';':
+        if name and name[-1] != ";":
             # In entities.html5 sometimes the entities are recorded
             # with/without semicolon. That list is copied from cPython
             # itself, and we don't want to maintain a separate diff.
             # So just ensure we ask for entities always recorded with trailing semicolon.
-            name += ';'
+            name += ";"
         return self.characters(html.entities.html5[name])
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover
-        raise NotImplementedError('startElementNS')
+        raise NotImplementedError("startElementNS")
 
     def endElementNS(self, name, qname):  # pragma no cover
-        raise NotImplementedError('startElementNS')
+        raise NotImplementedError("startElementNS")
 
     def startPrefixMapping(self, prefix, uri):  # pragma no cover
-        raise NotImplementedError('startPrefixMapping')
+        raise NotImplementedError("startPrefixMapping")
 
     def endPrefixMapping(self, prefix):  # pragma no cover
-        raise NotImplementedError('endPrefixMapping')
+        raise NotImplementedError("endPrefixMapping")
 
     # LexicalHandler implementation
     def comment(self, text):
@@ -689,14 +756,14 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def startCDATA(self):
-        node = self._doc.createTextNode('<![CDATA[')
+        node = self._doc.createTextNode("<![CDATA[")
         node._cdata = True
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
         self._cdata_stack.append(self._els[-1])
 
     def endCDATA(self):
-        node = self._doc.createTextNode(']]>')
+        node = self._doc.createTextNode("]]>")
         node._cdata = True
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
@@ -721,6 +788,7 @@ class _DomTransformer(object):
 
     The Transformer mutates the original document.
     """
+
     def __init__(self, doc, strip_text=True):
         self._transformed = False
         self.doc = doc
@@ -752,13 +820,13 @@ class _DomTransformer(object):
         if isinstance(tree, dom.Document):
             cls._merge_text_nodes(tree.firstChild)
             return tree
-        if not isinstance(getattr(tree, 'tagName', None), str):
+        if not isinstance(getattr(tree, "tagName", None), str):
             return tree
 
         # Squash all successive text nodes into a single one.
         merge_node = None
         for child in list(tree.childNodes):
-            if isinstance(child, dom.Text) and not getattr(child, '_cdata', False):
+            if isinstance(child, dom.Text) and not getattr(child, "_cdata", False):
                 if merge_node is None:
                     merge_node = child.ownerDocument.createTextNode(child.data)
                     merge_node.lineno = child.lineno
@@ -787,7 +855,7 @@ class _DomTransformer(object):
         """
         for child in tree.childNodes:
             if isinstance(child, dom.Text):
-                if not getattr(child, '_cdata', False):
+                if not getattr(child, "_cdata", False):
                     if not child.data.strip():
                         # Already a totally empty node, do nothing...
                         continue
@@ -801,7 +869,7 @@ class _DomTransformer(object):
                         begin_node.lineno = child.lineno
                         begin_node.escaped = child.escaped
                         tree.insertBefore(newChild=begin_node, refChild=child)
-                        child.lineno += child.data[:empty_text_len].count('\n')
+                        child.lineno += child.data[:empty_text_len].count("\n")
                         child.data = lstripped_data
 
                     rstripped_data = child.data.rstrip()
@@ -810,7 +878,9 @@ class _DomTransformer(object):
                         empty_text_len = len(child.data) - len(rstripped_data)
                         empty_text = child.data[-empty_text_len:]
                         end_node = child.ownerDocument.createTextNode(empty_text)
-                        end_node.lineno = child.lineno + child.data[:-empty_text_len].count('\n')
+                        end_node.lineno = child.lineno + child.data[
+                            :-empty_text_len
+                        ].count("\n")
                         end_node.escaped = child.escaped
                         tree.replaceChild(newChild=end_node, oldChild=child)
                         tree.insertBefore(newChild=child, refChild=end_node)
@@ -824,10 +894,12 @@ class _DomTransformer(object):
         """Strips empty characters in all text nodes."""
         for child in tree.childNodes:
             if isinstance(child, dom.Text):
-                if not getattr(child, '_cdata', False):
+                if not getattr(child, "_cdata", False):
                     # Move lineno forward the amount of lines we are going to strip.
                     lstripped_data = child.data.lstrip()
-                    child.lineno += child.data[:len(child.data)-len(lstripped_data)].count('\n')
+                    child.lineno += child.data[
+                        : len(child.data) - len(lstripped_data)
+                    ].count("\n")
                     child.data = child.data.strip()
             else:
                 cls._strip_text_nodes(child)
@@ -856,19 +928,19 @@ class _DomTransformer(object):
         if isinstance(tree, dom.Document):
             cls._expand_directives(tree.firstChild, tree)
             return tree
-        if not isinstance(getattr(tree, 'tagName', None), str):
+        if not isinstance(getattr(tree, "tagName", None), str):
             return tree
         if tree.tagName in QDIRECTIVES_DICT:
             tree.setAttribute(
-                tree.tagName,
-                tree.getAttribute(QDIRECTIVES_DICT[tree.tagName]))
-            tree.tagName = 'py:nop'
-        if tree.tagName != 'py:nop' and tree.hasAttribute('py:extends'):
-            value = tree.getAttribute('py:extends')
-            el = tree.ownerDocument.createElement('py:extends')
-            el.setAttribute('href', value)
+                tree.tagName, tree.getAttribute(QDIRECTIVES_DICT[tree.tagName])
+            )
+            tree.tagName = "py:nop"
+        if tree.tagName != "py:nop" and tree.hasAttribute("py:extends"):
+            value = tree.getAttribute("py:extends")
+            el = tree.ownerDocument.createElement("py:extends")
+            el.setAttribute("href", value)
             el.lineno = tree.lineno
-            tree.removeAttribute('py:extends')
+            tree.removeAttribute("py:extends")
             tree.childNodes.insert(0, el)
         for directive, attr in QDIRECTIVES:
             if not tree.hasAttribute(directive):
@@ -892,9 +964,11 @@ class _DomTransformer(object):
 
 class XMLTemplateError(Exception):
     """Base class for all Parse/Compile errors."""
+
     def __init__(self, msg, source, filename, linen, coln):
         super(XMLTemplateError, self).__init__(
-            '[%s:%s] %s\n%s' % (filename, linen, msg, self._get_source_snippet(source, linen))
+            "[%s:%s] %s\n%s"
+            % (filename, linen, msg, self._get_source_snippet(source, linen))
         )
         self.filename = filename
         self.linenum = linen
@@ -924,9 +998,10 @@ class XMLTemplateCompileError(XMLTemplateError):
     they are invalid or any kajiki template constraint
     that fails in the provided template code.
     """
+
     def __init__(self, msg, doc, filename, linen):
         super(XMLTemplateCompileError, self).__init__(
-            msg, getattr(doc, '_source', ''), filename, linen, 0
+            msg, getattr(doc, "_source", ""), filename, linen, 0
         )
 
 

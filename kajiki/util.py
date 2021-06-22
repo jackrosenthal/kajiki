@@ -18,12 +18,13 @@ class flattener(object):
     def decorate(cls, func):
         def inner(*args, **kwargs):
             return cls(func(*args, **kwargs))
+
         return inner
 
     def accumulate_str(self):
         if type(self.iterator) == flattener:
             return self.iterator.accumulate_str()
-        s = ''
+        s = ""
         iter_stack = [self.iterator]
         while iter_stack:
             try:
@@ -61,19 +62,19 @@ class NameGen(object):
 
     @classmethod
     def gen(cls, hint):
-        if not hasattr(cls.lcl, 'inst'):
+        if not hasattr(cls.lcl, "inst"):
             cls.lcl.inst = NameGen()
         return cls.lcl.inst._gen(hint)
 
     def _gen(self, hint):
         r = hint
         while r in self.names:
-            r = '%s_%d' % (hint, randint(0, len(self.names) * 10))
+            r = "%s_%d" % (hint, randint(0, len(self.names) * 10))
         self.names.add(r)
         return r
 
 
-def gen_name(hint='_kj_'):
+def gen_name(hint="_kj_"):
     return NameGen.gen(hint)
 
 
