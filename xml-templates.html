@@ -61,23 +61,28 @@ template to determine how to render:</p>
 <span class="gp">... </span><span class="s1">        &lt;/form&gt;</span>
 <span class="gp">... </span><span class="s1">    &lt;/body&gt;</span>
 <span class="gp">... </span><span class="s1">&lt;/html&gt;&#39;&#39;&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">kajiki</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="n">tpl_text</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-<span class="go">&lt;!DOCTYPE html&gt;&lt;html&gt;</span>
-<span class="go">    &lt;head&gt;&lt;!--  Some stuff here  --&gt;</span>
+<span class="go">&lt;!DOCTYPE html&gt;</span>
+<span class="go">&lt;html&gt;</span>
+<span class="go">    &lt;head&gt;&lt;!--  Some stuff here  --&gt;&lt;/head&gt;</span>
 <span class="go">    &lt;body&gt;</span>
 <span class="go">        &lt;form&gt;</span>
 <span class="go">            &lt;input checked type=&quot;checkbox&quot;&gt;</span>
 <span class="go">            &lt;select&gt;</span>
-<span class="go">                &lt;option selected&gt;One</span>
-<span class="go">                &lt;option&gt;Two</span>
-<span class="go">                &lt;option&gt;Three</span>
+<span class="go">                &lt;option selected&gt;One&lt;/option&gt;</span>
+<span class="go">                &lt;option&gt;Two&lt;/option&gt;</span>
+<span class="go">                &lt;option&gt;Three&lt;/option&gt;</span>
 <span class="go">            &lt;/select&gt;</span>
 <span class="go">        &lt;/form&gt;</span>
+<span class="go">    &lt;/body&gt;</span>
+<span class="go">&lt;/html&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># If we want to override the detected type, we can pass a &#39;mode&#39; param</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="n">tpl_text</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;xml&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-<span class="go">&lt;!DOCTYPE html&gt;&lt;html&gt;</span>
+<span class="go">&lt;!DOCTYPE html&gt;</span>
+<span class="go">&lt;html&gt;</span>
 <span class="go">    &lt;head&gt;&lt;!--  Some stuff here  --&gt;&lt;/head&gt;</span>
 <span class="go">    &lt;body&gt;</span>
 <span class="go">        &lt;form&gt;</span>

@@ -31,26 +31,11 @@
           <div class="body" role="main">
             
   <h1>Source code for kajiki.template</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
-                        <span class="n">unicode_literals</span><span class="p">)</span>
+<span></span><span class="kn">import</span> <span class="nn">dis</span>
+<span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">types</span>
-<span class="kn">from</span> <span class="nn">nine</span> <span class="kn">import</span> <span class="n">IS_PYTHON2</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iteritems</span>
 <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">version_info</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">update_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span>
-                       <span class="n">assigned</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;__module__&#39;</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;__doc__&#39;</span><span class="p">),</span>
-                       <span class="n">updated</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;__dict__&#39;</span><span class="p">,)):</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">assigned</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">updated</span><span class="p">:</span>
-            <span class="nb">getattr</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">wrapper</span>
 
 <span class="kn">import</span> <span class="nn">kajiki</span>
 <span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">literal</span>
@@ -62,7 +47,7 @@
 
 <span class="k">class</span> <span class="nc">_obj</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">kw</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kw</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
 
@@ -167,19 +152,19 @@
 <span class="sd">        the first thing it does is asking the loader of the</span>
 <span class="sd">        child template to load the parent template</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">basestring</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
         <span class="n">p_inst</span> <span class="o">=</span> <span class="n">parent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="p">)</span>
         <span class="n">p_globals</span> <span class="o">=</span> <span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span>
         <span class="c1"># Find overrides</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="n">p_globals</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="c1"># Find inherited funcs</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">):</span>
@@ -347,9 +332,12 @@
     <span class="n">py_text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">py_lines</span><span class="p">))</span>
     <span class="n">py_linenos</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">last_lineno</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">py_lines</span><span class="p">):</span>
-        <span class="n">lno</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">last_lineno</span><span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="n">_lineno</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">py_linenos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lno</span><span class="p">))</span>
+    <span class="n">py_lineno</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">py_lines</span><span class="p">:</span>
+        <span class="n">lno</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">last_lineno</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">_lineno</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">py_linenos</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">py_lineno</span><span class="p">,</span> <span class="n">lno</span><span class="p">))</span>
+            <span class="n">py_lineno</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">last_lineno</span> <span class="o">=</span> <span class="n">lno</span>
     <span class="n">dct</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">kajiki</span><span class="o">=</span><span class="n">kajiki</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -407,7 +395,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__closure__</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">update_wrapper</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">functools</span><span class="o">.</span><span class="n">update_wrapper</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">flattener</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)),</span>
             <span class="n">func</span><span class="p">)</span>
 
@@ -416,12 +404,8 @@
             <span class="k">return</span>
         <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span>
         <span class="n">new_lnotab_numbers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">bc_off</span><span class="p">,</span> <span class="n">py_lno</span> <span class="ow">in</span> <span class="n">lnotab</span><span class="o">.</span><span class="n">lnotab_numbers</span><span class="p">(</span>
-                <span class="n">code</span><span class="o">.</span><span class="n">co_lnotab</span><span class="p">,</span> <span class="n">code</span><span class="o">.</span><span class="n">co_firstlineno</span><span class="p">):</span>
-            <span class="n">tpl_lno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">py_lno</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">tpl_lno</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ERROR LOOKING UP LINE #</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">py_lno</span><span class="p">)</span>
-                <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">bc_off</span><span class="p">,</span> <span class="n">py_lno</span> <span class="ow">in</span> <span class="n">dis</span><span class="o">.</span><span class="n">findlinestarts</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+            <span class="n">tpl_lno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="p">[</span><span class="n">py_lno</span><span class="p">]</span>
             <span class="n">new_lnotab_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">bc_off</span><span class="p">,</span> <span class="n">tpl_lno</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">new_lnotab_numbers</span><span class="p">:</span>
             <span class="k">return</span>
@@ -433,44 +417,27 @@
         <span class="k">return</span>
 
 
-<span class="k">if</span> <span class="n">IS_PYTHON2</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firstlineno</span><span class="p">,</span> <span class="n">lnotab</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
-                              <span class="n">filename</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">),</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
-                              <span class="n">firstlineno</span><span class="p">,</span>
-                              <span class="n">lnotab</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
-                              <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firstlineno</span><span class="p">,</span> <span class="n">lnotab</span><span class="p">):</span>
-        <span class="n">code_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
-            <span class="n">code_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span><span class="p">)</span>
-        <span class="n">code_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
-            <span class="n">filename</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
-            <span class="n">firstlineno</span><span class="p">,</span>
-            <span class="n">lnotab</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
-        <span class="p">])</span>
-        <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="o">*</span><span class="n">code_args</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firstlineno</span><span class="p">,</span> <span class="n">lnotab</span><span class="p">):</span>
+    <span class="n">code_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+        <span class="n">code_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span><span class="p">)</span>
+    <span class="n">code_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
+        <span class="n">firstlineno</span><span class="p">,</span>
+        <span class="n">lnotab</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
+    <span class="p">])</span>
+    <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="o">*</span><span class="n">code_args</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">KajikiSyntaxError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>

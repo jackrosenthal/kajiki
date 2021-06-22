@@ -31,28 +31,18 @@
           <div class="body" role="main">
             
   <h1>Source code for kajiki.xml_template</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
-                        <span class="n">unicode_literals</span><span class="p">)</span>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">html</span>
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">codecs</span> <span class="kn">import</span> <span class="nb">open</span>
 <span class="kn">from</span> <span class="nn">xml</span> <span class="kn">import</span> <span class="n">sax</span>
 <span class="kn">from</span> <span class="nn">xml.dom</span> <span class="kn">import</span> <span class="n">minidom</span> <span class="k">as</span> <span class="n">dom</span>
 <span class="kn">from</span> <span class="nn">xml.sax</span> <span class="kn">import</span> <span class="n">SAXParseException</span>
 
-<span class="kn">from</span> <span class="nn">nine</span> <span class="kn">import</span> <span class="n">IS_PYTHON2</span><span class="p">,</span> <span class="n">basestring</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iteritems</span><span class="p">,</span> <span class="n">native_str</span>
-
-<span class="k">if</span> <span class="n">IS_PYTHON2</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">cStringIO</span> <span class="kn">import</span> <span class="n">StringIO</span> <span class="k">as</span> <span class="n">BytesIO</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
-
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ir</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">template</span>
-<span class="kn">from</span> <span class="nn">.ddict</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">.doctype</span> <span class="kn">import</span> <span class="n">DocumentTypeDeclaration</span><span class="p">,</span> <span class="n">extract_dtd</span>
-<span class="kn">from</span> <span class="nn">.entities</span> <span class="kn">import</span> <span class="n">html5</span><span class="p">,</span> <span class="n">unescape</span>
 <span class="kn">from</span> <span class="nn">.html_utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">HTML_OPTIONAL_END_TAGS</span><span class="p">,</span> <span class="n">HTML_REQUIRED_END_TAGS</span><span class="p">,</span>
                          <span class="n">HTML_CDATA_TAGS</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.markup_template</span> <span class="kn">import</span> <span class="n">QDIRECTIVES</span><span class="p">,</span> <span class="n">QDIRECTIVES_DICT</span>
@@ -109,7 +99,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="n">doc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_fragment</span> <span class="o">=</span> <span class="n">is_fragment</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functions</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="s1">&#39;__main__()&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">function_lnos</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mod_py</span> <span class="o">=</span> <span class="p">[]</span>
@@ -169,7 +159,7 @@
                 <span class="n">body</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtd</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="s1">&#39;__main__()&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">body</span>
         <span class="n">defs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">node</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">DefNode</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">v</span><span class="p">)</span>
             <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_lnos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
             <span class="n">defs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
@@ -287,7 +277,7 @@
                         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_text</span><span class="p">(</span><span class="n">child</span><span class="p">):</span>
                             <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">escaped</span><span class="p">:</span>  <span class="c1"># If user declared CDATA no escaping happened.</span>
-                                <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">unescape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                                <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
                             <span class="k">yield</span> <span class="n">x</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;xml&#39;</span><span class="p">:</span>  <span class="c1"># Finish escaping</span>
                         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s1">&#39;/*]]&gt;*/&#39;</span><span class="p">)</span>
@@ -654,8 +644,8 @@
         <span class="c1"># So if source is unicode, we pre-encode it:</span>
         <span class="c1"># TODO Is this dance really necessary? Can&#39;t I just call a function?</span>
         <span class="n">byts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-        <span class="n">source</span><span class="o">.</span><span class="n">setEncoding</span><span class="p">(</span><span class="n">native_str</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
-        <span class="n">source</span><span class="o">.</span><span class="n">setByteStream</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">byts</span><span class="p">))</span>
+        <span class="n">source</span><span class="o">.</span><span class="n">setEncoding</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="n">source</span><span class="o">.</span><span class="n">setByteStream</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">byts</span><span class="p">))</span>
         <span class="n">source</span><span class="o">.</span><span class="n">setSystemId</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -711,7 +701,7 @@
             <span class="c1"># itself, and we don&#39;t want to maintain a separate diff.</span>
             <span class="c1"># So just ensure we ask for entities always recorded with trailing semicolon.</span>
             <span class="n">name</span> <span class="o">+=</span> <span class="s1">&#39;;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">characters</span><span class="p">(</span><span class="n">html5</span><span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">characters</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">entities</span><span class="o">.</span><span class="n">html5</span><span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="_Parser.startElementNS"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElementNS">[docs]</a>    <span class="k">def</span> <span class="nf">startElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;startElementNS&#39;</span><span class="p">)</span></div>
@@ -795,7 +785,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Document</span><span class="p">):</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_merge_text_nodes</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">firstChild</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">tree</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">basestring</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">tree</span>
 
         <span class="c1"># Squash all successive text nodes into a single one.</span>
@@ -899,7 +889,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Document</span><span class="p">):</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_expand_directives</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">firstChild</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">tree</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">basestring</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s1">&#39;tagName&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">tree</span>
         <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">QDIRECTIVES_DICT</span><span class="p">:</span>
             <span class="n">tree</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span>
@@ -943,26 +933,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">linenum</span> <span class="o">=</span> <span class="n">linen</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">colnum</span> <span class="o">=</span> <span class="n">coln</span>
 
-    <span class="k">def</span> <span class="nf">_get_source_snippet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
-        <span class="n">SURROUNDING</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="n">linen</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">def</span> <span class="nf">_get_source_snippet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">lineno</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+        <span class="c1"># Lines are 1 indexed, account for that.</span>
+        <span class="n">lineno</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SURROUNDING</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1"> --&gt; </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">SURROUNDING</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_get_source_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">linen</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">source</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="n">linen</span><span class="p">]</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lineno</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">lineno</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> </span><span class="si">{arrow}</span><span class="s2"> </span><span class="si">{src}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">arrow</span><span class="o">=</span><span class="s2">&quot;--&gt;&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">lineno</span> <span class="k">else</span> <span class="s2">&quot;   &quot;</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">XMLTemplateCompileError</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">):</span>

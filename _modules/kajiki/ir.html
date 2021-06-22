@@ -31,15 +31,10 @@
           <div class="body" role="main">
             
   <h1>Source code for kajiki.ir</h1><div class="highlight"><pre>
-<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
-                        <span class="n">unicode_literals</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">gen_name</span><span class="p">,</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">window</span>
-<span class="kn">from</span> <span class="nn">nine</span> <span class="kn">import</span> <span class="n">nine</span>
 
 
 <span class="k">def</span> <span class="nf">generate_python</span><span class="p">(</span><span class="n">ir</span><span class="p">):</span>
@@ -477,7 +472,6 @@
         <span class="k">yield</span> <span class="n">last_node</span>
 
 
-<span class="nd">@nine</span>
 <span class="k">class</span> <span class="nc">PyLine</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">filename</span>
