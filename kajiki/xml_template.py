@@ -27,19 +27,23 @@ def XMLTemplate(
     strip_text=False,
     base_globals=None,
 ):
-    """Given XML source code of a Kajiki Templates parses and returns a template class.
+    """Given XML source code of a Kajiki Templates parses and returns
+    a template class.
 
-    The source code is parsed to its DOM representation by :class:`._Parser`,
-    which is then expanded to separate directives from tags by :class:`._DomTransformer`
-    and then compiled to the *Intermediate Representation* tree by :class:`._Compiler`.
+    The source code is parsed to its DOM representation by
+    :class:`._Parser`, which is then expanded to separate directives
+    from tags by :class:`._DomTransformer` and then compiled to the
+    *Intermediate Representation* tree by :class:`._Compiler`.
 
     The *Intermediate Representation* generates the Python code
-    which creates a new :class:`kajiki.template._Template` subclass through
-    :meth:`kajiki.template.Template`.
+    which creates a new :class:`kajiki.template._Template` subclass
+    through :meth:`kajiki.template.Template`.
 
-    The generated code is then executed to return the newly created class.
+    The generated code is then executed to return the newly created
+    class.
 
-    Calling ``.render()`` on an instance of the generate class will then render the template.
+    Calling ``.render()`` on an instance of the generate class will
+    then render the template.
     """
     if source is None:
         with open(filename, encoding=encoding) as f:
@@ -572,8 +576,9 @@ class _TextCompiler(object):
         # see https://github.com/nandoflorestan/kajiki/pull/38
         # Trying to get the position of a closing } in braced expressions
         # So, self.source can be something like `1+1=${1+1} ahah`
-        # in this case this function gets called only once with self.pos equal to 6
-        # this function must return the result of self.expr('1+1') and must set self.pos to 9
+        # in this case this function gets called only once with
+        # self.pos equal to 6 this function must return the result of
+        # self.expr('1+1') and must set self.pos to 9
         def py_expr(end=None):
             return self.source[self.pos : end]
 
@@ -724,16 +729,19 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(node)
 
     def skippedEntity(self, name):
-        # Deals with an HTML entity such as &nbsp; (XML itself defines very few entities.)
+        # Deals with an HTML entity such as &nbsp; (XML itself defines
+        # very few entities.)
 
-        # The presence of a SYSTEM doctype makes expat say "hey, that MIGHT be
-        # a valid entity, better pass it along to sax and find out!"
-        # (Since expat is nonvalidating, it never reads the external doctypes.)
+        # The presence of a SYSTEM doctype makes expat say "hey, that
+        # MIGHT be a valid entity, better pass it along to sax and
+        # find out!" (Since expat is nonvalidating, it never reads the
+        # external doctypes.)
         if name and name[-1] != ";":
             # In entities.html5 sometimes the entities are recorded
             # with/without semicolon. That list is copied from cPython
             # itself, and we don't want to maintain a separate diff.
-            # So just ensure we ask for entities always recorded with trailing semicolon.
+            # So just ensure we ask for entities always recorded with
+            # trailing semicolon.
             name += ";"
         return self.characters(html.entities.html5[name])
 
@@ -847,11 +855,13 @@ class _DomTransformer(object):
 
     @classmethod
     def _extract_nodes_leading_and_trailing_spaces(cls, tree):
-        """Extract the leading and traling spaces of TextNodes to separate nodes.
+        """Extract the leading and traling spaces of TextNodes to
+        separate nodes.
 
-        This is explicitly intended to make i18n easier, as we don't want people having
-        to pay attention to spaces at being and end of text when translating it. So those
-        are always extracted and only the meaningful part is preserved for translation.
+        This is explicitly intended to make i18n easier, as we don't
+        want people having to pay attention to spaces at being and end
+        of text when translating it. So those are always extracted and
+        only the meaningful part is preserved for translation.
         """
         for child in tree.childNodes:
             if isinstance(child, dom.Text):
@@ -862,7 +872,8 @@ class _DomTransformer(object):
 
                     lstripped_data = child.data.lstrip()
                     if len(lstripped_data) != len(child.data):
-                        # There is text to strip at begin, create a new text node with empty space
+                        # There is text to strip at begin, create a
+                        # new text node with empty space
                         empty_text_len = len(child.data) - len(lstripped_data)
                         empty_text = child.data[:empty_text_len]
                         begin_node = child.ownerDocument.createTextNode(empty_text)
@@ -874,7 +885,8 @@ class _DomTransformer(object):
 
                     rstripped_data = child.data.rstrip()
                     if len(rstripped_data) != len(child.data):
-                        # There is text to strip at end, create a new text node with empty space
+                        # There is text to strip at end, create a new
+                        # text node with empty space
                         empty_text_len = len(child.data) - len(rstripped_data)
                         empty_text = child.data[-empty_text_len:]
                         end_node = child.ownerDocument.createTextNode(empty_text)
@@ -895,7 +907,8 @@ class _DomTransformer(object):
         for child in tree.childNodes:
             if isinstance(child, dom.Text):
                 if not getattr(child, "_cdata", False):
-                    # Move lineno forward the amount of lines we are going to strip.
+                    # Move lineno forward the amount of lines we are
+                    # going to strip.
                     lstripped_data = child.data.lstrip()
                     child.lineno += child.data[
                         : len(child.data) - len(lstripped_data)
