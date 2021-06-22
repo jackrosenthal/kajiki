@@ -27,9 +27,7 @@ class MainMocks:
         monkeypatch.setattr(kajiki.loader, "FileLoader", self.file_loader_type)
 
         self.package_loader_type = mock.Mock(return_value=MockedLoader())
-        monkeypatch.setattr(
-            kajiki.loader, "PackageLoader", self.package_loader_type
-        )
+        monkeypatch.setattr(kajiki.loader, "PackageLoader", self.package_loader_type)
 
 
 @pytest.fixture
@@ -104,9 +102,7 @@ def test_output_to_file(tmpdir, main_mocks):
     outfile = str(tmpdir / "output_file.txt")
     main(["infile.txt", outfile])
 
-    main_mocks.file_loader_type.assert_called_once_with(
-        path=["."], force_mode=None
-    )
+    main_mocks.file_loader_type.assert_called_once_with(path=["."], force_mode=None)
     main_mocks.import_.assert_called_once_with("infile.txt")
     main_mocks.template_type.assert_called_once_with({})
     main_mocks.render.assert_called_once_with()
@@ -118,9 +114,7 @@ def test_output_to_file(tmpdir, main_mocks):
 def test_template_variables(main_mocks):
     main(["-v", "foo=bar", "-v", "baz=bip", "infile.txt"])
 
-    main_mocks.file_loader_type.assert_called_once_with(
-        path=["."], force_mode=None
-    )
+    main_mocks.file_loader_type.assert_called_once_with(path=["."], force_mode=None)
     main_mocks.import_.assert_called_once_with("infile.txt")
     main_mocks.template_type.assert_called_once_with(
         {
