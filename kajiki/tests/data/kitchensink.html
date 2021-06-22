@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html py:strip="defined('strip_html') and strip_html" py:block="thedoc">
+  <!--!
+      This file is intended to use most all the XML template features
+      of Kajiki, "including the kitchen sink".
+  -->
+  <head>
+    <title py:if="defined('title')" py:content="title" />
+    <title py:if="not defined('title')">${
+      "The title is {2} {1} {0}!".format(
+      {'nohtyP'}.pop()[::-1],
+      list({'from': 'idontmatter'}).pop(),
+      {'ohea': 'generated', 'rtns': 'kcwb'}['ohea'],
+      )} And more text. "abc
+    </title>
+  </head>
+  <body py:strip="False" py:block="thebody" class="ohea ${'rtns'}">
+    <span py:strip="" class="nevershows">
+      The span around this always gets stripped.
+    </span>
+    <span py:strip="defined('foo')" py:attrs="{'class': 'foo', 'id': 'bar'}">
+      Content in a span only if foo was not defined.
+    </span>
+    This is a literal dolars sign before
+    <tt>not_a_var</tt>: <tt>$$not_a_var</tt>
+    <py:with vars="a = 100">
+      $a
+    </py:with>
+    <ul py:with="stop = 10">
+      <py:for each="x in range(stop)">
+        <py:if test="x % 3 == 0">
+          <li>$x is divisible by 3</li>
+        </py:if><py:else>
+          <li class="not-div-3">
+            ${x} is not divisible by 3,
+            <span py:for="y in range(2, x + 1)" py:if="x % y == 0">
+              but it is divisible by ${y}!
+            </span>
+          </li>
+        </py:else>
+      </py:for>
+    </ul>
+    <div py:if="defined('replace_the_div')" py:replace="replace_the_div" />
+    <pre py:for="i in range(40, 122)" py:content="literal(chr(i))" />
+    <pre py:replace="1234567890123456789012345678901234567890"
+         py:attrs="dict(BAD_BAD_BAD=1234)" />
+    ${value_of('somevar', 'somevar is not set')}
+
+    ${Markup('1234&amp;')}
+
+    <py:def function="divfunc(i)">
+      <py:switch test="i % 3">
+        <py:case value="0">
+          <li>${i} divides by 3</li>
+        </py:case>
+        <py:case value="1">
+          <li>${i} is not a friend of 3</li>
+        </py:case>
+        <py:else>
+          <li>${i} aspires to be a number that divides by 3</li>
+        </py:else>
+      </py:switch>
+    </py:def>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <ul>
+      <py:for each="i in range(1, 100)">
+        ${divfunc(i)}
+      </py:for>
+    </ul>
+    ${_('')}
+  </body>
+</html>
