@@ -26,3 +26,8 @@ def test_golden_file(args, golden_file, capsys):
     captured = capsys.readouterr()
     assert captured.out == golden_data
     assert captured.err == ""
+
+
+def test_file_not_found():
+    with pytest.raises(IOError):
+        main(["/does/not/exist.txt"])
