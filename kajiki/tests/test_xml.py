@@ -429,7 +429,8 @@ class TestFunction(TestCase):
     def test_function(self):
         perform(
             """<div
-><div py:def="evenness(n)"><py:if test="n % 2 == 0">even</py:if><py:else>odd</py:else></div>
+><div py:def="evenness(n)"
+><py:if test="n % 2 == 0">even</py:if><py:else>odd</py:else></div>
 <py:for each="i in range(2)">$i is ${evenness(i)}
 </py:for
 ></div>""",
@@ -1041,7 +1042,10 @@ class TestBuiltinFunctions(TestCase):
 
 class TestTranslation(TestCase):
     def test_scripts_non_translatable(self):
-        src = "<xml><div>Hi</div><script>hello world</script><style>hello style</style></xml>"
+        src = (
+            "<xml><div>Hi</div><script>hello world</script>"
+            "<style>hello style</style></xml>"
+        )
         doc = _Parser("<string>", src).parse()
 
         for n in _Compiler("<string>", doc).compile():
@@ -1142,12 +1146,12 @@ class TestTranslation(TestCase):
         gettext = lambda x: "egg"
         loader = MockLoader(
             {
-                "parent.html": XMLTemplate("""<div>parent</div>"""),
+                "parent.html": XMLTemplate("<div>parent</div>"),
                 "mid.html": XMLTemplate(
-                    """<py:extends href="parent.html"><div>${variable}</div></py:extends>"""
+                    '<py:extends href="parent.html"><div>${variable}</div></py:extends>'
                 ),
                 "child.html": XMLTemplate(
-                    """<py:extends href="mid.html"><div>child</div></py:extends>"""
+                    '<py:extends href="mid.html"><div>child</div></py:extends>'
                 ),
             }
         )
@@ -1241,7 +1245,8 @@ class TestBracketsInExpression(TestCase):
 
     def test_complex(self):
         perform(
-            "<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'} ${1+1}</div></xml>",
+            "<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'}"
+            " ${1+1}</div></xml>",
             "<xml><div>ciao {  } {a {} b {{{{} w}}rarsd{} 2</div></xml>",
         )
 
