@@ -1129,7 +1129,6 @@ class TestTranslation(TestCase):
         perform(src, expected, context=dict(gettext=lambda x: "spam"))
 
     def test_substituting_gettext_with_lambda_extending(self):
-        gettext = lambda x: "egg"
         loader = MockLoader(
             {
                 "parent.html": XMLTemplate("""<div>parent</div>"""),
@@ -1139,11 +1138,10 @@ class TestTranslation(TestCase):
             }
         )
         tpl = loader.import_("child.html")
-        rsp = tpl(dict(gettext=gettext)).render()
+        rsp = tpl(dict(gettext=lambda _: "egg")).render()
         assert rsp == """<div>egg</div><div>egg</div>""", rsp
 
     def test_substituting_gettext_with_lambda_extending_twice(self):
-        gettext = lambda x: "egg"
         loader = MockLoader(
             {
                 "parent.html": XMLTemplate("<div>parent</div>"),
@@ -1156,7 +1154,7 @@ class TestTranslation(TestCase):
             }
         )
         tpl = loader.import_("child.html")
-        rsp = tpl(dict(variable="spam", gettext=gettext)).render()
+        rsp = tpl(dict(variable="spam", gettext=lambda _: "egg")).render()
         # variables must not be translated
         assert rsp == """<div>egg</div><div>spam</div><div>egg</div>""", rsp
 
