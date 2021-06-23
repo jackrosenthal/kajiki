@@ -29,7 +29,7 @@ class Loader(object):
 
 class MockLoader(Loader):
     def __init__(self, modules):
-        super(MockLoader, self).__init__()
+        super().__init__()
         self.modules.update(modules)
         for v in self.modules.values():
             v.loader = self
@@ -45,7 +45,7 @@ class FileLoader(Loader):
         xml_autoblocks=None,
         **template_options
     ):
-        super(FileLoader, self).__init__()
+        super().__init__()
         from kajiki import TextTemplate, XMLTemplate
 
         if isinstance(path, str):
@@ -80,7 +80,7 @@ class FileLoader(Loader):
             mtime = os.stat(filename).st_mtime
             if mtime > self._timestamps.get(name, 0):
                 del self.modules[name]
-        return super(FileLoader, self).import_(name, *args, **kwargs)
+        return super().import_(name, *args, **kwargs)
 
     def _load(self, name, encoding="utf-8", *args, **kwargs):
         """Text templates are read in text mode and XML templates are read in
@@ -117,7 +117,7 @@ class FileLoader(Loader):
 
 class PackageLoader(FileLoader):
     def __init__(self, reload=True, force_mode=None):
-        super(PackageLoader, self).__init__(None, reload, force_mode)
+        super().__init__(None, reload, force_mode)
 
     def _filename(self, name):
         package, module = name.rsplit(".", 1)

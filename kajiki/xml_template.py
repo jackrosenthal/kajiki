@@ -987,9 +987,7 @@ class XMLTemplateCompileError(XMLTemplateError):
     """
 
     def __init__(self, msg, doc, filename, linen):
-        super(XMLTemplateCompileError, self).__init__(
-            msg, getattr(doc, "_source", ""), filename, linen, 0
-        )
+        super().__init__(msg, getattr(doc, "_source", ""), filename, linen, 0)
 
 
 class XMLTemplateParseError(XMLTemplateError):
