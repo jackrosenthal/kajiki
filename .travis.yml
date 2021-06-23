@@ -22,6 +22,12 @@ jobs:
         - touch docs/_build/html/.nojekyll
       env:
         - DOCS_BUILD=t
+    - name: format-black
+      python: "3.9"
+      install:
+        pip install black
+      script:
+        black --check .
 deploy:
   provider: pages
   skip_cleanup: true
