@@ -598,7 +598,7 @@ class TestImport(TestCase):
 
             def __init__(self, sources):
                 self.sources = sources
-                super(XMLSourceLoader, self).__init__({})
+                super().__init__({})
 
             def _load(self, name, encoding="utf-8", *args, **kwargs):
                 return XMLTemplate(

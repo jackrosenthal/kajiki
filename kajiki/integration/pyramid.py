@@ -66,7 +66,7 @@ class PyramidKajikiLoader(Loader):
         self.auto_reload = auto_reload
         self.mode = mode
         self._timestamps = {}
-        super(PyramidKajikiLoader, self).__init__()
+        super().__init__()
 
     def _load(self, name, *a, **kw):
         """Called when the template actually needs to be (re)compiled."""
@@ -83,7 +83,7 @@ class PyramidKajikiLoader(Loader):
             mtime = stat(name).st_mtime
             if mtime > self._timestamps.get(name, 0):
                 del self.modules[name]
-        return super(PyramidKajikiLoader, self).import_(name, *a, **kw)
+        return super().import_(name, *a, **kw)
 
     def __call__(self, value, system, is_fragment=False):
         """IRenderer implementation.
