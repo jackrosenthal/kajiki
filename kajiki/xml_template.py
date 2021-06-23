@@ -975,33 +975,8 @@ class _DomTransformer(object):
         return tree
 
 
-class XMLTemplateError(Exception):
+class XMLTemplateError(template.KajikiTemplateError):
     """Base class for all Parse/Compile errors."""
-
-    def __init__(self, msg, source, filename, linen, coln):
-        super(XMLTemplateError, self).__init__(
-            "[%s:%s] %s\n%s"
-            % (filename, linen, msg, self._get_source_snippet(source, linen))
-        )
-        self.filename = filename
-        self.linenum = linen
-        self.colnum = coln
-
-    def _get_source_snippet(self, source, lineno):
-        lines = source.splitlines()
-
-        # Lines are 1 indexed, account for that.
-        lineno -= 1
-
-        parts = []
-        for i in range(lineno - 2, lineno + 2):
-            if 0 <= i < len(lines):
-                parts.append(
-                    "\t {arrow} {src}\n".format(
-                        arrow="-->" if i == lineno else "   ", src=lines[i]
-                    )
-                )
-        return "".join(parts)
 
 
 class XMLTemplateCompileError(XMLTemplateError):

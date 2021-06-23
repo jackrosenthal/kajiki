@@ -423,9 +423,9 @@ def patch_code_file_lines(code, filename, firstlineno, lnotab):
     return types.CodeType(*code_args)
 
 
-class KajikiSyntaxError(Exception):
+class KajikiTemplateError(Exception):
     def __init__(self, msg, source, filename, linen, coln):
-        super(KajikiSyntaxError, self).__init__(
+        super().__init__(
             "[%s:%s] %s\n%s"
             % (filename, linen, msg, self._get_source_snippet(source, linen))
         )
@@ -433,23 +433,22 @@ class KajikiSyntaxError(Exception):
         self.linenum = linen
         self.colnum = coln
 
-    def _get_source_snippet(self, source, linen):
-        SURROUNDING = 2
-        linen -= 1
+    def _get_source_snippet(self, source, lineno):
+        lines = source.splitlines()
+
+        # Lines are 1 indexed, account for that.
+        lineno -= 1
 
         parts = []
-        for i in range(SURROUNDING, 0, -1):
-            parts.append("\t     %s\n" % self._get_source_line(source, linen - i))
-        parts.append("\t --> %s\n" % self._get_source_line(source, linen))
-        for i in range(1, SURROUNDING + 1):
-            parts.append("\t     %s\n" % self._get_source_line(source, linen + i))
+        for i in range(lineno - 2, lineno + 2):
+            if 0 <= i < len(lines):
+                parts.append(
+                    "\t {arrow} {src}\n".format(
+                        arrow="-->" if i == lineno else "   ", src=lines[i]
+                    )
+                )
         return "".join(parts)
 
-    def _get_source_line(self, source, linen):
-        if linen < 0:
-            return ""
 
-        try:
-            return source.splitlines()[linen]
-        except:
-            return ""
+class KajikiSyntaxError(KajikiTemplateError):
+    pass
