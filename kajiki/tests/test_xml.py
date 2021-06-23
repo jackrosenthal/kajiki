@@ -1223,7 +1223,7 @@ class TestErrorReporting(TestCase):
                     os.path.join(os.path.dirname(__file__), "data")
                 ).load("error.html", strip_text=strip_text)
                 child().render()
-            except ZeroDivisionError as exc:
+            except ZeroDivisionError:
                 import traceback, sys
 
                 exn_info = traceback.format_exception(*sys.exc_info())
@@ -1321,7 +1321,7 @@ class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
 >${echo('hello'))}</div>"""
             )
             assert False, "should raise"
-        except XMLTemplateCompileError as e:
+        except XMLTemplateCompileError:
             pass
 
 
