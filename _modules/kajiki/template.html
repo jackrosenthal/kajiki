@@ -38,11 +38,12 @@
 <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">version_info</span>
 
 <span class="kn">import</span> <span class="nn">kajiki</span>
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">literal</span>
+<span class="kn">from</span> <span class="nn">kajiki</span> <span class="kn">import</span> <span class="n">i18n</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">lnotab</span>
 <span class="kn">from</span> <span class="nn">.html_utils</span> <span class="kn">import</span> <span class="n">HTML_EMPTY_ATTRS</span>
 <span class="kn">from</span> <span class="nn">.ir</span> <span class="kn">import</span> <span class="n">generate_python</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">lnotab</span>
-<span class="kn">from</span> <span class="nn">kajiki</span> <span class="kn">import</span> <span class="n">i18n</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">literal</span>
 
 
 <span class="k">class</span> <span class="nc">_obj</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -73,6 +74,7 @@
 <span class="sd">          providing features like keeping track of py:with stack or</span>
 <span class="sd">          or the gettext function used to translate text.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">__methods__</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">loader</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">base_globals</span> <span class="o">=</span> <span class="kc">None</span>
@@ -83,10 +85,16 @@
             <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">context</span>
         <span class="n">base_globals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_globals</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">local</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">local</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">defined</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">,</span>
-            <span class="n">literal</span><span class="o">=</span><span class="n">literal</span><span class="p">,</span> <span class="n">Markup</span><span class="o">=</span><span class="n">literal</span><span class="p">,</span> <span class="n">gettext</span><span class="o">=</span><span class="n">i18n</span><span class="o">.</span><span class="n">gettext</span><span class="p">,</span>
-            <span class="n">__builtins__</span><span class="o">=</span><span class="n">__builtins__</span><span class="p">,</span> <span class="n">__kj__</span><span class="o">=</span><span class="n">kajiki</span><span class="p">)</span>
+            <span class="n">literal</span><span class="o">=</span><span class="n">literal</span><span class="p">,</span>
+            <span class="n">Markup</span><span class="o">=</span><span class="n">literal</span><span class="p">,</span>
+            <span class="n">gettext</span><span class="o">=</span><span class="n">i18n</span><span class="o">.</span><span class="n">gettext</span><span class="p">,</span>
+            <span class="n">__builtins__</span><span class="o">=</span><span class="n">__builtins__</span><span class="p">,</span>
+            <span class="n">__kj__</span><span class="o">=</span><span class="n">kajiki</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">base_globals</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__methods__</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">bind_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -108,8 +116,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_with_stack</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;gettext&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;value_of&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">get</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;gettext&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;value_of&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">get</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;We convert the chunk to string because it can be of any type</span>
@@ -121,11 +129,11 @@
 
 <div class="viewcode-block" id="_Template.render"><a class="viewcode-back" href="../../runtime.html#kajiki._Template.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Render the template to a string.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_gettext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Used by the code generated by the template to translate static text&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;gettext&#39;</span><span class="p">](</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;gettext&quot;</span><span class="p">](</span><span class="n">s</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_push_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locals_</span><span class="p">,</span> <span class="nb">vars</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Enter a ``py:with`` block.</span>
@@ -158,32 +166,36 @@
         <span class="n">p_globals</span> <span class="o">=</span> <span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span>
         <span class="c1"># Find overrides</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="n">p_globals</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="c1"># Find inherited funcs</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">p_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+
                 <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">):</span>
-                    <span class="sd">&#39;&#39;&#39;Capture the &#39;k&#39; variable in a closure&#39;&#39;&#39;</span>
+                    <span class="sd">&quot;&quot;&quot;Capture the &#39;k&#39; variable in a closure&quot;&quot;&quot;</span>
+
                     <span class="k">def</span> <span class="nf">trampoline</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
                         <span class="k">global</span> <span class="n">parent</span>
                         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">k</span><span class="p">)(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
                     <span class="k">return</span> <span class="n">trampoline</span>
+
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">(</span><span class="n">_</span><span class="p">())</span><span class="o">.</span><span class="n">bind_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
-        <span class="n">p_globals</span><span class="p">[</span><span class="s1">&#39;child&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
-        <span class="n">p_globals</span><span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_inst</span>
-        <span class="n">p_globals</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;parent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_inst</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">p_globals</span><span class="p">[</span><span class="s2">&quot;child&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">p_globals</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_inst</span>
+        <span class="n">p_globals</span><span class="p">[</span><span class="s2">&quot;self&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;self&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_inst</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">return</span> <span class="n">p_inst</span>
 
     <span class="k">def</span> <span class="nf">_push_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
@@ -214,7 +226,7 @@
         <span class="c1"># template is both included and used as a standalone page</span>
         <span class="c1"># it might act as a fragment or not depending on the order it was loaded.</span>
         <span class="c1"># But usually templates meant for inclusion are not standalone pages.</span>
-        <span class="c1"># Also there is no way to set a template as a fragment once loaded. </span>
+        <span class="c1"># Also there is no way to set a template as a fragment once loaded.</span>
         <span class="c1"># So we can only do it through the loader.</span>
         <span class="n">tpl_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_fragment</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">alias</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -226,7 +238,7 @@
         <span class="sd">&quot;&quot;&quot;Returns the given HTML with ampersands, carets and quotes encoded.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">flattener</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">value</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__html__&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__html__&quot;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">__html__</span><span class="p">()</span>
         <span class="n">uval</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_re_escape</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">uval</span><span class="p">):</span>  <span class="c1"># Scan the string before working.</span>
@@ -234,13 +246,18 @@
             <span class="c1"># In 3, html.escape() translates the single quote to &#39;&amp;#39;&#39;</span>
             <span class="c1"># In 2.6 and 2.7, cgi.escape() does not touch the single quote.</span>
             <span class="c1"># Preserve our tests and Kajiki behaviour across Python versions:</span>
-            <span class="k">return</span> <span class="n">uval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;amp;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;lt;&#39;</span><span class="p">)</span> \
-                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;quot;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="n">uval</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;amp;&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;lt;&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&amp;gt;&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&amp;quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="c1"># .replace(&quot;&#39;&quot;, &#39;&amp;#39;&#39;))</span>
             <span class="c1"># Above we do NOT escape the single quote; we don&#39;t need it because</span>
             <span class="c1"># all HTML attributes are double-quoted in our output.</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">uval</span>
+
     <span class="n">_re_escape</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&amp;|&lt;|&gt;|&quot;&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_render_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
@@ -250,7 +267,7 @@
 <span class="sd">        code that in fact leads to this function to generate</span>
 <span class="sd">        the html for tag attributes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s1">&#39;items&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">):</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">attrs</span><span class="p">):</span>
@@ -258,8 +275,8 @@
                     <span class="n">v</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="kc">None</span>
                 <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;html&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">HTML_EMPTY_ATTRS</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;html&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">HTML_EMPTY_ATTRS</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="s1">&#39; </span><span class="si">%s</span><span class="s1">=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_escape</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
 
@@ -273,7 +290,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">part</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
@@ -308,11 +325,11 @@
 <span class="sd">        &#39;Hi&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dct</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">methods</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;__methods__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">methods</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s2">&quot;__methods__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
         <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;exposed&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;__func__&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">))))</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;exposed&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">TplFunc</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__func__&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">))))</span>
     <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">(</span><span class="n">_Template</span><span class="p">,),</span> <span class="n">dct</span><span class="p">)</span>
 
 
@@ -329,7 +346,7 @@
     <span class="k">if</span> <span class="n">base_globals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">base_globals</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">py_lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">generate_python</span><span class="p">(</span><span class="n">ir_node</span><span class="p">))</span>
-    <span class="n">py_text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">py_lines</span><span class="p">))</span>
+    <span class="n">py_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">py_lines</span><span class="p">))</span>
     <span class="n">py_linenos</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">last_lineno</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">py_lineno</span> <span class="o">=</span> <span class="mi">1</span>
@@ -344,7 +361,7 @@
         <span class="n">exec</span><span class="p">(</span><span class="n">py_text</span><span class="p">,</span> <span class="n">dct</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">SyntaxError</span><span class="p">,</span> <span class="ne">IndentationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma no cover</span>
         <span class="k">raise</span> <span class="n">KajikiSyntaxError</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">py_text</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
-    <span class="n">tpl</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span>
+    <span class="n">tpl</span> <span class="o">=</span> <span class="n">dct</span><span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">]</span>
     <span class="n">tpl</span><span class="o">.</span><span class="n">base_globals</span> <span class="o">=</span> <span class="n">base_globals</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">tpl</span><span class="o">.</span><span class="n">base_globals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
     <span class="n">tpl</span><span class="o">.</span><span class="n">py_text</span> <span class="o">=</span> <span class="n">py_text</span>
@@ -363,6 +380,7 @@
 <span class="sd">    This is used by :meth:`.Template` to create a new</span>
 <span class="sd">    ``_Template`` with the attached functions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">inst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_func</span> <span class="o">=</span> <span class="n">func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span> <span class="o">=</span> <span class="n">inst</span>
@@ -373,31 +391,29 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&lt;bound tpl_function </span><span class="si">%r</span><span class="s1"> of </span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;bound tpl_function </span><span class="si">%r</span><span class="s2"> of </span><span class="si">%r</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&lt;unbound tpl_function </span><span class="si">%r</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;unbound tpl_function </span><span class="si">%r</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_globals</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_globals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inst</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_bind_globals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">globals</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Return a function which has the globals dict set to &#39;globals&#39;</span>
+        <span class="sd">&quot;&quot;&quot;Return a function which has the globals dict set to &#39;globals&#39;</span>
 <span class="sd">        and which flattens the result of self._func&#39;.</span>
-<span class="sd">        &#39;&#39;&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span><span class="p">,</span>
             <span class="nb">globals</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__defaults__</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__closure__</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__closure__</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">functools</span><span class="o">.</span><span class="n">update_wrapper</span><span class="p">(</span>
-            <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">flattener</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)),</span>
-            <span class="n">func</span><span class="p">)</span>
+            <span class="k">lambda</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">flattener</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)),</span> <span class="n">func</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">annotate_lnotab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">py_to_tpl</span><span class="p">,</span> <span class="n">py_to_tpl_dct</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">py_to_tpl</span><span class="p">:</span>
@@ -411,8 +427,7 @@
             <span class="k">return</span>
         <span class="n">new_firstlineno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_firstlineno</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">new_lnotab</span> <span class="o">=</span> <span class="n">lnotab</span><span class="o">.</span><span class="n">lnotab_string</span><span class="p">(</span><span class="n">new_lnotab_numbers</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">)</span>
-        <span class="n">new_code</span> <span class="o">=</span> <span class="n">patch_code_file_lines</span><span class="p">(</span>
-            <span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">,</span> <span class="n">new_lnotab</span><span class="p">)</span>
+        <span class="n">new_code</span> <span class="o">=</span> <span class="n">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">,</span> <span class="n">new_lnotab</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span> <span class="o">=</span> <span class="n">new_code</span>
         <span class="k">return</span>
 
@@ -421,54 +436,56 @@
     <span class="n">code_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
         <span class="n">code_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span><span class="p">)</span>
-    <span class="n">code_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
-        <span class="n">filename</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
-        <span class="n">firstlineno</span><span class="p">,</span>
-        <span class="n">lnotab</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
-    <span class="p">])</span>
+    <span class="n">code_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
+            <span class="n">filename</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
+            <span class="n">firstlineno</span><span class="p">,</span>
+            <span class="n">lnotab</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="o">*</span><span class="n">code_args</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">KajikiSyntaxError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">KajikiTemplateError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">coln</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">KajikiSyntaxError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="s1">&#39;[</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">] </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_snippet</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">] </span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_snippet</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">linenum</span> <span class="o">=</span> <span class="n">linen</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">colnum</span> <span class="o">=</span> <span class="n">coln</span>
 
-    <span class="k">def</span> <span class="nf">_get_source_snippet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
-        <span class="n">SURROUNDING</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="n">linen</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">def</span> <span class="nf">_get_source_snippet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">lineno</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">source</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+        <span class="c1"># Lines are 1 indexed, account for that.</span>
+        <span class="n">lineno</span> <span class="o">-=</span> <span class="mi">1</span>
 
         <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SURROUNDING</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span>
-        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1"> --&gt; </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">SURROUNDING</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">     </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_source_line</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">linen</span> <span class="o">+</span> <span class="n">i</span><span class="p">))</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lineno</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">lineno</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> </span><span class="si">{arrow}</span><span class="s2"> </span><span class="si">{src}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">arrow</span><span class="o">=</span><span class="s2">&quot;--&gt;&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">lineno</span> <span class="k">else</span> <span class="s2">&quot;   &quot;</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_source_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">linen</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">source</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="n">linen</span><span class="p">]</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+<span class="k">class</span> <span class="nc">KajikiSyntaxError</span><span class="p">(</span><span class="n">KajikiTemplateError</span><span class="p">):</span>
+    <span class="k">pass</span>
 </pre></div>
 
           </div>

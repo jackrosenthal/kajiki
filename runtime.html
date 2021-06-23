@@ -43,15 +43,19 @@ a template by examining the py_text attribute of the generated Template class.</
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template.XMLTemplate">
 <span class="sig-prename descclassname"><span class="pre">xml_template.</span></span><span class="sig-name descname"><span class="pre">XMLTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_globals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.xml_template.XMLTemplate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given XML source code of a Kajiki Templates parses and returns a template class.</p>
-<p>The source code is parsed to its DOM representation by <a class="reference internal" href="#kajiki.xml_template._Parser" title="kajiki.xml_template._Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Parser</span></code></a>,
-which is then expanded to separate directives from tags by <a class="reference internal" href="#kajiki.xml_template._DomTransformer" title="kajiki.xml_template._DomTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">_DomTransformer</span></code></a>
-and then compiled to the <em>Intermediate Representation</em> tree by <a class="reference internal" href="#kajiki.xml_template._Compiler" title="kajiki.xml_template._Compiler"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Compiler</span></code></a>.</p>
+<dd><p>Given XML source code of a Kajiki Templates parses and returns
+a template class.</p>
+<p>The source code is parsed to its DOM representation by
+<a class="reference internal" href="#kajiki.xml_template._Parser" title="kajiki.xml_template._Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Parser</span></code></a>, which is then expanded to separate directives
+from tags by <a class="reference internal" href="#kajiki.xml_template._DomTransformer" title="kajiki.xml_template._DomTransformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">_DomTransformer</span></code></a> and then compiled to the
+<em>Intermediate Representation</em> tree by <a class="reference internal" href="#kajiki.xml_template._Compiler" title="kajiki.xml_template._Compiler"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Compiler</span></code></a>.</p>
 <p>The <em>Intermediate Representation</em> generates the Python code
-which creates a new <a class="reference internal" href="#kajiki.template._Template" title="kajiki.template._Template"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.template._Template</span></code></a> subclass through
-<a class="reference internal" href="#kajiki.template.Template" title="kajiki.template.Template"><code class="xref py py-meth docutils literal notranslate"><span class="pre">kajiki.template.Template()</span></code></a>.</p>
-<p>The generated code is then executed to return the newly created class.</p>
-<p>Calling <code class="docutils literal notranslate"><span class="pre">.render()</span></code> on an instance of the generate class will then render the template.</p>
+which creates a new <a class="reference internal" href="#kajiki.template._Template" title="kajiki.template._Template"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.template._Template</span></code></a> subclass
+through <a class="reference internal" href="#kajiki.template.Template" title="kajiki.template.Template"><code class="xref py py-meth docutils literal notranslate"><span class="pre">kajiki.template.Template()</span></code></a>.</p>
+<p>The generated code is then executed to return the newly created
+class.</p>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">.render()</span></code> on an instance of the generate class will
+then render the template.</p>
 </dd></dl>
 
 <dl class="py class">
