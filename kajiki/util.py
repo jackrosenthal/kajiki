@@ -80,9 +80,8 @@ def gen_name(hint="_kj_"):
 
 def window(seq, n=2):
     """Return a sliding window of size ``n`` over an iterator"""
-    l = deque((next(seq, None) for _ in range(n)), maxlen=n)
-    push = l.append
-    yield l
+    win = deque((next(seq, None) for _ in range(n)), maxlen=n)
+    yield win
     for item in seq:
-        push(item)
-        yield l
+        win.append(item)
+        yield win
