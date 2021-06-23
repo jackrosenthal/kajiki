@@ -320,7 +320,7 @@ $i is <py:switch test="i % 4">
 
     def test_switch_div(self):
         try:
-            tpl = perform(
+            perform(
                 """
         <div class="test" py:switch="5 == 3">
             <p py:case="True">True</p>
@@ -340,7 +340,7 @@ $i is <py:switch test="i % 4">
 class TestElse(TestCase):
     def test_pyif_pyelse(self):
         try:
-            tpl = perform(
+            perform(
                 """
             <div>
                 <div py:if="False">True</div>
@@ -357,13 +357,13 @@ class TestElse(TestCase):
             self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
 
     def test_pyiftag_pyelse_continuation(self):
-        tpl = perform(
+        perform(
             """<div><div py:if="False">True</div><py:else>False</py:else></div>""",
             """<div>False</div>""",
         )
 
     def test_pyif_pyelse_continuation(self):
-        tpl = perform(
+        perform(
             """<div><py:if test="False">True</py:if><py:else>False</py:else></div>""",
             """<div>False</div>""",
         )
@@ -1112,7 +1112,7 @@ class TestTranslation(TestCase):
     def test_extract_python_inside_invalid(self):
         src = """<xml><div>${_('hi' +)}</div></xml>"""
         try:
-            x = list(
+            list(
                 i18n.extract(
                     BytesIO(src.encode("utf-8")), [], None, {"extract_python": True}
                 )
