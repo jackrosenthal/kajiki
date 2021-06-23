@@ -1224,8 +1224,6 @@ class TestErrorReporting(TestCase):
                 ).load("error.html", strip_text=strip_text)
                 child().render()
             except ZeroDivisionError:
-                import traceback, sys
-
                 exn_info = traceback.format_exception(*sys.exc_info())
                 last_line = exn_info[-2]
                 assert "${3/0}" in last_line, last_line
