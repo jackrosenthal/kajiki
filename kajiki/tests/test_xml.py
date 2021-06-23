@@ -1226,8 +1226,8 @@ class TestErrorReporting(TestCase):
             except ZeroDivisionError as exc:
                 import traceback, sys
 
-                l = traceback.format_exception(*sys.exc_info())
-                last_line = l[-2]
+                exn_info = traceback.format_exception(*sys.exc_info())
+                last_line = exn_info[-2]
                 assert "${3/0}" in last_line, last_line
             else:
                 assert False

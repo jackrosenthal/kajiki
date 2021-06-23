@@ -221,7 +221,7 @@ class WithNode(HierNode):
             assignments.append((lhs, rhs))
 
         self.vars = assignments
-        self.var_names = [l for l, _ in assignments]
+        self.var_names = [lhs for lhs, _ in assignments]
 
     def py(self):
         yield self.line(
@@ -396,11 +396,11 @@ class AttrsNode(Node):
 
         if self.guard:
             yield self.line("if %s:" % self.guard)
-            for l in _body():
-                yield l.indent()
+            for line in _body():
+                yield line.indent()
         else:
-            for l in _body():
-                yield l
+            for line in _body():
+                yield line
 
 
 class PythonNode(Node):
