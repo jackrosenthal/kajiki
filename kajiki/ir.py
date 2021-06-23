@@ -1,7 +1,7 @@
-from itertools import chain
 import re
+from itertools import chain
 
-from .util import gen_name, flattener, window
+from .util import flattener, gen_name, window
 
 
 def generate_python(ir):

@@ -1,7 +1,7 @@
 from io import BytesIO
 from tokenize import TokenError
 
-from .ir import TranslatableTextNode, ExprNode
+from .ir import ExprNode, TranslatableTextNode
 
 
 def gettext(s):
@@ -11,7 +11,7 @@ def gettext(s):
 def extract(fileobj, keywords, comment_tags, options):
     """Babel entry point that extracts translation strings from XML templates."""
     from .template import KajikiSyntaxError
-    from .xml_template import _Parser, _Compiler, _DomTransformer
+    from .xml_template import _Compiler, _DomTransformer, _Parser
 
     try:
         from babel.messages.extract import extract_python

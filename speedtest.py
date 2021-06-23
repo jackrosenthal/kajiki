@@ -1,9 +1,11 @@
 #!/usr/bin/env python
-from collections import defaultdict
 import time
+from collections import defaultdict
 from contextlib import contextmanager
-from kajiki import XMLTemplate
+
 from genshi.template import MarkupTemplate
+
+from kajiki import XMLTemplate
 
 FN = "kajiki/perf/tables.html"
 

@@ -1,10 +1,10 @@
 """End-to-end tests of Kajiki."""
 
 import pathlib
+
 import pytest
 
 from kajiki.__main__ import main
-
 
 DATA = pathlib.Path(__file__).parent / "data"
 GOLDEN = DATA / "golden"

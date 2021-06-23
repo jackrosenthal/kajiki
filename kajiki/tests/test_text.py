@@ -5,7 +5,7 @@ import sys
 import traceback
 from unittest import TestCase, main
 
-from kajiki import MockLoader, FileLoader, TextTemplate
+from kajiki import FileLoader, MockLoader, TextTemplate
 
 
 class TestBasic(TestCase):

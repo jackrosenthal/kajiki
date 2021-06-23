@@ -5,11 +5,12 @@ import types
 from sys import version_info
 
 import kajiki
-from .util import flattener, literal
+from kajiki import i18n
+
+from . import lnotab
 from .html_utils import HTML_EMPTY_ATTRS
 from .ir import generate_python
-from . import lnotab
-from kajiki import i18n
+from .util import flattener, literal
 
 
 class _obj(object):
