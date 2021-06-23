@@ -340,13 +340,11 @@ class AttrNode(HierNode):
 
         def py(self):
             gen = self.p.genname
-            x = gen_name()
             yield self.line("%s = self.__kj__.collect(%s())" % (gen, gen))
             yield self.line(
-                "for %s in self.__kj__.render_attrs({%r:%s}, %r):"
-                % (x, self.p.attr, gen, self.p.mode)
+                "yield from self.__kj__.render_attrs({%r:%s}, %r)"
+                % (self.p.attr, gen, self.p.mode)
             )
-            yield self.line("    yield %s" % x)
 
     def __init__(self, attr, value, guard=None, mode="xml"):
         super().__init__(value)
@@ -385,14 +383,11 @@ class AttrsNode(Node):
         self.mode = mode
 
     def py(self):
-        x = gen_name()
-
         def _body():
             yield self.line(
-                "for %s in self.__kj__.render_attrs(%s, %r):"
-                % (x, self.attrs, self.mode)
+                "yield from self.__kj__.render_attrs(%s, %r)"
+                % (self.attrs, self.mode)
             )
-            yield self.line("    yield %s" % x)
 
         if self.guard:
             yield self.line("if %s:" % self.guard)
