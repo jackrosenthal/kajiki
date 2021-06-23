@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 # http://peak.telecommunity.com/DevCenter/setuptools#developer-s-guide
 

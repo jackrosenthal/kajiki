@@ -28,12 +28,14 @@ languages, passing an asset specification to the ``renderer`` argument::
 """
 
 from os import stat
+
 from paste.deploy.converters import asbool
-from zope.interface import implementer
 from pyramid.interfaces import IRenderer, ITemplateRenderer
 from pyramid.resource import abspath_from_resource_spec
-from ..loader import Loader
+from zope.interface import implementer
+
 from .. import XMLTemplate
+from ..loader import Loader
 
 
 def includeme(config):
@@ -113,7 +115,7 @@ class PyramidKajikiLoader(Loader):
     ):
         "Just a debugging device used in the development of Kajiki itself."
         from codecs import open
-        from os import path, makedirs
+        from os import makedirs, path
 
         makedirs(dir, exist_ok=True)
         path = path.join(dir, name.replace(":", "-").replace("/", "_") + ".py")

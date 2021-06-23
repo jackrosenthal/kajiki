@@ -1,5 +1,6 @@
-import pytest
 import unittest.mock as mock
+
+import pytest
 
 import kajiki.loader
 from kajiki.__main__ import main
