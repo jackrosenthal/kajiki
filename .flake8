@@ -1,3 +1,7 @@
 [flake8]
 max-line-length = 88
 extend-ignore = E203
+per-file-ignores =
+    # This file uses names from Kajiki's IR language, and confuses
+    # flake8:
+    kajiki/tests/test_runtime.py: F821
