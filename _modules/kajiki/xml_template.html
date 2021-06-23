@@ -1020,9 +1020,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">XMLTemplateCompileError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">msg</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="s2">&quot;_source&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="mi">0</span>
-        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="s2">&quot;_source&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">filename</span><span class="p">,</span> <span class="n">linen</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">XMLTemplateParseError</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">):</span>

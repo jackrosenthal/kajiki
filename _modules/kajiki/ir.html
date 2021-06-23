@@ -73,7 +73,7 @@
     <span class="sd">&quot;&quot;&quot;Base for nodes that contain an indented Python block (def, for, if etc.)&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">HierNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">body</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">body_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -113,7 +113,7 @@
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;template = kajiki.Template(template)&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_py</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">defs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TemplateNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">defs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">defs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mod_py</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mod_py</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">defs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -126,14 +126,14 @@
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flattener</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mod_py</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">x</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">TemplateNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">():</span>
             <span class="k">yield</span> <span class="n">x</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">TemplateTail</span><span class="p">()</span></div>
 
 
 <span class="k">class</span> <span class="nc">ImportNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tpl_name</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ImportNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span> <span class="o">=</span> <span class="n">tpl_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span>
 
@@ -146,7 +146,7 @@
 
 <span class="k">class</span> <span class="nc">IncludeNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tpl_name</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IncludeNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span> <span class="o">=</span> <span class="n">tpl_name</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -158,7 +158,7 @@
 
 <span class="k">class</span> <span class="nc">ExtendNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tpl_name</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExtendNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span> <span class="o">=</span> <span class="n">tpl_name</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -169,7 +169,7 @@
     <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;@kajiki.expose&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">DefNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -195,14 +195,14 @@
 <span class="k">class</span> <span class="nc">CallNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
     <span class="k">class</span> <span class="nc">CallTail</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">call</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">CallNode</span><span class="o">.</span><span class="n">CallTail</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
 
         <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;yield &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">call</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">caller</span><span class="p">,</span> <span class="n">callee</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CallNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">gen_name</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;$caller&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">callee</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;$caller&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
@@ -222,7 +222,7 @@
 
 <span class="k">class</span> <span class="nc">ForNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ForNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -235,7 +235,7 @@
 
     <span class="k">class</span> <span class="nc">WithTail</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_names</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">WithNode</span><span class="o">.</span><span class="n">WithTail</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="o">=</span> <span class="n">var_names</span>
 
         <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -245,7 +245,7 @@
             <span class="c1"># yield self.line(&#39;if %s == (): del %s&#39; % (v, v))</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">WithNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignment_pattern</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="ow">in</span> <span class="n">window</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">]),</span> <span class="mi">2</span><span class="p">):</span>
@@ -277,7 +277,7 @@
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;local.__kj__.pop_switch()&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SwitchNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -293,7 +293,7 @@
 
 <span class="k">class</span> <span class="nc">CaseNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CaseNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -302,7 +302,7 @@
 
 <span class="k">class</span> <span class="nc">IfNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">IfNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -311,7 +311,7 @@
 
 <span class="k">class</span> <span class="nc">ElseNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ElseNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;else:&quot;</span><span class="p">)</span>
@@ -321,7 +321,7 @@
     <span class="sd">&quot;&quot;&quot;Node that outputs Python literals.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">guard</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TextNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">guard</span> <span class="o">=</span> <span class="n">guard</span>
 
@@ -352,7 +352,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ExprNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">safe</span> <span class="o">=</span> <span class="n">safe</span>
 
@@ -368,7 +368,7 @@
 
     <span class="k">class</span> <span class="nc">AttrTail</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
-            <span class="nb">super</span><span class="p">(</span><span class="n">AttrNode</span><span class="o">.</span><span class="n">AttrTail</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">parent</span>
 
         <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -382,7 +382,7 @@
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;    yield </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">guard</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;xml&quot;</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">AttrNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">guard</span> <span class="o">=</span> <span class="n">guard</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
@@ -412,7 +412,7 @@
 
 <span class="k">class</span> <span class="nc">AttrsNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">guard</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;xml&quot;</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">AttrsNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">guard</span> <span class="o">=</span> <span class="n">guard</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
@@ -438,7 +438,7 @@
 
 <span class="k">class</span> <span class="nc">PythonNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">PythonNode</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">module_level</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">blocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">body</span><span class="p">:</span>
