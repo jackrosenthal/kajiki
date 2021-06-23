@@ -82,9 +82,9 @@ def perform(source, expected_output, context=dict(name="Rick"), **options):
         rsp = tpl(context).render()
         assert isinstance(rsp, str), "render() must return a unicode string."
         assert rsp == expected_output, (rsp, expected_output)
-    except:
+    except Exception as e:
         print("\n" + tpl.py_text)
-        raise
+        raise e
     else:
         return tpl
 
