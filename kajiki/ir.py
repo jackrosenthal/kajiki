@@ -40,7 +40,7 @@ class HierNode(Node):
     """Base for nodes that contain an indented Python block (def, for, if etc.)"""
 
     def __init__(self, body):
-        super(HierNode, self).__init__()
+        super().__init__()
         self.body = tuple(x for x in body if x is not None)
 
     def body_iter(self):
@@ -80,7 +80,7 @@ class TemplateNode(HierNode):
             yield self.line("template = kajiki.Template(template)")
 
     def __init__(self, mod_py=None, defs=None):
-        super(TemplateNode, self).__init__(defs)
+        super().__init__(defs)
         if mod_py is None:
             mod_py = []
         if defs is None:
@@ -93,14 +93,14 @@ class TemplateNode(HierNode):
     def __iter__(self):
         for x in flattener(self.mod_py):
             yield x
-        for x in super(TemplateNode, self).__iter__():
+        for x in super().__iter__():
             yield x
         yield self.TemplateTail()
 
 
 class ImportNode(Node):
     def __init__(self, tpl_name, alias=None):
-        super(ImportNode, self).__init__()
+        super().__init__()
         self.tpl_name = tpl_name
         self.alias = alias
 
@@ -113,7 +113,7 @@ class ImportNode(Node):
 
 class IncludeNode(Node):
     def __init__(self, tpl_name):
-        super(IncludeNode, self).__init__()
+        super().__init__()
         self.tpl_name = tpl_name
 
     def py(self):
@@ -125,7 +125,7 @@ class IncludeNode(Node):
 
 class ExtendNode(Node):
     def __init__(self, tpl_name):
-        super(ExtendNode, self).__init__()
+        super().__init__()
         self.tpl_name = tpl_name
 
     def py(self):
@@ -136,7 +136,7 @@ class DefNode(HierNode):
     prefix = "@kajiki.expose"
 
     def __init__(self, decl, *body):
-        super(DefNode, self).__init__(body)
+        super().__init__(body)
         self.decl = decl
 
     def py(self):
@@ -162,14 +162,14 @@ class InnerDefNode(DefNode):
 class CallNode(HierNode):
     class CallTail(Node):
         def __init__(self, call):
-            super(CallNode.CallTail, self).__init__()
+            super().__init__()
             self.call = call
 
         def py(self):
             yield self.line("yield " + self.call)
 
     def __init__(self, caller, callee, *body):
-        super(CallNode, self).__init__(body)
+        super().__init__(body)
         fname = gen_name()
         self.decl = caller.replace("$caller", fname)
         self.call = callee.replace("$caller", fname)
@@ -189,7 +189,7 @@ class CallNode(HierNode):
 
 class ForNode(HierNode):
     def __init__(self, decl, *body):
-        super(ForNode, self).__init__(body)
+        super().__init__(body)
         self.decl = decl
 
     def py(self):
@@ -202,7 +202,7 @@ class WithNode(HierNode):
 
     class WithTail(Node):
         def __init__(self, var_names):
-            super(WithNode.WithTail, self).__init__()
+            super().__init__()
             self.var_names = var_names
 
         def py(self):
@@ -212,7 +212,7 @@ class WithNode(HierNode):
             # yield self.line('if %s == (): del %s' % (v, v))
 
     def __init__(self, vars, *body):
-        super(WithNode, self).__init__(body)
+        super().__init__(body)
         assignments = []
         matches = self.assignment_pattern.finditer(vars)
         for m1, m2 in window(chain(matches, [None]), 2):
@@ -244,7 +244,7 @@ class SwitchNode(HierNode):
             yield self.line("local.__kj__.pop_switch()")
 
     def __init__(self, decl, *body):
-        super(SwitchNode, self).__init__(body)
+        super().__init__(body)
         self.decl = decl
 
     def py(self):
@@ -260,7 +260,7 @@ class SwitchNode(HierNode):
 
 class CaseNode(HierNode):
     def __init__(self, decl, *body):
-        super(CaseNode, self).__init__(body)
+        super().__init__(body)
         self.decl = decl
 
     def py(self):
@@ -269,7 +269,7 @@ class CaseNode(HierNode):
 
 class IfNode(HierNode):
     def __init__(self, decl, *body):
-        super(IfNode, self).__init__(body)
+        super().__init__(body)
         self.decl = decl
 
     def py(self):
@@ -278,7 +278,7 @@ class IfNode(HierNode):
 
 class ElseNode(HierNode):
     def __init__(self, *body):
-        super(ElseNode, self).__init__(body)
+        super().__init__(body)
 
     def py(self):
         yield self.line("else:")
@@ -288,7 +288,7 @@ class TextNode(Node):
     """Node that outputs Python literals."""
 
     def __init__(self, text, guard=None):
-        super(TextNode, self).__init__()
+        super().__init__()
         self.text = text
         self.guard = guard
 
@@ -319,7 +319,7 @@ class ExprNode(Node):
     """
 
     def __init__(self, text, safe=False):
-        super(ExprNode, self).__init__()
+        super().__init__()
         self.text = text
         self.safe = safe
 
@@ -335,7 +335,7 @@ class AttrNode(HierNode):
 
     class AttrTail(Node):
         def __init__(self, parent):
-            super(AttrNode.AttrTail, self).__init__()
+            super().__init__()
             self.p = parent
 
         def py(self):
@@ -349,7 +349,7 @@ class AttrNode(HierNode):
             yield self.line("    yield %s" % x)
 
     def __init__(self, attr, value, guard=None, mode="xml"):
-        super(AttrNode, self).__init__(value)
+        super().__init__(value)
         self.attr = attr
         self.guard = guard
         self.mode = mode
@@ -379,7 +379,7 @@ class AttrNode(HierNode):
 
 class AttrsNode(Node):
     def __init__(self, attrs, guard=None, mode="xml"):
-        super(AttrsNode, self).__init__()
+        super().__init__()
         self.attrs = attrs
         self.guard = guard
         self.mode = mode
@@ -405,7 +405,7 @@ class AttrsNode(Node):
 
 class PythonNode(Node):
     def __init__(self, *body):
-        super(PythonNode, self).__init__()
+        super().__init__()
         self.module_level = False
         blocks = []
         for b in body:

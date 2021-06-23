@@ -350,7 +350,7 @@ class _Tag(_Token):
         self.tagname = tagname
         self.body = body
         text = tagname + " " + body
-        super(_Tag, self).__init__(filename, lineno, text)
+        super().__init__(filename, lineno, text)
 
 
 def _unescape_newlines(text):
