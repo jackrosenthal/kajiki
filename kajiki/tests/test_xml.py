@@ -7,16 +7,15 @@ import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
 
-from kajiki import i18n
-from kajiki.template import KajikiSyntaxError
 import kajiki
-from kajiki import MockLoader, XMLTemplate, FileLoader, PackageLoader
+from kajiki import FileLoader, MockLoader, PackageLoader, XMLTemplate, i18n
 from kajiki.ir import TranslatableTextNode
+from kajiki.template import KajikiSyntaxError
 from kajiki.xml_template import (
-    _Compiler,
-    _Parser,
     XMLTemplateCompileError,
     XMLTemplateParseError,
+    _Compiler,
+    _Parser,
 )
 
 DATA = os.path.join(os.path.dirname(__file__), "data")

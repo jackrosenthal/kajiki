@@ -34,6 +34,12 @@ jobs:
         pip install flake8
       script:
         flake8 .
+    - name: lint-isort
+      python: "3.9"
+      install:
+        pip install isort
+      script:
+        isort --check .
 deploy:
   provider: pages
   skip_cleanup: true

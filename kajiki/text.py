@@ -19,6 +19,7 @@ import tokenize
 from itertools import chain
 
 import kajiki
+
 from . import ir
 
 _pattern = r"""

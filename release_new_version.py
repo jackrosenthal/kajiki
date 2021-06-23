@@ -3,8 +3,8 @@
 """Script that releases a new version of the software."""
 
 from releaser import Releaser  # easy_install -UZ releaser
-from releaser.steps import *
 from releaser.git_steps import *
+from releaser.steps import *
 
 # These settings are used by multiple release steps below.
 config = dict(

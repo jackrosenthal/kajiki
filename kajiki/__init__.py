@@ -1,11 +1,11 @@
 """Kajiki public API."""
 
-from .util import expose, flattener
+from .loader import FileLoader, MockLoader, PackageLoader
 from .template import Template
-from .loader import MockLoader, FileLoader, PackageLoader
 from .text import TextTemplate
+from .util import expose, flattener
+from .version import __release__, __version__
 from .xml_template import XMLTemplate
-from .version import __version__, __release__
 
 __all__ = [
     "expose",

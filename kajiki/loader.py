@@ -1,4 +1,5 @@
 import os
+
 import pkg_resources
 
 
@@ -45,7 +46,7 @@ class FileLoader(Loader):
         **template_options
     ):
         super(FileLoader, self).__init__()
-        from kajiki import XMLTemplate, TextTemplate
+        from kajiki import TextTemplate, XMLTemplate
 
         if isinstance(path, str):
             self.path = path.split(";")
@@ -86,7 +87,7 @@ class FileLoader(Loader):
         binary mode. Thus, the ``encoding`` argument is only used for reading
         text template files.
         """
-        from kajiki import XMLTemplate, TextTemplate
+        from kajiki import TextTemplate, XMLTemplate
 
         options = self._template_options.copy()
         options.update(kwargs)
