@@ -12,9 +12,6 @@ exec(open("kajiki/version.py").read())
 
 
 def content_of(*files):
-    import codecs
-
-    open = lambda path: codecs.open(path, encoding="utf-8")
     here = os.path.abspath(os.path.dirname(__file__))
     content = []
     for f in files:
