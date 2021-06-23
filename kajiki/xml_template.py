@@ -606,7 +606,7 @@ class _TextCompiler(object):
                 # if the expression ends in a } then it may be valid
                 try:
                     compile(py_expr(end - 1), "check_validity", "eval")
-                except SyntaxError as se:
+                except SyntaxError:
                     # for example + operators with a single operand
                     raise XMLTemplateCompileError(
                         "Kajiki detected an invalid python expression `%s`"
