@@ -22,12 +22,18 @@ jobs:
         - touch docs/_build/html/.nojekyll
       env:
         - DOCS_BUILD=t
-    - name: format-black
+    - name: lint-black
       python: "3.9"
       install:
         pip install black
       script:
         black --check .
+    - name: lint-flake8
+      python: "3.9"
+      install:
+        pip install flake8
+      script:
+        flake8 .
 deploy:
   provider: pages
   skip_cleanup: true
