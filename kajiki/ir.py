@@ -33,7 +33,7 @@ class Node(object):
 class PassNode(Node):
     def py(self):
         # 'pass' would result in: TypeError: 'NoneType' object is not iterable
-        yield self.line('yield ""')
+        yield self.line("yield from ()")
 
 
 class HierNode(Node):
@@ -385,8 +385,7 @@ class AttrsNode(Node):
     def py(self):
         def _body():
             yield self.line(
-                "yield from self.__kj__.render_attrs(%s, %r)"
-                % (self.attrs, self.mode)
+                "yield from self.__kj__.render_attrs(%s, %r)" % (self.attrs, self.mode)
             )
 
         if self.guard:
