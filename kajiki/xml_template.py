@@ -2,6 +2,7 @@ import collections
 import html
 import io
 import re
+import tokenize
 from codecs import open
 from xml import sax
 from xml.dom import minidom as dom
@@ -13,6 +14,66 @@ from .html_utils import HTML_CDATA_TAGS, HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_E
 from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 
 impl = dom.getDOMImplementation(" ")
+
+
+def parse_with_string(text):
+    """Parse the string passed to py:with.
+
+    Args:
+        text: The text to compile (e.g., "a = 1; b = 2")
+
+    Returns:
+        A list of 2-tuples, mapping variable names to Python
+        expressions (e.g., [("a", "1"), ("b", "2")])
+
+    Raises:
+        - SyntaxError if the expression is not valid.
+        - tokenize.TokenError if the expression has malformed Python
+          tokens.
+    """
+    text_io = io.StringIO(text)
+
+    name = None
+    equals_seen = False
+    value = ""
+    result = []
+
+    def _flush():
+        nonlocal name
+        nonlocal equals_seen
+        nonlocal value
+
+        if not name:
+            return
+        if not equals_seen:
+            raise SyntaxError("Equals sign expected")
+        compile(value, "", "eval")
+        result.append((name, value))
+
+        name = None
+        equals_seen = False
+        value = ""
+
+    for token in tokenize.generate_tokens(text_io.readline):
+        if token.type == tokenize.ENDMARKER:
+            break
+        elif token.type == tokenize.NEWLINE:
+            continue
+        elif token.type == tokenize.OP and token.string == ";":
+            _flush()
+        elif not name:
+            if token.type != tokenize.NAME:
+                raise SyntaxError("Expected a variable name, got {}".format(token))
+            name = token.string
+        elif not equals_seen:
+            if token.type != tokenize.OP or token.string != "=":
+                raise SyntaxError("Expected an equals, got {}".format(token))
+            equals_seen = True
+        else:
+            value += token.string
+
+    _flush()
+    return result
 
 
 def XMLTemplate(
@@ -429,7 +490,17 @@ class _Compiler(object):
     @annotate
     def _compile_with(self, node):
         """Convert py:with nodes to their intermediate representation."""
-        yield ir.WithNode(node.getAttribute("vars"), *list(self._compile_nop(node)))
+        vars_str = node.getAttribute("vars")
+        try:
+            vars = parse_with_string(vars_str)
+        except (SyntaxError, tokenize.TokenError) as e:
+            raise XMLTemplateCompileError(
+                "Syntax error in py:with string: {}".format(e),
+                doc=self.doc,
+                filename=self.filename,
+                linen=node.lineno,
+            ) from e
+        yield ir.WithNode(vars, *self._compile_nop(node))
 
     @annotate
     def _compile_switch(self, node):

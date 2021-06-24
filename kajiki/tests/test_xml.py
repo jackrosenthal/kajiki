@@ -7,6 +7,8 @@ import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
 
+import pytest
+
 import kajiki
 from kajiki import FileLoader, MockLoader, PackageLoader, XMLTemplate, i18n
 from kajiki.ir import TranslatableTextNode
@@ -422,6 +424,23 @@ class TestWith(TestCase):
             """<div><py:with vars="a=';';b='-)'">$a$b</py:with></div>""",
             "<div>;-)</div>",
         )
+
+
+@pytest.mark.parametrize(
+    ["source"],
+    [
+        ('<div><py:with vars="a">$a</py:with></div>',),
+        ('<div><py:with vars="a a">$a</py:with></div>',),
+        ('<div><py:with vars="a =">$a</py:with></div>',),
+        ('<div><py:with vars="a;">$a</py:with></div>',),
+        ('<div><py:with vars="=;a=1">$a</py:with></div>',),
+        ('<div><py:with vars="a = {(}">$a</py:with></div>',),
+        ('<div><py:with vars="a = (1 +)">$a</py:with></div>',),
+    ],
+)
+def test_with_expr_error(source):
+    with pytest.raises(XMLTemplateCompileError):
+        XMLTemplate(source)
 
 
 class TestFunction(TestCase):

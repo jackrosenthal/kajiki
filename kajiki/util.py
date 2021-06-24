@@ -1,4 +1,3 @@
-from collections import deque
 from random import randint
 from threading import local
 
@@ -76,12 +75,3 @@ class NameGen(object):
 
 def gen_name(hint="_kj_"):
     return NameGen.gen(hint)
-
-
-def window(seq, n=2):
-    """Return a sliding window of size ``n`` over an iterator"""
-    win = deque((next(seq, None) for _ in range(n)), maxlen=n)
-    yield win
-    for item in seq:
-        win.append(item)
-        yield win

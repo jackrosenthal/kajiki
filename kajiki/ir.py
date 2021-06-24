@@ -1,7 +1,4 @@
-import re
-from itertools import chain
-
-from .util import flattener, gen_name, window
+from .util import flattener, gen_name
 
 
 def generate_python(ir):
@@ -20,8 +17,8 @@ class Node(object):
         self.filename = "<string>"
         self.lineno = 0
 
-    def py(self):  # pragma no cover
-        return []
+    def py(self):
+        yield from ()
 
     def __iter__(self):
         yield self
@@ -196,46 +193,55 @@ class ForNode(HierNode):
         yield self.line("for %s:" % (self.decl))
 
 
-class WithNode(HierNode):
+class WithVarNode(HierNode):
+    """Assign a single variable to a value within a body.
 
-    assignment_pattern = re.compile(r"(?:^|;)\s*([^;=]+)=(?!=)", re.M)
+    This works by generating a function and calling it, similar to the
+    classical expansion of ``(let ((name value)) body...)`` ->
+    ``(funcall (lambda (name) body...) value)`` in Lisp.
+    """
 
-    class WithTail(Node):
-        def __init__(self, var_names):
+    class WithVarTail(Node):
+        def __init__(self, parent):
             super().__init__()
-            self.var_names = var_names
+            self.parent = parent
 
         def py(self):
             yield self.line(
-                "(%s,) = local.__kj__.pop_with()" % (",".join(self.var_names),)
+                "yield from {}({})".format(self.parent.func_name, self.parent.value)
             )
-            # yield self.line('if %s == (): del %s' % (v, v))
 
-    def __init__(self, vars, *body):
+    def __init__(self, name, value, body):
         super().__init__(body)
-        assignments = []
-        matches = self.assignment_pattern.finditer(vars)
-        for m1, m2 in window(chain(matches, [None]), 2):
-            lhs = m1.group(1).strip()
-            rhs = vars[m1.end() : (m2.start() if m2 else len(vars))]
-            assignments.append((lhs, rhs))
 
-        self.vars = assignments
-        self.var_names = [lhs for lhs, _ in assignments]
+        self.func_name = gen_name()
+        self.name = name
+        self.value = value
 
     def py(self):
-        yield self.line(
-            "local.__kj__.push_with(locals(), [%s])"
-            % (",".join('"%s"' % k for k in self.var_names),)
-        )
-        for k, v in self.vars:
-            yield self.line("%s = %s" % (k, v))
+        yield self.line("def {}({}={}):".format(self.func_name, self.name, self.value))
 
     def __iter__(self):
         yield self
-        for x in self.body_iter():
-            yield x
-        yield self.WithTail(self.var_names)
+        yield IndentNode()
+        yield from self.body_iter()
+        yield PassNode()
+        yield DedentNode()
+        yield self.WithVarTail(self)
+
+
+class WithNode(HierNode):
+    def __init__(self, vars, *body):
+        super().__init__(body)
+        self.vars = vars
+
+    def __iter__(self):
+        yield self
+        body = self.body
+        for name, value in reversed(self.vars):
+            body = [WithVarNode(name, value, body)]
+        for item in body:
+            yield from item
 
 
 class SwitchNode(HierNode):
