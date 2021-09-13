@@ -149,10 +149,10 @@ for dtd in (
     ),
     # html3='<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">',
     # html2='<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">',
-    # xml='<?xml version="1.0" encoding="utf-8" ?>',
 ):
     DocumentTypeDeclaration.by_uri[dtd.uri] = dtd
 
+XML_DECLARATION = re.compile(r"<\?xml .*?\?>")
 
 def extract_dtd(markup):
     """Lookup the DTD in the provided markup code.
@@ -174,13 +174,57 @@ def extract_dtd(markup):
     ...     </body>
     ...     </html>''')
     >>> import kajiki.doctype
-    >>> dtd, dtd_pos, html = kajiki.doctype.extract_dtd(markup)
+    >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
     >>> print(dtd)  # doctest: +NORMALIZE_WHITESPACE
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
+    >>> print(dtd_pos)
+    0
+    >>> print(markup_without_dtd)  # doctest: +NORMALIZE_WHITESPACE
+    <html>
+    <head>
+    ...
+    </head>
+    <body>
+    ...
+    </body>
+    </html>
+
+    >>> markup = '<?xml version="1.0"?><!DOCTYPE html><html><head></head><body></body></html>'
+    >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
+    >>> print(dtd)
+    <!DOCTYPE html>
+    >>> print(dtd_pos)
+    21
+    >>> print(markup_without_dtd)
+    <?xml version="1.0"?><html><head></head><body></body></html>
+
+    >>> markup = '<?xml version="1.0"?><html><head></head><body></body></html>'
+    >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
+    >>> print(dtd)
+    <BLANKLINE>
+    >>> print(dtd_pos)
+    21
+    >>> print(markup_without_dtd == markup)
+    True
+
+    >>> markup = '<?xml version="1.0" encoding="UTF-8"?><html><head></head><body></body></html>'
+    >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
+    >>> print(dtd)
+    <BLANKLINE>
+    >>> print(dtd_pos)
+    38
+    >>> print(markup_without_dtd == markup)
+    True
     """
     match = DocumentTypeDeclaration.REGEX.search(markup)
     if not match:
-        return "", 0, markup
+        decl_match = XML_DECLARATION.match(markup)
+        if decl_match:
+            # The position for a prospective DTD is *after* the <?xml ...?> declaration,
+            # because it's not allowed for there to be anything before it.
+            return "", decl_match.end(), markup
+        else:
+            return "", 0, markup
     found = match.group()
     return found, match.start(), markup.replace(found, "", 1)
