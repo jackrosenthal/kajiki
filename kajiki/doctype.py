@@ -154,6 +154,7 @@ for dtd in (
 
 XML_DECLARATION = re.compile(r"<\?xml .*?\?>")
 
+
 def extract_dtd(markup):
     """Lookup the DTD in the provided markup code.
 
@@ -190,14 +191,14 @@ def extract_dtd(markup):
     </body>
     </html>
 
-    >>> markup = '<?xml version="1.0"?><!DOCTYPE html><html><head></head><body></body></html>'
+    >>> markup = '<?xml version="1.0"?><!DOCTYPE html><html><body></body></html>'
     >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
     >>> print(dtd)
     <!DOCTYPE html>
     >>> print(dtd_pos)
     21
     >>> print(markup_without_dtd)
-    <?xml version="1.0"?><html><head></head><body></body></html>
+    <?xml version="1.0"?><html><body></body></html>
 
     >>> markup = '<?xml version="1.0"?><html><head></head><body></body></html>'
     >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
@@ -208,7 +209,7 @@ def extract_dtd(markup):
     >>> print(markup_without_dtd == markup)
     True
 
-    >>> markup = '<?xml version="1.0" encoding="UTF-8"?><html><head></head><body></body></html>'
+    >>> markup = '<?xml version="1.0" encoding="UTF-8"?><html><body></body></html>'
     >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
     >>> print(dtd)
     <BLANKLINE>
