@@ -1,5 +1,7 @@
 language: python
+dist: focal
 python:
+  - "3.10"
   - "3.9"
   - "3.8"
   - "3.7"
@@ -14,7 +16,7 @@ script: pytest
 jobs:
   include:
     - name: docs
-      python: "3.9"
+      python: "3.10"
       install:
         pip install -e .[docs]
       script:
@@ -23,19 +25,19 @@ jobs:
       env:
         - DOCS_BUILD=t
     - name: lint-black
-      python: "3.9"
+      python: "3.10"
       install:
         pip install black
       script:
         black --check .
     - name: lint-flake8
-      python: "3.9"
+      python: "3.10"
       install:
         pip install flake8
       script:
         flake8 .
     - name: lint-isort
-      python: "3.9"
+      python: "3.10"
       install:
         pip install isort
       script:
