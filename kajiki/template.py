@@ -424,6 +424,7 @@ def patch_code_file_lines(code, filename, firstlineno, lnotab):
     )
     return types.CodeType(*(arg for arg in code_args if arg != 'REMOVE'))
 
+
 class KajikiTemplateError(Exception):
     def __init__(self, msg, source, filename, linen, coln):
         super().__init__(
