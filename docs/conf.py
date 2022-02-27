@@ -222,4 +222,4 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "kajiki", u"Kajiki Documentation", ["Rick Copeland"], 1)]
+man_pages = [("index", "kajiki", "Kajiki Documentation", ["Rick Copeland"], 1)]
