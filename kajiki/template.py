@@ -400,28 +400,29 @@ class TplFunc(object):
 
 
 def patch_code_file_lines(code, filename, firstlineno, lnotab):
-    code_args = [code.co_argcount]
-    if version_info >= (3, 8):
-        code_args.append(code.co_posonlyargcount)
-    code_args.extend(
-        [
-            code.co_kwonlyargcount,
-            code.co_nlocals,
-            code.co_stacksize,
-            code.co_flags,
-            code.co_code,
-            code.co_consts,
-            code.co_names,
-            code.co_varnames,
-            filename,
-            code.co_name,
-            firstlineno,
-            lnotab,
-            code.co_freevars,
-            code.co_cellvars,
-        ]
+    code_args = (
+        code.co_argcount,
+        code.co_posonlyargcount if version_info >= (3, 8) else 'REMOVE',
+        code.co_kwonlyargcount,
+        code.co_nlocals,
+        code.co_stacksize,
+        code.co_flags,
+        code.co_code,
+        code.co_consts,
+        code.co_names,
+        code.co_varnames,
+        filename,
+        code.co_name,
+        code.co_qualname if version_info >= (3, 11) else 'REMOVE',
+        firstlineno,
+        lnotab,
+        code.co_endlinetable if version_info >= (3, 11) else 'REMOVE',
+        code.co_columntable if version_info >= (3, 11) else 'REMOVE',
+        code.co_exceptiontable if version_info >= (3, 11) else 'REMOVE',
+        code.co_freevars,
+        code.co_cellvars,
     )
-    return types.CodeType(*code_args)
+    return types.CodeType(*(arg for arg in code_args if arg != 'REMOVE'))
 
 
 class KajikiTemplateError(Exception):
