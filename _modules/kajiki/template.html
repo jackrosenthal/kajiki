@@ -433,28 +433,29 @@
 
 
 <span class="k">def</span> <span class="nf">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">firstlineno</span><span class="p">,</span> <span class="n">lnotab</span><span class="p">):</span>
-    <span class="n">code_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
-        <span class="n">code_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span><span class="p">)</span>
-    <span class="n">code_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
-            <span class="n">filename</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
-            <span class="n">firstlineno</span><span class="p">,</span>
-            <span class="n">lnotab</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
-            <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
-        <span class="p">]</span>
+    <span class="n">code_args</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_posonlyargcount</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_kwonlyargcount</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_nlocals</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_stacksize</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_code</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_names</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_qualname</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+        <span class="n">firstlineno</span><span class="p">,</span>
+        <span class="n">lnotab</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_endlinetable</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_columntable</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_exceptiontable</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
+        <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="o">*</span><span class="n">code_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">CodeType</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">code_args</span> <span class="k">if</span> <span class="n">arg</span> <span class="o">!=</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">))</span>
 
 
 <span class="k">class</span> <span class="nc">KajikiTemplateError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
@@ -566,7 +567,7 @@
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
