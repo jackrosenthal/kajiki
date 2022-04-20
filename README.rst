@@ -1,9 +1,6 @@
 Kajiki provides fast well-formed XML templates
 ==============================================
 
-.. image:: https://travis-ci.com/jackrosenthal/kajiki.svg?branch=master
-           :target: https://travis-ci.com/jackrosenthal/kajiki
-
 Because Kajiki's input is XML, it can ensure that your HTML/XML output is
 well-formed. The Genshi-like syntax, based on XML attributes or tags, is simply
 beautiful and easily understood (or ignored) by web designers.
@@ -56,15 +53,12 @@ Kajiki is licensed under an MIT-style license_.
 The git repository and `issue tracker`_ are at GitHub_. Previously the project
 used SourceForge_ for the hg repository, issue tracker and forums.
 
-We use Travis_ for continuous integration.
-
 
 .. _Documentation: https://docs.kajiki.io/
 .. _license: https://github.com/jackrosenthal/kajiki/blob/master/LICENSE.rst
 .. _`issue tracker`: https://github.com/jackrosenthal/kajiki/issues
 .. _GitHub: https://github.com/jackrosenthal/kajiki
 .. _SourceForge: http://sourceforge.net/p/kajiki/
-.. _Travis: https://travis-ci.com/jackrosenthal/kajiki
 .. _Genshi: https://pypi.python.org/pypi/Genshi
 .. _Jinja: https://pypi.python.org/pypi/Jinja2
 .. _Mako: https://pypi.python.org/pypi/Mako
