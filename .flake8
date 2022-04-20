@@ -11,4 +11,4 @@ exclude =
 per-file-ignores =
     # This file uses names from Kajiki's IR language, and confuses
     # flake8:
-    kajiki/tests/test_runtime.py: F821
+    tests/test_runtime.py: F821
