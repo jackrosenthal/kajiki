@@ -1006,7 +1006,7 @@ class TestDebug(TestCase):
 class TestPackageLoader(TestCase):
     def test_pkg_loader(self):
         loader = PackageLoader()
-        loader.import_("kajiki.tests.data.debug")
+        loader.import_("kajiki_test_data.debug")
 
 
 class TestBuiltinFunctions(TestCase):
