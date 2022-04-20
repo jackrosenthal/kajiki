@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+0.9.1 (2022-04-20)
+------------------
+
+* Fixed compatibility for Python 3.11.
+* The unit tests were moved out of the ``kajiki`` package: tests are
+  now under the ``tests/`` directory.
+* Migrated from Travis CI to GitHub Actions.
+
 0.9.0 (2021-11-29)
 ------------------
 
