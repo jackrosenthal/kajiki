@@ -30,7 +30,8 @@ pip-log.txt
 .coverage
 .tox
 htmlcov/
-nosetests.xml
+.pytest_cache
+.pytestdebug.log
 
 # virtualenvs
 venv
