@@ -1,3 +1,5 @@
+import pytest
+
 from kajiki.doctype import DocumentTypeDeclaration, extract_dtd
 
 XHTML1 = (
@@ -6,21 +8,24 @@ XHTML1 = (
 )
 
 
-def test_dtd():
-    dtd = DocumentTypeDeclaration.by_uri[""]
-    assert dtd.name == "html5"
-    assert str(dtd) == "<!DOCTYPE html>", str(dtd)
-    assert dtd.rendering_mode == "html5"
-    dtd = DocumentTypeDeclaration.by_uri[None]
-    assert dtd.name == "xhtml5"
-    assert str(dtd) == "<!DOCTYPE html>", str(dtd)
-    assert dtd.rendering_mode == "xml"
-    dtd = DocumentTypeDeclaration.by_uri[
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-    ]
-    assert dtd.name == "xhtml1transitional"
-    assert str(dtd) == XHTML1
-    assert dtd.rendering_mode == "xml"
+@pytest.mark.parametrize(
+    ["uri", "name", "rendering_mode", "stringified"],
+    [
+        ["", "html5", "html5", "<!DOCTYPE html>"],
+        [None, "xhtml5", "xml", "<!DOCTYPE html>"],
+        [
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd",
+            "xhtml1transitional",
+            "xml",
+            XHTML1,
+        ],
+    ],
+)
+def test_dtd_by_uri(uri, name, rendering_mode, stringified):
+    dtd = DocumentTypeDeclaration.by_uri[uri]
+    assert dtd.name == name
+    assert dtd.rendering_mode == rendering_mode
+    assert str(dtd) == stringified
 
 
 def test_extract_dtd():
