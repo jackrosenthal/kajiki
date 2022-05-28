@@ -477,6 +477,30 @@ child.id() = <span>mid</span>
 <h6>Footer</h6>
 </div>
 
+Summary of Directives
+=====================
+
+========== ======================  ============================ ==========================================================
+Directive  Usable as an attribute  Usable as a separate element When used as a separate element, requires attributes named
+========== ======================  ============================ ==========================================================
+py:if      ✅                       ✅                            test
+py:else    ✅                       ✅
+py:switch  ❌                       ✅                            test
+py:case    ✅                       ✅                            value
+py:for     ✅                       ✅                            each
+py:def     ✅                       ✅                            function
+py:call    ❌                       ✅                            args, function
+py:include ❌                       ✅                            href
+py:import  ❌                       ✅                            href
+py:with    ✅                       ✅                            vars
+py:attrs   ✅                       ❌
+py:strip   ✅                       ❌
+py:content ✅                       ❌
+py:replace ✅                       ✅                            value
+py:extends ❌                       ✅                            href
+py:block   ✅                       ✅                            name
+========== ======================  ============================ ==========================================================
+
 Built-in functions
 ==================
 
