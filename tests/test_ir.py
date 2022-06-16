@@ -51,6 +51,32 @@ class TestSwitch(TestCase):
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
+class TestSPM(TestCase):
+    def setUp(self):
+        self.tpl = ir.TemplateNode(
+            defs=[
+                ir.DefNode(
+                    "__main__()",
+                    ir.ForNode(
+                        "i in range(2)",
+                        ir.ExprNode("i"),
+                        ir.TextNode(" is "),
+                        ir.SPMNode(
+                            "i % 2",
+                            ir.SPMCaseNode("0", ir.TextNode("even\n")),
+                            ir.SPMCaseNode("_", ir.TextNode("odd\n")),
+                        ),
+                    ),
+                )
+            ]
+        )
+
+    def test_basic(self):
+        tpl = kajiki.template.from_ir(self.tpl)
+        rsp = tpl(dict()).render()
+        assert rsp == "0 is even\n1 is odd\n", rsp
+
+
 class TestFunction(TestCase):
     def setUp(self):
         self.tpl = ir.TemplateNode(

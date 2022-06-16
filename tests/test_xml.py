@@ -336,6 +336,39 @@ $i is <py:switch test="i % 4">
             self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
 
 
+class TestSPM(TestCase):
+    def test_match(self):
+        perform(
+            """<div py:for="i in range(2)">
+$i is <py:match on="i % 2">
+<py:case matching="0">even</py:case>
+<py:case matching="_">odd</py:case>
+</py:match></div>""",
+            """<div>
+0 is even</div><div>
+1 is odd</div>""",
+        )
+
+    def test_switch_div(self):
+        try:
+            perform(
+                """
+        <div class="test" py:match="5 == 3">
+            <p py:case="True">True</p>
+            <p py:case="_">False</p>
+        </div>""",
+                "<div><div>False</div></div>",
+            )
+        except XMLTemplateCompileError as e:
+            assert ("case must have either value or matching attribute,"
+                    " the former for py:switch, the latter for py:match") in str(e)
+        else:
+            self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
+
+    # TODO assert "py:match directive can only contain py:case" in str(e), str(e)
+
+        
+
 class TestElse(TestCase):
     def test_pyif_pyelse(self):
         try:

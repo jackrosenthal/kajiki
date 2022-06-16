@@ -458,7 +458,12 @@ class _Compiler(object):
     def _compile_match(self, node):
         """Convert py:match nodes to their IR."""
         if version_info < (3, 10):
-            raise RuntimeError('at least Python 3.10 is required to use py:match directive')
+            raise XMLTemplateCompileError(
+                'at least Python 3.10 is required to use py:match directive',
+                doc=self.doc,
+                filename=self.filename,
+                linen=node.lineno,
+            )
         body = []
         
         # Filter out empty text nodes and report unsupported nodes
@@ -485,8 +490,13 @@ class _Compiler(object):
         elif node.getAttribute("matching"):
             yield ir.SPMCaseNode(node.getAttribute("matching"), *list(self._compile_nop(node)))
         else:
-            raise RuntimeError('case must have either value or matching attribute,'
-                               ' the former for py:switch, the latter for py:match')
+            raise XMLTemplateCompileError(
+                'case must have either value or matching attribute,'
+                ' the former for py:switch, the latter for py:match',
+                doc=self.doc,
+                filename=self.filename,
+                linen=node.lineno,
+            )
 
     @annotate
     def _compile_if(self, node):
