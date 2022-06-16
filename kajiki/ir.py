@@ -12,7 +12,12 @@ def generate_python(ir):
         elif isinstance(node, DedentNode):
             cur_indent -= 4
         for line in node.py():
-            yield line.indent(cur_indent)
+            if isinstance(line, IndentNode):
+                cur_indent += 4
+            elif isinstance(line, DedentNode):
+                cur_indent -= 4
+            else:
+                yield line.indent(cur_indent)
 
 
 class Node:
@@ -250,6 +255,40 @@ class CaseNode(HierNode):
 
     def py(self):
         yield self.line(f"elif local.__kj__.case({self.decl}):")
+
+
+class MatchNode(HierNode):
+    """Structural Pattern Matching Node"""
+
+    def __init__(self, decl, *body):
+        super().__init__(body)
+        self.decl = decl
+
+    def py(self):
+        yield self.line(f"match ({self.decl}):")
+        yield IndentNode()
+
+    def __iter__(self):
+        yield self
+        yield from self.body_iter()
+        yield DedentNode()
+
+
+class MatchCaseNode(HierNode):
+    """Structural Pattern Matching Case Node"""
+
+    def __init__(self, decl, *body):
+        super().__init__(body)
+        self.decl = decl
+
+    def py(self):
+        yield self.line(f"case {self.decl}:")
+        yield IndentNode()
+
+    def __iter__(self):
+        yield self
+        yield from self.body_iter()
+        yield DedentNode()
 
 
 class IfNode(HierNode):
