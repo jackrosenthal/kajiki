@@ -66,9 +66,12 @@ class TestExpand(TestCase):
                 continue
             assert node.tagName == tagname, "%s != %s" % (node.tagName, tagname)
             if attr:
-                assert len(node.attributes) == 1
-                assert node.hasAttribute(attr)
-                assert node.getAttribute(attr) == tagname.split(":")[-1]
+                if node.tagName != 'py:case':
+                    assert len(node.attributes) == 1, node.attributes.items()
+                    assert node.hasAttribute(attr)
+                    assert node.getAttribute(attr) == tagname.split(":")[-1]
+                else:
+                    assert len(node.attributes) == 2
             else:
                 assert len(node.attributes) == 0
             assert len(node.childNodes) == 1
@@ -349,7 +352,7 @@ $i is <py:match on="i % 2">
 1 is odd</div>""",
         )
 
-    def test_switch_div(self):
+    def test_match_div(self):
         try:
             perform(
                 """
