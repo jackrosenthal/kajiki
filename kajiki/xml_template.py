@@ -4,7 +4,6 @@ import io
 import re
 from sys import version_info
 from codecs import open
-from itertools import chain
 from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
