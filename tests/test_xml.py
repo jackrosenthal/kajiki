@@ -372,7 +372,21 @@ $i is <py:match on="i % 2">
         else:
             self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
 
-    # TODO assert "py:match directive can only contain py:case" in str(e), str(e)
+    def test_match_aliens(self):
+        try:
+            perform(
+                """<div py:for="i in range(2)">
+$i is <py:match on="i % 2">
+alien
+<py:case matching="0">even</py:case>
+<py:case matching="_">odd</py:case>
+</py:match></div>""",
+            """<div>
+0 is even</div><div>
+1 is odd</div>""",
+            )
+        except XMLTemplateCompileError as e:
+            assert "py:match directive can only contain py:case" in str(e), str(e)
 
         
 
