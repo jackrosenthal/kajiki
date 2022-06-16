@@ -66,7 +66,7 @@ class TestExpand(TestCase):
                 continue
             assert node.tagName == tagname, "%s != %s" % (node.tagName, tagname)
             if attr:
-                if node.tagName != 'py:case':
+                if node.tagName != "py:case":
                     assert len(node.attributes) == 1, node.attributes.items()
                     assert node.hasAttribute(attr)
                     assert node.getAttribute(attr) == tagname.split(":")[-1]
@@ -342,8 +342,8 @@ $i is <py:switch test="i % 4">
 class TestSPM(TestCase):
     def setUp(self):
         if sys.version_info < (3, 10):
-            raise self.skipTest('pep622 unavailable before python3.10')
-        
+            raise self.skipTest("pep622 unavailable before python3.10")
+
     def test_match(self):
         perform(
             """<div py:for="i in range(2)">
@@ -367,8 +367,10 @@ $i is <py:match on="i % 2">
                 "<div><div>False</div></div>",
             )
         except XMLTemplateCompileError as e:
-            assert ("case must have either value or matching attribute,"
-                    " the former for py:switch, the latter for py:match") in str(e)
+            assert (
+                "case must have either value or matching attribute,"
+                " the former for py:switch, the latter for py:match"
+            ) in str(e)
         else:
             self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
 
@@ -381,14 +383,13 @@ alien
 <py:case matching="0">even</py:case>
 <py:case matching="_">odd</py:case>
 </py:match></div>""",
-            """<div>
+                """<div>
 0 is even</div><div>
 1 is odd</div>""",
             )
         except XMLTemplateCompileError as e:
             assert "py:match directive can only contain py:case" in str(e), str(e)
 
-        
 
 class TestElse(TestCase):
     def test_pyif_pyelse(self):

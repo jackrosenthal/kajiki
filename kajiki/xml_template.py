@@ -458,13 +458,13 @@ class _Compiler(object):
         """Convert py:match nodes to their IR."""
         if version_info < (3, 10):
             raise XMLTemplateCompileError(
-                'at least Python 3.10 is required to use py:match directive',
+                "at least Python 3.10 is required to use py:match directive",
                 doc=self.doc,
                 filename=self.filename,
                 linen=node.lineno,
             )
         body = []
-        
+
         # Filter out empty text nodes and report unsupported nodes
         for n in self._compile_nop(node):
             if isinstance(n, ir.TextNode) and not n.text.strip():
@@ -480,18 +480,22 @@ class _Compiler(object):
             body.append(n)
 
         yield ir.SPMNode(node.getAttribute("on"), *body)
-        
+
     @annotate
     def _compile_case(self, node):
         """Convert py:case nodes to their intermediate representation."""
         if node.getAttribute("value"):
-            yield ir.CaseNode(node.getAttribute("value"), *list(self._compile_nop(node)))
+            yield ir.CaseNode(
+                node.getAttribute("value"), *list(self._compile_nop(node))
+            )
         elif node.getAttribute("matching"):
-            yield ir.SPMCaseNode(node.getAttribute("matching"), *list(self._compile_nop(node)))
+            yield ir.SPMCaseNode(
+                node.getAttribute("matching"), *list(self._compile_nop(node))
+            )
         else:
             raise XMLTemplateCompileError(
-                'case must have either value or matching attribute,'
-                ' the former for py:switch, the latter for py:match',
+                "case must have either value or matching attribute,"
+                " the former for py:switch, the latter for py:match",
                 doc=self.doc,
                 filename=self.filename,
                 linen=node.lineno,
@@ -987,9 +991,7 @@ class _DomTransformer(object):
             if not isinstance(attrs, tuple):
                 attrs = [attrs]
             for attr in attrs:
-                tree.setAttribute(
-                    tree.tagName, tree.getAttribute(attr)
-                )
+                tree.setAttribute(tree.tagName, tree.getAttribute(attr))
             tree.tagName = "py:nop"
         if tree.tagName != "py:nop" and tree.hasAttribute("py:extends"):
             value = tree.getAttribute("py:extends")
@@ -1010,12 +1012,14 @@ class _DomTransformer(object):
                 # eg: handle bare py:case tags
                 for at in attr:
                     el.setAttribute(at, dict(tree.attributes.items()).get(at))
-                if directive == 'py:case' and tree.nodeName != 'py:case':
-                    if (tree.parentNode.nodeName == 'py:match'
-                       or 'py:match' in tree.parentNode.attributes.keys()):
-                        at = 'on'
+                if directive == "py:case" and tree.nodeName != "py:case":
+                    if (
+                        tree.parentNode.nodeName == "py:match"
+                        or "py:match" in tree.parentNode.attributes.keys()
+                    ):
+                        at = "on"
                     else:
-                        at = 'value'
+                        at = "value"
                     el.setAttribute(at, value)
             elif attr:
                 el.setAttribute(attr, value)

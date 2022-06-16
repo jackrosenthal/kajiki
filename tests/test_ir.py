@@ -55,7 +55,7 @@ class TestSwitch(TestCase):
 class TestSPM(TestCase):
     def setUp(self):
         if sys.version_info < (3, 10):
-            raise self.skipTest('pep622 unavailable before python3.10')
+            raise self.skipTest("pep622 unavailable before python3.10")
 
         self.tpl = ir.TemplateNode(
             defs=[
