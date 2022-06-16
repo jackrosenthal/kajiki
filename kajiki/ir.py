@@ -274,6 +274,7 @@ class CaseNode(HierNode):
 
 class SPMNode(HierNode):
     """Structural Pattern Matching Node"""
+
     def __init__(self, decl, *body):
         super().__init__(body)
         self.decl = decl
@@ -291,6 +292,7 @@ class SPMNode(HierNode):
 
 class SPMCaseNode(HierNode):
     """Structural Pattern Matching Case Node"""
+
     def __init__(self, decl, *body):
         super().__init__(body)
         self.decl = decl
