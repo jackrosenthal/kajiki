@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from unittest import TestCase, main
+import sys
 
 import kajiki
 from kajiki import ir
@@ -53,6 +54,9 @@ class TestSwitch(TestCase):
 
 class TestSPM(TestCase):
     def setUp(self):
+        if sys.version_info < (3, 10):
+            raise self.skipTest('pep622 unavailable before python3.10')
+
         self.tpl = ir.TemplateNode(
             defs=[
                 ir.DefNode(
