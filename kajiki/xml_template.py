@@ -2,6 +2,7 @@ import collections
 import html
 import io
 import re
+from sys import version_info
 from codecs import open
 from itertools import chain
 from xml import sax
@@ -454,9 +455,38 @@ class _Compiler(object):
         yield ir.SwitchNode(node.getAttribute("test"), *body)
 
     @annotate
+    def _compile_match(self, node):
+        """Convert py:match nodes to their IR."""
+        if version_info < (3, 10):
+            raise RuntimeError('at least Python 3.10 is required to use py:match directive')
+        body = []
+        
+        # Filter out empty text nodes and report unsupported nodes
+        for n in self._compile_nop(node):
+            if isinstance(n, ir.TextNode) and not n.text.strip():
+                continue
+            elif not isinstance(n, ir.SPMCaseNode):
+                raise XMLTemplateCompileError(
+                    "py:match directive can only contain py:case nodes "
+                    "and cannot be placed on a tag.",
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=node.lineno,
+                )
+            body.append(n)
+
+        yield ir.SPMNode(node.getAttribute("on"), *body)
+        
+    @annotate
     def _compile_case(self, node):
         """Convert py:case nodes to their intermediate representation."""
-        yield ir.CaseNode(node.getAttribute("value"), *list(self._compile_nop(node)))
+        if node.getAttribute("value"):
+            yield ir.CaseNode(node.getAttribute("value"), *list(self._compile_nop(node)))
+        elif node.getAttribute("matching"):
+            yield ir.SPMCaseNode(node.getAttribute("matching"), *list(self._compile_nop(node)))
+        else:
+            raise RuntimeError('case must have either value or matching attribute,'
+                               ' the former for py:switch, the latter for py:match')
 
     @annotate
     def _compile_if(self, node):
@@ -944,9 +974,13 @@ class _DomTransformer(object):
         if not isinstance(getattr(tree, "tagName", None), str):
             return tree
         if tree.tagName in QDIRECTIVES_DICT:
-            tree.setAttribute(
-                tree.tagName, tree.getAttribute(QDIRECTIVES_DICT[tree.tagName])
-            )
+            attrs = QDIRECTIVES_DICT[tree.tagName]
+            if not isinstance(attrs, tuple):
+                attrs = [attrs]
+            for attr in attrs:
+                tree.setAttribute(
+                    tree.tagName, tree.getAttribute(attr)
+                )
             tree.tagName = "py:nop"
         if tree.tagName != "py:nop" and tree.hasAttribute("py:extends"):
             value = tree.getAttribute("py:extends")
@@ -963,7 +997,10 @@ class _DomTransformer(object):
             # nsmap = (parent is not None) and parent.nsmap or tree.nsmap
             el = tree.ownerDocument.createElement(directive)
             el.lineno = tree.lineno
-            if attr:
+            if isinstance(attr, tuple):
+                for at in attr:
+                    el.setAttribute(at, dict(tree.attributes.items()).get(at))
+            elif attr:
                 el.setAttribute(attr, value)
             # el.setsourceline = tree.sourceline
             parent.replaceChild(newChild=el, oldChild=tree)

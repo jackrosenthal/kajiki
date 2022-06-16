@@ -1,7 +1,7 @@
 DIRECTIVES = [
     ("def", "function"),
     ("call", "function"),
-    ("case", "value"),
+    ("case", ("value", "matching")),
     ("else", ""),
     ("for", "each"),
     ("if", "test"),
