@@ -171,6 +171,25 @@ Perform multiple tests to render one of several alternatives.  The first matchin
 <div>
 3 is odd</div>
 
+py:match, py:case
+^^^^^^^^^^^^^^^^^
+
+Similar to `py:switch` this makes use of `PEP622 <https://peps.python.org/pep-0622/>`_
+Structural Pattern Matching
+
+>>> Template = kajiki.XMLTemplate(''''<div>
+... $i is <py:match on="i % 2">
+... <py:case matching="0">even</py:case>
+... <py:case matching="_">odd</py:case>
+... </py:match></div>''')
+>>> print(Template(dict(i=4)).render())
+<div>
+4 is even</div>
+>>> print(Template(dict(i=3)).render())
+<div>
+3 is odd</div>
+
+
 py:for
 ^^^^^^^^^^^^^
 

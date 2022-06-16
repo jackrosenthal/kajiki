@@ -975,7 +975,7 @@ class _DomTransformer(object):
             </py:if>
 
         This ensures that whenever a template is processed there is no
-        different between the two formats as the Compiler will always
+        difference between the two formats as the Compiler will always
         receive the latter.
         """
         if isinstance(tree, dom.Document):
@@ -1008,8 +1008,16 @@ class _DomTransformer(object):
             el = tree.ownerDocument.createElement(directive)
             el.lineno = tree.lineno
             if isinstance(attr, tuple):
+                # eg: handle bare py:case tags
                 for at in attr:
                     el.setAttribute(at, dict(tree.attributes.items()).get(at))
+                if directive == 'py:case' and tree.nodeName != 'py:case':
+                    if (tree.parentNode.nodeName == 'py:match'
+                       or 'py:match' in tree.parentNode.attributes.keys()):
+                        at = 'on'
+                    else:
+                        at = 'value'
+                    el.setAttribute(at, value)
             elif attr:
                 el.setAttribute(attr, value)
             # el.setsourceline = tree.sourceline
