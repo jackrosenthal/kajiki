@@ -340,6 +340,10 @@ $i is <py:switch test="i % 4">
 
 
 class TestSPM(TestCase):
+    def setUp(self):
+        if sys.version_info < (3, 10):
+            raise self.skipTest('pep622 unavailable before python3.10')
+        
     def test_match(self):
         perform(
             """<div py:for="i in range(2)">
