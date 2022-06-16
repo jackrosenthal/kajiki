@@ -171,6 +171,27 @@ Perform multiple tests to render one of several alternatives.  The first matchin
 <div>
 3 is odd</div>
 
+py:match, py:case
+^^^^^^^^^^^^^^^^^
+
+Similar to `py:switch` this makes use of `PEP622 <https://peps.python.org/pep-0622/>`_
+Structural Pattern Matching
+
+>>> import sys, pytest
+>>> if sys.version_info < (3, 10): pytest.skip('pep622 unsupported')
+>>> Template = kajiki.XMLTemplate('''<div>
+... $i is <py:match on="i % 2">
+... <py:case match="0">even</py:case>
+... <py:case match="_">odd</py:case>
+... </py:match></div>''')
+>>> print(Template(dict(i=4)).render())
+<div>
+4 is even</div>
+>>> print(Template(dict(i=3)).render())
+<div>
+3 is odd</div>
+
+
 py:for
 ^^^^^^^^^^^^^
 
@@ -455,6 +476,31 @@ child.id() = <span>mid</span>
 </div>
 <h6>Footer</h6>
 </div>
+
+Summary of Directives
+=====================
+
+========== ======================  ============================ ==========================================================
+Directive  Usable as an attribute  Usable as a separate element When used as a separate element, requires attributes named
+========== ======================  ============================ ==========================================================
+py:if      ✅                       ✅                            test
+py:else    ✅                       ✅
+py:switch  ❌                       ✅                            test
+py:match   ❌                       ✅                            on
+py:case    ✅                       ✅                            value or match (for usage with py:switch or py:match)
+py:for     ✅                       ✅                            each
+py:def     ✅                       ✅                            function
+py:call    ❌                       ✅                            args, function
+py:include ❌                       ✅                            href
+py:import  ❌                       ✅                            href
+py:with    ✅                       ✅                            vars
+py:attrs   ✅                       ❌
+py:strip   ✅                       ❌
+py:content ✅                       ❌
+py:replace ✅                       ✅                            value
+py:extends ❌                       ✅                            href
+py:block   ✅                       ✅                            name
+========== ======================  ============================ ==========================================================
 
 Built-in functions
 ==================

@@ -7,6 +7,8 @@ import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
 
+import pytest
+
 import kajiki
 from kajiki import FileLoader, MockLoader, PackageLoader, XMLTemplate, i18n
 from kajiki.ir import TranslatableTextNode
@@ -66,9 +68,12 @@ class TestExpand(TestCase):
                 continue
             assert node.tagName == tagname, "%s != %s" % (node.tagName, tagname)
             if attr:
-                assert len(node.attributes) == 1
-                assert node.hasAttribute(attr)
-                assert node.getAttribute(attr) == tagname.split(":")[-1]
+                if node.tagName != "py:case":
+                    assert len(node.attributes) == 1, node.attributes.items()
+                    assert node.hasAttribute(attr)
+                    assert node.getAttribute(attr) == tagname.split(":")[-1]
+                else:
+                    assert len(node.attributes) == 2
             else:
                 assert len(node.attributes) == 0
             assert len(node.childNodes) == 1
@@ -334,6 +339,58 @@ $i is <py:switch test="i % 4">
             )
         else:
             self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
+
+
+class TestMatch:
+    def setup_class(self):
+        if sys.version_info < (3, 10):
+            pytest.skip("pep622 unavailable before python3.10")
+
+    def test_match(self):
+        perform(
+            """<div py:for="i in range(2)">
+$i is <py:match on="i % 2">
+<py:case match="0">even</py:case>
+<py:case match="_">odd</py:case>
+</py:match></div>""",
+            """<div>
+0 is even</div><div>
+1 is odd</div>""",
+        )
+
+    def test_match_div(self):
+        try:
+            perform(
+                """
+        <div class="test" py:match="5 == 3">
+            <p py:case="True">True</p>
+            <p py:case="_">False</p>
+        </div>""",
+                "<div><div>False</div></div>",
+            )
+        except XMLTemplateCompileError as e:
+            assert (
+                "case must have either value or match attribute,"
+                " the former for py:switch, the latter for py:match"
+            ) in str(e)
+        else:
+            self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
+
+    def test_match_aliens(self):
+        try:
+            perform(
+                """<div py:for="i in range(2)">
+$i is <py:match on="i % 2">
+alien
+<py:case match="0">even</py:case>
+<py:case match="_">odd</py:case>
+</py:match></div>""",
+                """<div>
+0 is even</div><div>
+1 is odd</div>""",
+            )
+        except XMLTemplateCompileError as e:
+            assert "py:match directive can only contain py:case" in str(e), str(e)
 
 
 class TestElse(TestCase):

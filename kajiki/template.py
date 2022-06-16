@@ -416,8 +416,6 @@ def patch_code_file_lines(code, filename, firstlineno, lnotab):
         code.co_qualname if version_info >= (3, 11) else "REMOVE",
         firstlineno,
         lnotab,
-        code.co_endlinetable if version_info >= (3, 11) else "REMOVE",
-        code.co_columntable if version_info >= (3, 11) else "REMOVE",
         code.co_exceptiontable if version_info >= (3, 11) else "REMOVE",
         code.co_freevars,
         code.co_cellvars,
