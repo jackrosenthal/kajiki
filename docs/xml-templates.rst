@@ -177,7 +177,7 @@ py:match, py:case
 Similar to `py:switch` this makes use of `PEP622 <https://peps.python.org/pep-0622/>`_
 Structural Pattern Matching
 
->>> Template = kajiki.XMLTemplate(''''<div>
+>>> Template = kajiki.XMLTemplate('''<div>
 ... $i is <py:match on="i % 2">
 ... <py:case matching="0">even</py:case>
 ... <py:case matching="_">odd</py:case>
