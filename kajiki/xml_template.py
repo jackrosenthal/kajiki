@@ -458,7 +458,7 @@ class _Compiler(object):
         """Convert py:match nodes to their IR."""
         if version_info < (3, 10):
             raise XMLTemplateCompileError(
-                "at least Python 3.10 is required to use py:match directive",
+                "At least Python 3.10 is required to use the py:match directive",
                 doc=self.doc,
                 filename=self.filename,
                 linen=node.lineno,
@@ -469,7 +469,7 @@ class _Compiler(object):
         for n in self._compile_nop(node):
             if isinstance(n, ir.TextNode) and not n.text.strip():
                 continue
-            elif not isinstance(n, ir.SPMCaseNode):
+            elif not isinstance(n, ir.MatchCaseNode):
                 raise XMLTemplateCompileError(
                     "py:match directive can only contain py:case nodes "
                     "and cannot be placed on a tag.",
@@ -479,7 +479,7 @@ class _Compiler(object):
                 )
             body.append(n)
 
-        yield ir.SPMNode(node.getAttribute("on"), *body)
+        yield ir.MatchNode(node.getAttribute("on"), *body)
 
     @annotate
     def _compile_case(self, node):
@@ -488,13 +488,13 @@ class _Compiler(object):
             yield ir.CaseNode(
                 node.getAttribute("value"), *list(self._compile_nop(node))
             )
-        elif node.getAttribute("matching"):
-            yield ir.SPMCaseNode(
-                node.getAttribute("matching"), *list(self._compile_nop(node))
+        elif node.getAttribute("match"):
+            yield ir.MatchCaseNode(
+                node.getAttribute("match"), *list(self._compile_nop(node))
             )
         else:
             raise XMLTemplateCompileError(
-                "case must have either value or matching attribute,"
+                "case must have either value or match attribute,"
                 " the former for py:switch, the latter for py:match",
                 doc=self.doc,
                 filename=self.filename,

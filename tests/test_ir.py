@@ -3,6 +3,8 @@
 import sys
 from unittest import TestCase, main
 
+import pytest
+
 import kajiki
 from kajiki import ir
 
@@ -52,10 +54,10 @@ class TestSwitch(TestCase):
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
-class TestSPM(TestCase):
-    def setUp(self):
+class TestMatch():
+    def setup_class(self):
         if sys.version_info < (3, 10):
-            raise self.skipTest("pep622 unavailable before python3.10")
+            pytest.skip("pep622 unavailable before python3.10")
 
         self.tpl = ir.TemplateNode(
             defs=[
@@ -65,10 +67,10 @@ class TestSPM(TestCase):
                         "i in range(2)",
                         ir.ExprNode("i"),
                         ir.TextNode(" is "),
-                        ir.SPMNode(
+                        ir.MatchNode(
                             "i % 2",
-                            ir.SPMCaseNode("0", ir.TextNode("even\n")),
-                            ir.SPMCaseNode("_", ir.TextNode("odd\n")),
+                            ir.MatchCaseNode("0", ir.TextNode("even\n")),
+                            ir.MatchCaseNode("_", ir.TextNode("odd\n")),
                         ),
                     ),
                 )

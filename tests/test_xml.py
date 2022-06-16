@@ -7,6 +7,8 @@ import xml.dom.minidom
 from io import BytesIO
 from unittest import TestCase, main
 
+import pytest
+
 import kajiki
 from kajiki import FileLoader, MockLoader, PackageLoader, XMLTemplate, i18n
 from kajiki.ir import TranslatableTextNode
@@ -339,17 +341,17 @@ $i is <py:switch test="i % 4">
             self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
 
 
-class TestSPM(TestCase):
-    def setUp(self):
+class TestMatch:
+    def setup_class(self):
         if sys.version_info < (3, 10):
-            raise self.skipTest("pep622 unavailable before python3.10")
+            pytest.skip("pep622 unavailable before python3.10")
 
     def test_match(self):
         perform(
             """<div py:for="i in range(2)">
 $i is <py:match on="i % 2">
-<py:case matching="0">even</py:case>
-<py:case matching="_">odd</py:case>
+<py:case match="0">even</py:case>
+<py:case match="_">odd</py:case>
 </py:match></div>""",
             """<div>
 0 is even</div><div>
@@ -368,7 +370,7 @@ $i is <py:match on="i % 2">
             )
         except XMLTemplateCompileError as e:
             assert (
-                "case must have either value or matching attribute,"
+                "case must have either value or match attribute,"
                 " the former for py:switch, the latter for py:match"
             ) in str(e)
         else:
@@ -380,8 +382,8 @@ $i is <py:match on="i % 2">
                 """<div py:for="i in range(2)">
 $i is <py:match on="i % 2">
 alien
-<py:case matching="0">even</py:case>
-<py:case matching="_">odd</py:case>
+<py:case match="0">even</py:case>
+<py:case match="_">odd</py:case>
 </py:match></div>""",
                 """<div>
 0 is even</div><div>

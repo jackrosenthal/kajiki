@@ -181,8 +181,8 @@ Structural Pattern Matching
 >>> if sys.version_info < (3, 10): pytest.skip('pep622 unsupported')
 >>> Template = kajiki.XMLTemplate('''<div>
 ... $i is <py:match on="i % 2">
-... <py:case matching="0">even</py:case>
-... <py:case matching="_">odd</py:case>
+... <py:case match="0">even</py:case>
+... <py:case match="_">odd</py:case>
 ... </py:match></div>''')
 >>> print(Template(dict(i=4)).render())
 <div>

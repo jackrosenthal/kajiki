@@ -6,7 +6,7 @@ from .util import flattener, gen_name, window
 
 def generate_python(ir):
     cur_indent = 0
-    for node in flattener(flattener(ir)):
+    for node in flattener(ir):
         if isinstance(node, IndentNode):
             cur_indent += 4
         elif isinstance(node, DedentNode):
@@ -272,7 +272,7 @@ class CaseNode(HierNode):
         yield self.line("elif local.__kj__.case(%s):" % self.decl)
 
 
-class SPMNode(HierNode):
+class MatchNode(HierNode):
     """Structural Pattern Matching Node"""
 
     def __init__(self, decl, *body):
@@ -280,7 +280,7 @@ class SPMNode(HierNode):
         self.decl = decl
 
     def py(self):
-        yield self.line("match %s:" % self.decl)
+        yield self.line("match (%s):" % self.decl)
         yield IndentNode()
 
     def __iter__(self):
@@ -290,7 +290,7 @@ class SPMNode(HierNode):
         yield DedentNode()
 
 
-class SPMCaseNode(HierNode):
+class MatchCaseNode(HierNode):
     """Structural Pattern Matching Case Node"""
 
     def __init__(self, decl, *body):
