@@ -18,8 +18,8 @@ identical to those of Genshi_.
  * ``py:strip``
  * ``xi:include`` -- renamed ``py:include``
 
-Note that, in particular, ``py:match`` is not supported.  But Kajiki
-supports the following additional directives:
+Note that, in particular, ``py:match`` is not supported and instead implements PEP622.
+But Kajiki supports the following additional directives:
 
  * ``py:extends`` - indicates that this is an extension template.  The parent
    template will be read in and used for layout, with any ``py:block`` directives in

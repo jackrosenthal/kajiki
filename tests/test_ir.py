@@ -54,7 +54,7 @@ class TestSwitch(TestCase):
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
-class TestMatch():
+class TestMatch:
     def setup_class(self):
         if sys.version_info < (3, 10):
             pytest.skip("pep622 unavailable before python3.10")
