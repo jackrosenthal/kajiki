@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from unittest import TestCase, main
 import sys
+from unittest import TestCase, main
 
 import kajiki
 from kajiki import ir
