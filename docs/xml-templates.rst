@@ -486,7 +486,8 @@ Directive  Usable as an attribute  Usable as a separate element When used as a s
 py:if      ✅                       ✅                            test
 py:else    ✅                       ✅
 py:switch  ❌                       ✅                            test
-py:case    ✅                       ✅                            value
+py:match   ❌                       ✅                            on
+py:case    ✅                       ✅                            value or match (for usage with py:switch or py:match)
 py:for     ✅                       ✅                            each
 py:def     ✅                       ✅                            function
 py:call    ❌                       ✅                            args, function
