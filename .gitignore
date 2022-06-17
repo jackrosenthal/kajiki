@@ -46,3 +46,9 @@ pypyenv3
 .mr.developer.cfg
 .project
 .pydevproject
+
+
+# emacs
+\#*\#
+.\#*
+flycheck_*

@@ -3,6 +3,7 @@ import html
 import io
 import re
 from codecs import open
+from sys import version_info
 from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
@@ -453,9 +454,52 @@ class _Compiler(object):
         yield ir.SwitchNode(node.getAttribute("test"), *body)
 
     @annotate
+    def _compile_match(self, node):
+        """Convert py:match nodes to their IR."""
+        if version_info < (3, 10):
+            raise XMLTemplateCompileError(
+                "At least Python 3.10 is required to use the py:match directive",
+                doc=self.doc,
+                filename=self.filename,
+                linen=node.lineno,
+            )
+        body = []
+
+        # Filter out empty text nodes and report unsupported nodes
+        for n in self._compile_nop(node):
+            if isinstance(n, ir.TextNode) and not n.text.strip():
+                continue
+            elif not isinstance(n, ir.MatchCaseNode):
+                raise XMLTemplateCompileError(
+                    "py:match directive can only contain py:case nodes "
+                    "and cannot be placed on a tag.",
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=node.lineno,
+                )
+            body.append(n)
+
+        yield ir.MatchNode(node.getAttribute("on"), *body)
+
+    @annotate
     def _compile_case(self, node):
         """Convert py:case nodes to their intermediate representation."""
-        yield ir.CaseNode(node.getAttribute("value"), *list(self._compile_nop(node)))
+        if node.getAttribute("value"):
+            yield ir.CaseNode(
+                node.getAttribute("value"), *list(self._compile_nop(node))
+            )
+        elif node.getAttribute("match"):
+            yield ir.MatchCaseNode(
+                node.getAttribute("match"), *list(self._compile_nop(node))
+            )
+        else:
+            raise XMLTemplateCompileError(
+                "case must have either value or match attribute,"
+                " the former for py:switch, the latter for py:match",
+                doc=self.doc,
+                filename=self.filename,
+                linen=node.lineno,
+            )
 
     @annotate
     def _compile_if(self, node):
@@ -934,7 +978,7 @@ class _DomTransformer(object):
             </py:if>
 
         This ensures that whenever a template is processed there is no
-        different between the two formats as the Compiler will always
+        difference between the two formats as the Compiler will always
         receive the latter.
         """
         if isinstance(tree, dom.Document):
@@ -943,9 +987,11 @@ class _DomTransformer(object):
         if not isinstance(getattr(tree, "tagName", None), str):
             return tree
         if tree.tagName in QDIRECTIVES_DICT:
-            tree.setAttribute(
-                tree.tagName, tree.getAttribute(QDIRECTIVES_DICT[tree.tagName])
-            )
+            attrs = QDIRECTIVES_DICT[tree.tagName]
+            if not isinstance(attrs, tuple):
+                attrs = [attrs]
+            for attr in attrs:
+                tree.setAttribute(tree.tagName, tree.getAttribute(attr))
             tree.tagName = "py:nop"
         if tree.tagName != "py:nop" and tree.hasAttribute("py:extends"):
             value = tree.getAttribute("py:extends")
@@ -962,7 +1008,20 @@ class _DomTransformer(object):
             # nsmap = (parent is not None) and parent.nsmap or tree.nsmap
             el = tree.ownerDocument.createElement(directive)
             el.lineno = tree.lineno
-            if attr:
+            if isinstance(attr, tuple):
+                # eg: handle bare py:case tags
+                for at in attr:
+                    el.setAttribute(at, dict(tree.attributes.items()).get(at))
+                if directive == "py:case" and tree.nodeName != "py:case":
+                    if (
+                        tree.parentNode.nodeName == "py:match"
+                        or "py:match" in tree.parentNode.attributes.keys()
+                    ):
+                        at = "on"
+                    else:
+                        at = "value"
+                    el.setAttribute(at, value)
+            elif attr:
                 el.setAttribute(attr, value)
             # el.setsourceline = tree.sourceline
             parent.replaceChild(newChild=el, oldChild=tree)
