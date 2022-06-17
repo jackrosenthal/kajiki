@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Kajiki Templating Basics &#8212; Kajiki 0.9.2.dev1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,13 +35,13 @@
           <div class="body" role="main">
             
   <section id="kajiki-templating-basics">
-<h1>Kajiki Templating Basics<a class="headerlink" href="#kajiki-templating-basics" title="Permalink to this headline">¶</a></h1>
+<h1>Kajiki Templating Basics<a class="headerlink" href="#kajiki-templating-basics" title="Permalink to this heading">¶</a></h1>
 <p>Kajiki provides two templating engines, one which is useful for generating
 markup (HTML or XML most likely), and one of which is useful for generating
 plain text.  This document describes the aspects of the two engines that are
 similar and the basic API for using them.</p>
 <section id="synopsis">
-<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<h2>Synopsis<a class="headerlink" href="#synopsis" title="Permalink to this heading">¶</a></h2>
 <p>A Kajiki <em>xml template</em> is a well-formed XML document that may include one or
 more custom tags and attributes prefixed by the namespace ‘py:’.  XML templates
 also may contain python expressions that will be evaluated at template expansion
@@ -118,7 +119,7 @@ These are some of my favorite fruits:
 </div>
 </section>
 <section id="python-api">
-<h2>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h2>
+<h2>Python API<a class="headerlink" href="#python-api" title="Permalink to this heading">¶</a></h2>
 <p>In order to actually use Kajiki in generating text (either via the XML or the
 text-based languages), the pattern is as follows:</p>
 <blockquote>
@@ -161,7 +162,7 @@ templates:</p>
 </div>
 </section>
 <section id="template-expressions-and-code-blocks">
-<h2>Template Expressions and Code Blocks<a class="headerlink" href="#template-expressions-and-code-blocks" title="Permalink to this headline">¶</a></h2>
+<h2>Template Expressions and Code Blocks<a class="headerlink" href="#template-expressions-and-code-blocks" title="Permalink to this heading">¶</a></h2>
 <p>Python expressions can be used in “plain text” areas of templates, including, in
 XML templates, tag attributes.  They are also used in some directive arguments.
 Whenever a Python expression is used in a “plain text” area, it must be prefixed
@@ -179,7 +180,7 @@ For example:</p>
 </pre></div>
 </div>
 <section id="escaping">
-<h3>Escaping<a class="headerlink" href="#escaping" title="Permalink to this headline">¶</a></h3>
+<h3>Escaping<a class="headerlink" href="#escaping" title="Permalink to this heading">¶</a></h3>
 <p>If you need a literal dollar sign where Kajiki would normally detect an
 expression, you can simply double the dollar sign:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;em&gt;$foo&lt;/em&gt;&#39;</span><span class="p">)</span>
@@ -194,7 +195,7 @@ expression, you can simply double the dollar sign:</p>
 </div>
 </section>
 <section id="code-blocks">
-<h3>Code Blocks<a class="headerlink" href="#code-blocks" title="Permalink to this headline">¶</a></h3>
+<h3>Code Blocks<a class="headerlink" href="#code-blocks" title="Permalink to this heading">¶</a></h3>
 <p>Templates also support full Python syntax, using the &lt;?py ?&gt; processing
 instruction:</p>
 <div class="highlight-xml notranslate"><div class="highlight"><pre><span></span>&lt;div&gt;
@@ -244,7 +245,7 @@ first line of the Python with a percent (%) sign:</p>
 </div>
 </section>
 <section id="built-in-functions-and-variables">
-<h3>Built-in Functions and Variables<a class="headerlink" href="#built-in-functions-and-variables" title="Permalink to this headline">¶</a></h3>
+<h3>Built-in Functions and Variables<a class="headerlink" href="#built-in-functions-and-variables" title="Permalink to this heading">¶</a></h3>
 <p>All templates have access to the following functions and variables:</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="literal">
@@ -282,7 +283,7 @@ inheritance hierarchy.</p>
 </section>
 </section>
 <section id="template-directives">
-<h2>Template Directives<a class="headerlink" href="#template-directives" title="Permalink to this headline">¶</a></h2>
+<h2>Template Directives<a class="headerlink" href="#template-directives" title="Permalink to this heading">¶</a></h2>
 <p>Template directives provide control flow and inheritance functionality for
 templates.  As their syntax depends on whether you’re using XML or text
 templates, please refer to <a class="reference internal" href="xml-templates.html"><span class="doc">Kajiki XML Templates</span></a> or <a class="reference internal" href="text-templates.html"><span class="doc">Kajiki Text Templates</span></a>
@@ -358,7 +359,7 @@ for more information.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -375,7 +376,7 @@ for more information.</p>
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

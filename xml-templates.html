@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Kajiki XML Templates &#8212; Kajiki 0.9.2.dev1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,7 +35,7 @@
           <div class="body" role="main">
             
   <section id="kajiki-xml-templates">
-<h1>Kajiki XML Templates<a class="headerlink" href="#kajiki-xml-templates" title="Permalink to this headline">¶</a></h1>
+<h1>Kajiki XML Templates<a class="headerlink" href="#kajiki-xml-templates" title="Permalink to this heading">¶</a></h1>
 <p>Kajiki provides a full-featured XML-based template engine that guarantees
 well-formed output when generating HTML and XML.  This document describes that
 language.  Templates are XML files that include template directives that control
@@ -43,7 +44,7 @@ generated text at render time.</p>
 <p>Please see <a class="reference internal" href="templating-basics.html"><span class="doc">Kajiki Templating Basics</span></a> for general information on embedding Python
 code in templates.</p>
 <section id="output-modes">
-<h2>Output Modes<a class="headerlink" href="#output-modes" title="Permalink to this headline">¶</a></h2>
+<h2>Output Modes<a class="headerlink" href="#output-modes" title="Permalink to this heading">¶</a></h2>
 <p>Although Kajiki XML templates must be well-formed XML documents, Kajiki is capable of
 rendering HTML or XML.  By default, Kajiki will inspect the doctype of the
 template to determine how to render:</p>
@@ -133,7 +134,7 @@ document, you can begin the comment with the syntax <cite>&lt;!–!</cite> inste
 </div>
 </section>
 <section id="basic-expressions">
-<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this headline">¶</a></h2>
+<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this heading">¶</a></h2>
 <p>Let’s start with a hello world template:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;div&gt;Hello, $name!&lt;/div&gt;&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;world&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
@@ -162,13 +163,13 @@ as follows:</p>
 </div>
 </section>
 <section id="control-flow">
-<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this headline">¶</a></h2>
+<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki provides several directives that affect the rendering of a template.  This
 section describes the various directives.  Directives in text templates can
 either appear as special attributes on tags prefixed by <cite>py:</cite> or as standalone
 tags whose tagname is prefixed by <cite>py:</cite>.</p>
 <section id="py-if-py-else">
-<h3>py:if, py:else<a class="headerlink" href="#py-if-py-else" title="Permalink to this headline">¶</a></h3>
+<h3>py:if, py:else<a class="headerlink" href="#py-if-py-else" title="Permalink to this heading">¶</a></h3>
 <p>Only render the enclosed content if the expression evaluates to a truthy value:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;div&gt;&lt;py:if test=&quot;foo&quot;&gt;bar&lt;/py:if&gt;&lt;py:else&gt;baz&lt;/py:else&gt;&lt;/div&gt;&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
@@ -184,7 +185,7 @@ tags whose tagname is prefixed by <cite>py:</cite>.</p>
 </div>
 </section>
 <section id="py-switch-py-case-py-else">
-<h3>py:switch, py:case, py:else<a class="headerlink" href="#py-switch-py-case-py-else" title="Permalink to this headline">¶</a></h3>
+<h3>py:switch, py:case, py:else<a class="headerlink" href="#py-switch-py-case-py-else" title="Permalink to this heading">¶</a></h3>
 <p>Perform multiple tests to render one of several alternatives.  The first matching
 <cite>case</cite> is rendered, and if no <cite>case</cite> matches, the <cite>else</cite> branch is rendered:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;div&gt;</span>
@@ -202,7 +203,7 @@ tags whose tagname is prefixed by <cite>py:</cite>.</p>
 </div>
 </section>
 <section id="py-for">
-<h3>py:for<a class="headerlink" href="#py-for" title="Permalink to this headline">¶</a></h3>
+<h3>py:for<a class="headerlink" href="#py-for" title="Permalink to this heading">¶</a></h3>
 <p>Repeatedly render the content for each item in an iterable:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;ul&gt;</span>
 <span class="gp">... </span><span class="s1">&lt;li py:for=&quot;x in range(sz)&quot;&gt;$x&lt;/li&gt;</span>
@@ -215,7 +216,7 @@ tags whose tagname is prefixed by <cite>py:</cite>.</p>
 </div>
 </section>
 <section id="py-def">
-<h3>py:def<a class="headerlink" href="#py-def" title="Permalink to this headline">¶</a></h3>
+<h3>py:def<a class="headerlink" href="#py-def" title="Permalink to this heading">¶</a></h3>
 <p>Defines a function that can be used elsewhere in the template:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;div</span>
 <span class="gp">... </span><span class="s1">&gt;&lt;py:def function=&quot;evenness(n)&quot;</span>
@@ -231,7 +232,7 @@ tags whose tagname is prefixed by <cite>py:</cite>.</p>
 </div>
 </section>
 <section id="py-call">
-<h3>py:call<a class="headerlink" href="#py-call" title="Permalink to this headline">¶</a></h3>
+<h3>py:call<a class="headerlink" href="#py-call" title="Permalink to this heading">¶</a></h3>
 <p>Call a function, passing a block of template code as a ‘lambda’ parameter.  Note
 that this is a special case of calling when you wish to insert some templated text in the
 expansion of a function call.  In normal circumstances, you would just use <cite>${my_function(args)}</cite>.</p>
@@ -250,7 +251,7 @@ expansion of a function call.  In normal circumstances, you would just use <cite
 </div>
 </section>
 <section id="py-include">
-<h3>py:include<a class="headerlink" href="#py-include" title="Permalink to this headline">¶</a></h3>
+<h3>py:include<a class="headerlink" href="#py-include" title="Permalink to this heading">¶</a></h3>
 <p>Includes the text of another template verbatim.  The precise semantics of this
 tag depend on the <cite>TemplateLoader</cite> being used, as the <cite>TemplateLoader</cite> is used to
 parse the name of the template being included and render its contents into the
@@ -265,7 +266,7 @@ following:</p>
 </div>
 </section>
 <section id="py-import">
-<h3>py:import<a class="headerlink" href="#py-import" title="Permalink to this headline">¶</a></h3>
+<h3>py:import<a class="headerlink" href="#py-import" title="Permalink to this heading">¶</a></h3>
 <p>With <cite>py:import</cite>, you can make the functions defined in another template available
 without expanding the full template in-place.  Suppose that we saved the
 following template in a file <cite>lib.xml</cite>:</p>
@@ -285,7 +286,7 @@ function as follows:</p>
 </pre></div>
 </div>
 <section id="py-with">
-<h4>py:with<a class="headerlink" href="#py-with" title="Permalink to this headline">¶</a></h4>
+<h4>py:with<a class="headerlink" href="#py-with" title="Permalink to this heading">¶</a></h4>
 <p>Using <cite>py:with</cite>, you can temporarily assign variables values for the extent of
 the block:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;div py:with=&quot;a=&#39;foo&#39;&quot;&gt;</span>
@@ -305,9 +306,9 @@ the block:</p>
 </section>
 </section>
 <section id="content-generation">
-<h2>Content Generation<a class="headerlink" href="#content-generation" title="Permalink to this headline">¶</a></h2>
+<h2>Content Generation<a class="headerlink" href="#content-generation" title="Permalink to this heading">¶</a></h2>
 <section id="py-attrs">
-<h3>py:attrs<a class="headerlink" href="#py-attrs" title="Permalink to this headline">¶</a></h3>
+<h3>py:attrs<a class="headerlink" href="#py-attrs" title="Permalink to this heading">¶</a></h3>
 <p>With the <cite>py:attrs</cite> custom attribute, you can include dynamic attributes in an
 xml/html tag by passing a either a Python dict or a list of pairs:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;div py:attrs=&quot;attrs&quot;/&gt;&#39;</span><span class="p">)</span>
@@ -326,7 +327,7 @@ markup:</p>
 </div>
 </section>
 <section id="py-strip">
-<h3>py:strip<a class="headerlink" href="#py-strip" title="Permalink to this headline">¶</a></h3>
+<h3>py:strip<a class="headerlink" href="#py-strip" title="Permalink to this heading">¶</a></h3>
 <p>With <code class="docutils literal notranslate"><span class="pre">py:strip</span></code>, you can remove the tag to which the attribute is attached
 without removing the content of the tag:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;div&gt;&lt;div py:strip=&quot;True&quot;&gt;Foo&lt;/div&gt;&lt;/div&gt;&#39;</span><span class="p">)</span>
@@ -338,7 +339,7 @@ without removing the content of the tag:</p>
 the same effect as using a truth value (i.e. the element is stripped).</p>
 </section>
 <section id="py-content">
-<h3>py:content<a class="headerlink" href="#py-content" title="Permalink to this headline">¶</a></h3>
+<h3>py:content<a class="headerlink" href="#py-content" title="Permalink to this heading">¶</a></h3>
 <p>With <cite>py:content</cite>, you can remove the tag to which the attribute is attached
 without removing the content of the tag:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;div py:content=&quot;content&quot;/&gt;&#39;</span><span class="p">)</span>
@@ -348,7 +349,7 @@ without removing the content of the tag:</p>
 </div>
 </section>
 <section id="py-replace">
-<h3>py:replace<a class="headerlink" href="#py-replace" title="Permalink to this headline">¶</a></h3>
+<h3>py:replace<a class="headerlink" href="#py-replace" title="Permalink to this heading">¶</a></h3>
 <p>With <cite>py:replace</cite>, you can replace the entire tag to which the document is
 attached and its children:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&lt;div py:replace=&quot;content&quot;/&gt;&#39;</span><span class="p">)</span>
@@ -359,7 +360,7 @@ attached and its children:</p>
 </section>
 </section>
 <section id="inheritance-py-extends-py-block">
-<h2>Inheritance (py:extends, py:block)<a class="headerlink" href="#inheritance-py-extends-py-block" title="Permalink to this headline">¶</a></h2>
+<h2>Inheritance (py:extends, py:block)<a class="headerlink" href="#inheritance-py-extends-py-block" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki supports a concept of inheritance whereby child templates can extend
 parent templates, replacing their “methods” (functions) and “blocks” (to be defined below).
 For instance, consider the following template “parent.xml”:</p>
@@ -468,12 +469,106 @@ inheritance hierarchy:</p>
 </pre></div>
 </div>
 </section>
+<section id="summary-of-directives">
+<h2>Summary of Directives<a class="headerlink" href="#summary-of-directives" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Directive</p></th>
+<th class="head"><p>Usable as an attribute</p></th>
+<th class="head"><p>Usable as a separate element</p></th>
+<th class="head"><p>When used as a separate element, requires attributes named</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>py:if</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>test</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:else</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>py:switch</p></td>
+<td><p>❌</p></td>
+<td><p>✅</p></td>
+<td><p>test</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:case</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>value</p></td>
+</tr>
+<tr class="row-even"><td><p>py:for</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>each</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:def</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>function</p></td>
+</tr>
+<tr class="row-even"><td><p>py:call</p></td>
+<td><p>❌</p></td>
+<td><p>✅</p></td>
+<td><p>args, function</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:include</p></td>
+<td><p>❌</p></td>
+<td><p>✅</p></td>
+<td><p>href</p></td>
+</tr>
+<tr class="row-even"><td><p>py:import</p></td>
+<td><p>❌</p></td>
+<td><p>✅</p></td>
+<td><p>href</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:with</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>vars</p></td>
+</tr>
+<tr class="row-even"><td><p>py:attrs</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>py:strip</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>py:content</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>py:replace</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>value</p></td>
+</tr>
+<tr class="row-even"><td><p>py:extends</p></td>
+<td><p>❌</p></td>
+<td><p>✅</p></td>
+<td><p>href</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:block</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>name</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="built-in-functions">
-<h2>Built-in functions<a class="headerlink" href="#built-in-functions" title="Permalink to this headline">¶</a></h2>
+<h2>Built-in functions<a class="headerlink" href="#built-in-functions" title="Permalink to this heading">¶</a></h2>
 <p>The following functions are available by default in template code,
 in addition to the standard built-ins that are available to all Python code.</p>
 <section id="defined-name">
-<h3>defined(name)<a class="headerlink" href="#defined-name" title="Permalink to this headline">¶</a></h3>
+<h3>defined(name)<a class="headerlink" href="#defined-name" title="Permalink to this heading">¶</a></h3>
 <p>This function determines whether a variable of the specified name exists in the context data, and returns True if it does.</p>
 <p>When would you use it? Well, suppose you tried the following template snippet:</p>
 <blockquote>
@@ -489,7 +584,7 @@ that condition possible, so you can write this:</p>
 </div></blockquote>
 </section>
 <section id="literal-text">
-<h3>literal(text)<a class="headerlink" href="#literal-text" title="Permalink to this headline">¶</a></h3>
+<h3>literal(text)<a class="headerlink" href="#literal-text" title="Permalink to this heading">¶</a></h3>
 <p>All good templating languages escape text by default to avoid certain attacks.
 But sometimes you have an HTML snippet that you wish to include in a page,
 and you know the HTML is safe.</p>
@@ -505,7 +600,7 @@ your web site to cross-site scripting attacks. Example:</p>
 synonym, too.</p>
 </section>
 <section id="value-of-name-default-none">
-<h3>value_of(name, default=None)<a class="headerlink" href="#value-of-name-default-none" title="Permalink to this headline">¶</a></h3>
+<h3>value_of(name, default=None)<a class="headerlink" href="#value-of-name-default-none" title="Permalink to this heading">¶</a></h3>
 <p>This function returns the value of the variable with the specified name
 if such a variable is defined, and returns the value of the default parameter
 if no such variable is defined.</p>
@@ -520,7 +615,7 @@ evaluated as False.)</p>
 </section>
 </section>
 <section id="tips-on-writing-your-templates">
-<h2>Tips on writing your templates<a class="headerlink" href="#tips-on-writing-your-templates" title="Permalink to this headline">¶</a></h2>
+<h2>Tips on writing your templates<a class="headerlink" href="#tips-on-writing-your-templates" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki takes XML as input, with the exception that it recognizes HTML entities
 in addition to XML entities. (HTML has many more entities than XML;
 for instance, XML does not define <code class="docutils literal notranslate"><span class="pre">&amp;nbsp</span></code>).</p>
@@ -588,6 +683,7 @@ Kajiki takes XML as input.</p>
 <li class="toctree-l2"><a class="reference internal" href="#control-flow">Control Flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#content-generation">Content Generation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#inheritance-py-extends-py-block">Inheritance (py:extends, py:block)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#summary-of-directives">Summary of Directives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#built-in-functions">Built-in functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tips-on-writing-your-templates">Tips on writing your templates</a></li>
 </ul>
@@ -618,7 +714,7 @@ Kajiki takes XML as input.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -635,7 +731,7 @@ Kajiki takes XML as input.</p>
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

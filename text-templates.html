@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Kajiki Text Templates &#8212; Kajiki 0.9.2.dev1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,7 +35,7 @@
           <div class="body" role="main">
             
   <section id="kajiki-text-templates">
-<h1>Kajiki Text Templates<a class="headerlink" href="#kajiki-text-templates" title="Permalink to this headline">¶</a></h1>
+<h1>Kajiki Text Templates<a class="headerlink" href="#kajiki-text-templates" title="Permalink to this heading">¶</a></h1>
 <p>Kajiki provides a full-featured text template engine in addition to the XML
 templating engine for cases where you don’t want to necessarily generate markup.
 This document describes that language.  Templates are text files that include
@@ -43,7 +44,7 @@ that are substituted into the generated text at render time.</p>
 <p>Please see <a class="reference internal" href="templating-basics.html"><span class="doc">Kajiki Templating Basics</span></a> for general information on embedding Python
 code in templates.</p>
 <section id="basic-expressions">
-<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this headline">¶</a></h2>
+<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this heading">¶</a></h2>
 <p>Let’s start with a hello world template:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">kajiki</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;Hello, $name!&#39;</span><span class="p">)</span>
@@ -67,7 +68,7 @@ as follows:</p>
 </div>
 </section>
 <section id="control-flow">
-<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this headline">¶</a></h2>
+<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki provides several directives that affect the rendering of a template.  This
 section describes the various directives.  Directives in text templates can
 either be enclosed by <cite>{% … %}</cite> characters or they can exist on a line by
@@ -83,7 +84,7 @@ delimiter <cite>{%-</cite>.  Directives that appear on their own line via the <c
 never appear in the output, and neither they do not generate any whitespace.</p>
 </div>
 <section id="if-else">
-<h3>%if, %else<a class="headerlink" href="#if-else" title="Permalink to this headline">¶</a></h3>
+<h3>%if, %else<a class="headerlink" href="#if-else" title="Permalink to this heading">¶</a></h3>
 <p>Only render the enclosed content if the expression evaluates to a truthy value:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;{</span><span class="si">%i</span><span class="s1">f foo %}bar{</span><span class="si">%e</span><span class="s1">lse%}baz{</span><span class="si">%e</span><span class="s1">nd%}&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">foo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
@@ -94,7 +95,7 @@ never appear in the output, and neither they do not generate any whitespace.</p>
 </div>
 </section>
 <section id="switch-case-else">
-<h3>%switch, %case, %else<a class="headerlink" href="#switch-case-else" title="Permalink to this headline">¶</a></h3>
+<h3>%switch, %case, %else<a class="headerlink" href="#switch-case-else" title="Permalink to this heading">¶</a></h3>
 <p>Perform multiple tests to render one of several alternatives.  The first matching
 <cite>case</cite> is rendered, and if no <cite>case</cite> matches, the <cite>else</cite> branch is rendered:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;$i is </span><span class="se">\</span>
@@ -107,7 +108,7 @@ never appear in the output, and neither they do not generate any whitespace.</p>
 </div>
 </section>
 <section id="for">
-<h3>%for<a class="headerlink" href="#for" title="Permalink to this headline">¶</a></h3>
+<h3>%for<a class="headerlink" href="#for" title="Permalink to this heading">¶</a></h3>
 <p>Repeatedly render the content for each item in an iterable:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span><span class="si">%f</span><span class="s1">or i in range(3)</span>
 <span class="gp">... </span><span class="s1">$i</span>
@@ -120,7 +121,7 @@ never appear in the output, and neither they do not generate any whitespace.</p>
 </div>
 </section>
 <section id="def">
-<h3>%def<a class="headerlink" href="#def" title="Permalink to this headline">¶</a></h3>
+<h3>%def<a class="headerlink" href="#def" title="Permalink to this heading">¶</a></h3>
 <p>Defines a function that can be used elsewhere in the template:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">TextTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span><span class="si">%d</span><span class="s1">ef evenness(n)</span>
 <span class="gp">... </span><span class="s1">    {</span><span class="si">%-i</span><span class="s1">f n % 2 == 0 %}even{</span><span class="si">%e</span><span class="s1">lse%}odd{</span><span class="si">%e</span><span class="s1">nd%}</span><span class="se">\\</span><span class="s1"></span>
@@ -135,7 +136,7 @@ never appear in the output, and neither they do not generate any whitespace.</p>
 </div>
 </section>
 <section id="call">
-<h3>%call<a class="headerlink" href="#call" title="Permalink to this headline">¶</a></h3>
+<h3>%call<a class="headerlink" href="#call" title="Permalink to this heading">¶</a></h3>
 <p>Call a function, passing a block of template code as a ‘lambda’ parameter.  Note
 that this is a special case of calling when you wish to insert some templated text in the
 expansion of a function call.  In normal circumstances, you would just use <cite>${my_function(args)}</cite>.</p>
@@ -154,7 +155,7 @@ expansion of a function call.  In normal circumstances, you would just use <cite
 </div>
 </section>
 <section id="include">
-<h3>%include<a class="headerlink" href="#include" title="Permalink to this headline">¶</a></h3>
+<h3>%include<a class="headerlink" href="#include" title="Permalink to this heading">¶</a></h3>
 <p>Includes the text of another template verbatim.  The precise semantics of this
 tag depend on the <cite>TemplateLoader</cite> being used, as the <cite>TemplateLoader</cite> is used to
 parse the name of the template being included and render its contents into the
@@ -169,7 +170,7 @@ following:</p>
 </div>
 </section>
 <section id="import">
-<h3>%import<a class="headerlink" href="#import" title="Permalink to this headline">¶</a></h3>
+<h3>%import<a class="headerlink" href="#import" title="Permalink to this heading">¶</a></h3>
 <p>With <cite>%import</cite>, you can make the functions defined in another template available
 without expanding the full template in-place.  Suppose that we saved the
 following template in a file <cite>lib.txt</cite>:</p>
@@ -193,7 +194,7 @@ function as follows:</p>
 </section>
 </section>
 <section id="inheritance-extends-block">
-<h2>Inheritance (%extends, %block)<a class="headerlink" href="#inheritance-extends-block" title="Permalink to this headline">¶</a></h2>
+<h2>Inheritance (%extends, %block)<a class="headerlink" href="#inheritance-extends-block" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki supports a concept of inheritance whereby child templates can extend
 parent templates, replacing their “methods” (functions) and “blocks” (to be defined below).
 For instance, consider the following template “parent.txt”:</p>
@@ -366,7 +367,7 @@ inheritance hierarchy:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -383,7 +384,7 @@ inheritance hierarchy:</p>
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

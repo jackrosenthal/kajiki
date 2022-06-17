@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Kajiki Runtime &#8212; Kajiki 0.9.2.dev1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,7 +35,7 @@
           <div class="body" role="main">
             
   <section id="module-kajiki">
-<span id="kajiki-runtime"></span><h1>Kajiki Runtime<a class="headerlink" href="#module-kajiki" title="Permalink to this headline">¶</a></h1>
+<span id="kajiki-runtime"></span><h1>Kajiki Runtime<a class="headerlink" href="#module-kajiki" title="Permalink to this heading">¶</a></h1>
 <p>It’s sometimes good to have a mental model of the Python code that Kajiki
 creates in order to generate your templates.  This document uses several
 examples taken from the text templating language to illustrate the semantics of
@@ -311,7 +312,7 @@ and expanding <code class="docutils literal notranslate"><span class="pre">py:</
 </dd></dl>
 
 <section id="basic-expressions">
-<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this headline">¶</a></h2>
+<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this heading">¶</a></h2>
 <p>Let’s start with a hello world template:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Hello, World!
 </pre></div>
@@ -351,7 +352,7 @@ as in “hello_arithmetic.txt”:</p>
 <p>If you wish to include a literal $, simply prefix it with a backslash.</p>
 </section>
 <section id="control-flow">
-<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this headline">¶</a></h2>
+<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki provides several tags that affect the rendering of a template.  The
 following template “control_flow.txt” illustrates:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A{%for i in range(5)%}
@@ -486,7 +487,7 @@ that allows for line-oriented control flow as seen in
 <p>This syntax yields exactly the same results as “control_flow_ws.txt” above.</p>
 </section>
 <section id="python-blocks">
-<h2>Python Blocks<a class="headerlink" href="#python-blocks" title="Permalink to this headline">¶</a></h2>
+<h2>Python Blocks<a class="headerlink" href="#python-blocks" title="Permalink to this heading">¶</a></h2>
 <p>You can insert literal Python code into your template using the following syntax
 in “simple_py_block.txt”:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{%py%}\
@@ -542,7 +543,7 @@ Hello
 </div>
 </section>
 <section id="functions-and-imports">
-<h2>Functions and Imports<a class="headerlink" href="#functions-and-imports" title="Permalink to this headline">¶</a></h2>
+<h2>Functions and Imports<a class="headerlink" href="#functions-and-imports" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki provides for code reuse via the %def and %import directives.  First, let’s
 see %def in action in “simple_function.txt”:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%def evenness(n)
@@ -638,7 +639,7 @@ Quoth the raven, &quot;Nevermore 4.&quot;
 </div>
 </section>
 <section id="includes">
-<h2>Includes<a class="headerlink" href="#includes" title="Permalink to this headline">¶</a></h2>
+<h2>Includes<a class="headerlink" href="#includes" title="Permalink to this heading">¶</a></h2>
 <p>Sometimes you just want to pull the text of another template into your template
 verbatim.  For this, you use the %include directive as in “include_example.txt”:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>This is my story:
@@ -666,7 +667,7 @@ Isn&#39;t it good?
 </div>
 </section>
 <section id="inheritance">
-<h2>Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h2>
+<h2>Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this heading">¶</a></h2>
 <p>Kajiki supports a concept of inheritance whereby child templates can extend
 parent templates, replacing their methods and “blocks” (to be defined below).
 For instance, consider the following template “parent.txt”:</p>
@@ -825,7 +826,7 @@ Rick
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -842,7 +843,7 @@ Rick
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

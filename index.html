@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Kajiki: Fast Templates for Python &#8212; Kajiki 0.9.2.dev1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -33,9 +34,9 @@
           <div class="body" role="main">
             
   <section id="kajiki-fast-templates-for-python">
-<h1>Kajiki: Fast Templates for Python<a class="headerlink" href="#kajiki-fast-templates-for-python" title="Permalink to this headline">¶</a></h1>
+<h1>Kajiki: Fast Templates for Python<a class="headerlink" href="#kajiki-fast-templates-for-python" title="Permalink to this heading">¶</a></h1>
 <section id="kajiki-provides-fast-well-formed-xml-templates">
-<h2>Kajiki provides fast well-formed XML templates<a class="headerlink" href="#kajiki-provides-fast-well-formed-xml-templates" title="Permalink to this headline">¶</a></h2>
+<h2>Kajiki provides fast well-formed XML templates<a class="headerlink" href="#kajiki-provides-fast-well-formed-xml-templates" title="Permalink to this heading">¶</a></h2>
 <p>Because Kajiki’s input is XML, it can ensure that your HTML/XML output is
 well-formed. The Genshi-like syntax, based on XML attributes or tags, is simply
 beautiful and easily understood (or ignored) by web designers.
@@ -51,7 +52,7 @@ the most widely used templating engine for web development in Python.
 And more features are coming soon; stay tuned!</p>
 </section>
 <section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">kajiki</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;html&gt;</span>
 <span class="gp">... </span><span class="s1">    &lt;head&gt;&lt;title&gt;$title&lt;/title&gt;&lt;/head&gt;</span>
@@ -76,7 +77,7 @@ And more features are coming soon; stay tuned!</p>
 </div>
 </section>
 <section id="links">
-<h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
+<h2>Links<a class="headerlink" href="#links" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference external" href="https://docs.kajiki.io/">Documentation</a></p>
 <p>Kajiki is licensed under an MIT-style <a class="reference external" href="https://github.com/jackrosenthal/kajiki/blob/master/LICENSE.rst">license</a>.</p>
 <p>The git repository and <a class="reference external" href="https://github.com/jackrosenthal/kajiki/issues">issue tracker</a> are at <a class="reference external" href="https://github.com/jackrosenthal/kajiki">GitHub</a>. Previously the project
@@ -84,7 +85,7 @@ used <a class="reference external" href="http://sourceforge.net/p/kajiki/">Sourc
 </section>
 </section>
 <section id="documentation-contents">
-<h1>Documentation contents<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h1>
+<h1>Documentation contents<a class="headerlink" href="#documentation-contents" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="templating-basics.html">Kajiki Templating Basics</a><ul>
@@ -100,6 +101,7 @@ used <a class="reference external" href="http://sourceforge.net/p/kajiki/">Sourc
 <li class="toctree-l2"><a class="reference internal" href="xml-templates.html#control-flow">Control Flow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xml-templates.html#content-generation">Content Generation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xml-templates.html#inheritance-py-extends-py-block">Inheritance (py:extends, py:block)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xml-templates.html#summary-of-directives">Summary of Directives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xml-templates.html#built-in-functions">Built-in functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xml-templates.html#tips-on-writing-your-templates">Tips on writing your templates</a></li>
 </ul>
@@ -165,7 +167,7 @@ used <a class="reference external" href="http://sourceforge.net/p/kajiki/">Sourc
 </ul>
 </div>
 <section id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
@@ -235,7 +237,7 @@ used <a class="reference external" href="http://sourceforge.net/p/kajiki/">Sourc
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -252,7 +254,7 @@ used <a class="reference external" href="http://sourceforge.net/p/kajiki/">Sourc
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
