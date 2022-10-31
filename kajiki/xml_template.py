@@ -854,7 +854,7 @@ class _DomTransformer(object):
 
     @classmethod
     def _extract_nodes_leading_and_trailing_spaces(cls, tree):
-        """Extract the leading and traling spaces of TextNodes to
+        """Extract the leading and trailing spaces of TextNodes to
         separate nodes.
 
         This is explicitly intended to make i18n easier, as we don't
