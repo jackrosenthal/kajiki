@@ -41,6 +41,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
@@ -60,6 +61,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     python_requires=">=3.4",
+    install_requires=["linetable"],
     extras_require={
         "testing": ["babel", "pytest"],
         "docs": ["sphinx"],
