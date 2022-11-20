@@ -274,7 +274,7 @@ class _Template(object):
 
 
 def Template(ns):
-    """Creates a new :class:`._Template` subclass from an entity with ``exposed`` functions.
+    """Creates a :class:`._Template` subclass from an entity with ``exposed`` functions.
 
     Kajiki uses classes as containers of the exposed functions for convenience,
     but any object that can have the functions as attributes works.
