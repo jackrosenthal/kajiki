@@ -1223,7 +1223,7 @@ class TestErrorReporting(TestCase):
             except ZeroDivisionError:
                 exn_info = traceback.format_exception(*sys.exc_info())
                 last_line = exn_info[-2]
-                assert "${3/0}" in last_line, last_line
+                assert "${3/0}" in last_line
             else:
                 assert False
 

@@ -4,6 +4,8 @@ import re
 import types
 from sys import version_info
 
+import linetable
+
 import kajiki
 from kajiki import i18n
 
@@ -386,14 +388,33 @@ class TplFunc(object):
         if not py_to_tpl:
             return
         code = self._func.__code__
-        new_lnotab_numbers = []
-        for bc_off, py_lno in dis.findlinestarts(code):
-            tpl_lno = py_to_tpl_dct[py_lno]
-            new_lnotab_numbers.append((bc_off, tpl_lno))
-        if not new_lnotab_numbers:
-            return
+
         new_firstlineno = py_to_tpl_dct.get(code.co_firstlineno, 0)
-        new_lnotab = lnotab.lnotab_string(new_lnotab_numbers, new_firstlineno)
+        if version_info >= (3, 11):
+            ltable = linetable.parse_linetable(code.co_linetable, code.co_firstlineno)
+            new_lnotab = linetable.generate_linetable(
+                (
+                    (
+                        length,
+                        py_to_tpl_dct[start_line],
+                        py_to_tpl_dct[end_line],
+                        None,
+                        None,
+                    )
+                    if start_line
+                    else (length, None, None, None, None)
+                    for length, start_line, end_line, *_ in ltable
+                ),
+                firstlineno=new_firstlineno,
+            )
+        else:
+            new_lnotab_numbers = []
+            for bc_off, py_lno in dis.findlinestarts(code):
+                tpl_lno = py_to_tpl_dct[py_lno]
+                new_lnotab_numbers.append((bc_off, tpl_lno))
+            if not new_lnotab_numbers:
+                return
+            new_lnotab = lnotab.lnotab_string(new_lnotab_numbers, new_firstlineno)
         new_code = patch_code_file_lines(code, filename, new_firstlineno, new_lnotab)
         self._func.__code__ = new_code
         return
@@ -415,9 +436,7 @@ def patch_code_file_lines(code, filename, firstlineno, lnotab):
         code.co_name,
         code.co_qualname if version_info >= (3, 11) else "REMOVE",
         firstlineno,
-        lnotab,
-        code.co_endlinetable if version_info >= (3, 11) else "REMOVE",
-        code.co_columntable if version_info >= (3, 11) else "REMOVE",
+        lnotab,  # linetable for >=3.11 and lnotab for <3.11
         code.co_exceptiontable if version_info >= (3, 11) else "REMOVE",
         code.co_freevars,
         code.co_cellvars,
