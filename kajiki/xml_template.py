@@ -73,7 +73,7 @@ def annotate(gen):
 
 
 class _Compiler(object):
-    """Compiles a DOM tree into Intermediate Representation :class:`kajiki.ir.TemplateNode`.
+    """Compiles a DOM tree into IR :class:`kajiki.ir.TemplateNode`.
 
     Intermediate Representation is a tree of nodes that represent
     Python Code that should be generated to execute the template.
