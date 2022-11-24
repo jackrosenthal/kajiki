@@ -1,10 +1,17 @@
 CHANGES
 =======
 
+0.9.2 (2022-11-24)
+------------------
+
+* Python 3.11 compatibility.
+* Documentation updates and clarifications.
+* Unit test updates.
+
 0.9.1 (2022-04-20)
 ------------------
 
-* Fixed compatibility for Python 3.11.
+* Fixed compatibility for Python 3.11 alpha.
 * The unit tests were moved out of the ``kajiki`` package: tests are
   now under the ``tests/`` directory.
 * Migrated from Travis CI to GitHub Actions.
