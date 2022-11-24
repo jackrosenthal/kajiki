@@ -39,6 +39,8 @@
 <span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">version_info</span>
 
+<span class="kn">import</span> <span class="nn">linetable</span>
+
 <span class="kn">import</span> <span class="nn">kajiki</span>
 <span class="kn">from</span> <span class="nn">kajiki</span> <span class="kn">import</span> <span class="n">i18n</span>
 
@@ -307,7 +309,7 @@
 
 
 <span class="k">def</span> <span class="nf">Template</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Creates a new :class:`._Template` subclass from an entity with ``exposed`` functions.</span>
+    <span class="sd">&quot;&quot;&quot;Creates a :class:`._Template` subclass from an entity with ``exposed`` functions.</span>
 
 <span class="sd">    Kajiki uses classes as containers of the exposed functions for convenience,</span>
 <span class="sd">    but any object that can have the functions as attributes works.</span>
@@ -421,14 +423,33 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">py_to_tpl</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span>
-        <span class="n">new_lnotab_numbers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">bc_off</span><span class="p">,</span> <span class="n">py_lno</span> <span class="ow">in</span> <span class="n">dis</span><span class="o">.</span><span class="n">findlinestarts</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
-            <span class="n">tpl_lno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="p">[</span><span class="n">py_lno</span><span class="p">]</span>
-            <span class="n">new_lnotab_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">bc_off</span><span class="p">,</span> <span class="n">tpl_lno</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">new_lnotab_numbers</span><span class="p">:</span>
-            <span class="k">return</span>
+
         <span class="n">new_firstlineno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_firstlineno</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">new_lnotab</span> <span class="o">=</span> <span class="n">lnotab</span><span class="o">.</span><span class="n">lnotab_string</span><span class="p">(</span><span class="n">new_lnotab_numbers</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+            <span class="n">ltable</span> <span class="o">=</span> <span class="n">linetable</span><span class="o">.</span><span class="n">parse_linetable</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_linetable</span><span class="p">,</span> <span class="n">code</span><span class="o">.</span><span class="n">co_firstlineno</span><span class="p">)</span>
+            <span class="n">new_lnotab</span> <span class="o">=</span> <span class="n">linetable</span><span class="o">.</span><span class="n">generate_linetable</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">length</span><span class="p">,</span>
+                        <span class="n">py_to_tpl_dct</span><span class="p">[</span><span class="n">start_line</span><span class="p">],</span>
+                        <span class="n">py_to_tpl_dct</span><span class="p">[</span><span class="n">end_line</span><span class="p">],</span>
+                        <span class="kc">None</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">start_line</span>
+                    <span class="k">else</span> <span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">length</span><span class="p">,</span> <span class="n">start_line</span><span class="p">,</span> <span class="n">end_line</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="ow">in</span> <span class="n">ltable</span>
+                <span class="p">),</span>
+                <span class="n">firstlineno</span><span class="o">=</span><span class="n">new_firstlineno</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_lnotab_numbers</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">bc_off</span><span class="p">,</span> <span class="n">py_lno</span> <span class="ow">in</span> <span class="n">dis</span><span class="o">.</span><span class="n">findlinestarts</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+                <span class="n">tpl_lno</span> <span class="o">=</span> <span class="n">py_to_tpl_dct</span><span class="p">[</span><span class="n">py_lno</span><span class="p">]</span>
+                <span class="n">new_lnotab_numbers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">bc_off</span><span class="p">,</span> <span class="n">tpl_lno</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">new_lnotab_numbers</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">new_lnotab</span> <span class="o">=</span> <span class="n">lnotab</span><span class="o">.</span><span class="n">lnotab_string</span><span class="p">(</span><span class="n">new_lnotab_numbers</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">)</span>
         <span class="n">new_code</span> <span class="o">=</span> <span class="n">patch_code_file_lines</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">new_firstlineno</span><span class="p">,</span> <span class="n">new_lnotab</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="o">.</span><span class="vm">__code__</span> <span class="o">=</span> <span class="n">new_code</span>
         <span class="k">return</span>
@@ -450,9 +471,7 @@
         <span class="n">code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
         <span class="n">code</span><span class="o">.</span><span class="n">co_qualname</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
         <span class="n">firstlineno</span><span class="p">,</span>
-        <span class="n">lnotab</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_endlinetable</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
-        <span class="n">code</span><span class="o">.</span><span class="n">co_columntable</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
+        <span class="n">lnotab</span><span class="p">,</span>  <span class="c1"># linetable for &gt;=3.11 and lnotab for &lt;3.11</span>
         <span class="n">code</span><span class="o">.</span><span class="n">co_exceptiontable</span> <span class="k">if</span> <span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;REMOVE&quot;</span><span class="p">,</span>
         <span class="n">code</span><span class="o">.</span><span class="n">co_freevars</span><span class="p">,</span>
         <span class="n">code</span><span class="o">.</span><span class="n">co_cellvars</span><span class="p">,</span>
