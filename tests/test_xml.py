@@ -1320,5 +1320,23 @@ class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
             pass
 
 
+class TestExtendsWithImport(TestCase):
+    def test_extends_with_import(self):
+        loader = MockLoader({
+            'parent.html': XMLTemplate(
+                '<div>'
+                '<py:import href="lib.html"/>'
+                '${lib.foo()}'
+                '</div>'),
+            'lib.html': XMLTemplate(
+                '<div>'
+                '<py:def function="foo()"><b>foo</b></py:def>'
+                '</div>'),
+            'child.html': XMLTemplate('<py:extends href="parent.html"/>')})
+        child = loader.import_('child.html')
+        r = child().render()
+        assert r == '<div><b>foo</b></div>'
+
+
 if __name__ == "__main__":
     main()
