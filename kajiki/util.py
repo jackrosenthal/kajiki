@@ -1,6 +1,7 @@
 from collections import deque
 from random import randint
 from threading import local
+import os.path
 
 
 def expose(func):
@@ -85,3 +86,7 @@ def window(seq, n=2):
     for item in seq:
         win.append(item)
         yield win
+
+
+def default_alias_for(name):
+    return os.path.splitext(os.path.basename(name))[0]

@@ -2,6 +2,7 @@ import os
 
 import pkg_resources
 
+from .util import default_alias_for
 
 class Loader(object):
     def __init__(self):
@@ -20,7 +21,7 @@ class Loader(object):
         return mod
 
     def default_alias_for(self, name):
-        return os.path.splitext(os.path.basename(name))[0]
+        return default_alias_for(name)
 
     @property
     def load(self):
