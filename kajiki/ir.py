@@ -1,7 +1,7 @@
 import re
 from itertools import chain
 
-from .util import flattener, gen_name, window
+from .util import default_alias_for, flattener, gen_name, window
 
 
 def generate_python(ir):
@@ -102,12 +102,14 @@ class ImportNode(Node):
     def __init__(self, tpl_name, alias=None):
         super().__init__()
         self.tpl_name = tpl_name
+        if alias is None:
+            alias = default_alias_for(tpl_name)
         self.alias = alias
 
     def py(self):
         yield self.line(
-            "local.__kj__.import_(%r, %r, self.__globals__)"
-            % (self.tpl_name, self.alias)
+            "%s = local.__kj__.import_(%r, %r, self.__globals__)"
+            % (self.alias, self.tpl_name, self.alias)
         )
 
 
