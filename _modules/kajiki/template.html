@@ -1,19 +1,15 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>kajiki.template &#8212; Kajiki 0.9.3.dev1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../_static/documentation_options.js?v=1816cb3c"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -56,8 +52,10 @@
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="_Template"><a class="viewcode-back" href="../../runtime.html#kajiki._Template">[docs]</a><span class="k">class</span> <span class="nc">_Template</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base Class for all compiled Kajiki Templates.</span>
+<div class="viewcode-block" id="_Template">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Template">[docs]</a>
+<span class="k">class</span> <span class="nc">_Template</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Class for all compiled Kajiki Templates.</span>
 
 <span class="sd">    All kajiki templates created from a :class:`kajiki.ir.TemplateNode` will</span>
 <span class="sd">    be subclasses of this class.</span>
@@ -124,23 +122,26 @@
         <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;value_of&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="o">.</span><span class="n">get</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;We convert the chunk to string because it can be of any type</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;We convert the chunk to string because it can be of any type</span>
 <span class="sd">        -- after all, the template supports expressions such as ${x+y}.</span>
 <span class="sd">        Here, ``chunk`` can be the computed expression result.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__main__</span><span class="p">():</span>
             <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
 
-<div class="viewcode-block" id="_Template.render"><a class="viewcode-back" href="../../runtime.html#kajiki._Template.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Render the template to a string.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="_Template.render">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Template.render">[docs]</a>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the template to a string.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_gettext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Used by the code generated by the template to translate static text&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Used by the code generated by the template to translate static text&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__globals__</span><span class="p">[</span><span class="s2">&quot;gettext&quot;</span><span class="p">](</span><span class="n">s</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_push_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locals_</span><span class="p">,</span> <span class="nb">vars</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Enter a ``py:with`` block.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enter a ``py:with`` block.</span>
 
 <span class="sd">        When a ``py:with`` block is encountered, previous values</span>
 <span class="sd">        of the variables assigned inside the ``py:with`` statement are</span>
@@ -150,7 +151,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_with_stack</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">locals_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">_pop_with</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Exists a ``py:with`` block.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exists a ``py:with`` block.</span>
 
 <span class="sd">        When a ``py:with`` block is exited the values stack is popped</span>
 <span class="sd">        and the head returned to :class:`kajiki.ir.WithNode` so that</span>
@@ -159,7 +160,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Called when a child template extends a parent template</span>
 <span class="sd">        the first thing it does is asking the loader of the</span>
 <span class="sd">        child template to load the parent template</span>
@@ -186,7 +187,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 
                 <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">):</span>
-                    <span class="sd">&quot;&quot;&quot;Capture the &#39;k&#39; variable in a closure&quot;&quot;&quot;</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;Capture the &#39;k&#39; variable in a closure&quot;&quot;&quot;</span>
 
                     <span class="k">def</span> <span class="nf">trampoline</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
                         <span class="k">global</span> <span class="n">parent</span>
@@ -203,7 +204,7 @@
         <span class="k">return</span> <span class="n">p_inst</span>
 
     <span class="k">def</span> <span class="nf">_push_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Enter a ``py:switch`` block.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enter a ``py:switch`` block.</span>
 
 <span class="sd">        Pushes provided value on the stack used</span>
 <span class="sd">        to check ``py:case`` statements against.</span>
@@ -213,7 +214,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_pop_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Exit current ``py:switch`` block.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Exit current ``py:switch`` block.</span>
 
 <span class="sd">        Pops current value from the stack used</span>
 <span class="sd">        to check ``py:case`` statements against.</span>
@@ -221,7 +222,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check against current ``py:switch`` value.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check against current ``py:switch`` value.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">obj</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_switch_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">gbls</span><span class="p">):</span>
@@ -239,7 +240,7 @@
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">def</span> <span class="nf">_escape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns the given HTML with ampersands, carets and quotes encoded.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the given HTML with ampersands, carets and quotes encoded.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">flattener</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">value</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__html__&quot;</span><span class="p">):</span>
@@ -265,7 +266,7 @@
     <span class="n">_re_escape</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&amp;|&lt;|&gt;|&quot;&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_render_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Render tag attributes in key=&quot;value&quot; format.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render tag attributes in key=&quot;value&quot; format.</span>
 
 <span class="sd">        A :class:`kajiki.ir.AttrsNode` will generate</span>
 <span class="sd">        code that in fact leads to this function to generate</span>
@@ -303,13 +304,17 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">meth</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__methods__</span><span class="p">:</span>
             <span class="n">meth</span><span class="o">.</span><span class="n">annotate_lnotab</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">py_to_tpl</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">py_to_tpl</span><span class="p">))</span>
 
-<div class="viewcode-block" id="_Template.defined"><a class="viewcode-back" href="../../runtime.html#kajiki._Template.defined">[docs]</a>    <span class="k">def</span> <span class="nf">defined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check if a variable was provided to the template or not&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context</span></div></div>
+<div class="viewcode-block" id="_Template.defined">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Template.defined">[docs]</a>
+    <span class="k">def</span> <span class="nf">defined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a variable was provided to the template or not&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context</span></div>
+</div>
+
 
 
 <span class="k">def</span> <span class="nf">Template</span><span class="p">(</span><span class="n">ns</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Creates a :class:`._Template` subclass from an entity with ``exposed`` functions.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a :class:`._Template` subclass from an entity with ``exposed`` functions.</span>
 
 <span class="sd">    Kajiki uses classes as containers of the exposed functions for convenience,</span>
 <span class="sd">    but any object that can have the functions as attributes works.</span>
@@ -338,7 +343,7 @@
 
 
 <span class="k">def</span> <span class="nf">from_ir</span><span class="p">(</span><span class="n">ir_node</span><span class="p">,</span> <span class="n">base_globals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Creates a template class from Intermediate Representation TemplateNode.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a template class from Intermediate Representation TemplateNode.</span>
 
 <span class="sd">    This actually creates the class defined by the TemplateNode by executing</span>
 <span class="sd">    its code and returns a subclass of it.</span>
@@ -375,7 +380,7 @@
 
 
 <span class="k">class</span> <span class="nc">TplFunc</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A template function attached to a _Template.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A template function attached to a _Template.</span>
 
 <span class="sd">    By default template functions (ie: __main__) depends</span>
 <span class="sd">    on variables like ``self``, ``local`` and so on which</span>
@@ -405,7 +410,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_bind_globals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">globals</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return a function which has the globals dict set to &#39;globals&#39;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a function which has the globals dict set to &#39;globals&#39;</span>
 <span class="sd">        and which flattens the result of self._func&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">(</span>
@@ -588,8 +593,8 @@
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 

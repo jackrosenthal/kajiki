@@ -1,20 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Kajiki Runtime &#8212; Kajiki 0.9.3.dev1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=1816cb3c"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CHANGES" href="changes.html" />
@@ -36,7 +32,7 @@
           <div class="body" role="main">
             
   <section id="module-kajiki">
-<span id="kajiki-runtime"></span><h1>Kajiki Runtime<a class="headerlink" href="#module-kajiki" title="Permalink to this heading">¶</a></h1>
+<span id="kajiki-runtime"></span><h1>Kajiki Runtime<a class="headerlink" href="#module-kajiki" title="Link to this heading">¶</a></h1>
 <p>It’s sometimes good to have a mental model of the Python code that Kajiki
 creates in order to generate your templates.  This document uses several
 examples taken from the text templating language to illustrate the semantics of
@@ -44,7 +40,7 @@ Kajiki templates.  If in doubt, you can always view the Python text generated fo
 a template by examining the py_text attribute of the generated Template class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template.XMLTemplate">
-<span class="sig-prename descclassname"><span class="pre">xml_template.</span></span><span class="sig-name descname"><span class="pre">XMLTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_globals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.xml_template.XMLTemplate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">xml_template.</span></span><span class="sig-name descname"><span class="pre">XMLTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'utf-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_globals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.xml_template.XMLTemplate" title="Link to this definition">¶</a></dt>
 <dd><p>Given XML source code of a Kajiki Templates parses and returns
 a template class.</p>
 <p>The source code is parsed to its DOM representation by
@@ -62,7 +58,7 @@ then render the template.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="kajiki.ir.TemplateNode">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.ir.</span></span><span class="sig-name descname"><span class="pre">TemplateNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/ir.html#TemplateNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.ir.TemplateNode" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.ir.</span></span><span class="sig-name descname"><span class="pre">TemplateNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/ir.html#TemplateNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.ir.TemplateNode" title="Link to this definition">¶</a></dt>
 <dd><p>Represents the root Intermediate Representation node of a template.</p>
 <p>Iterating over this will generate the Python code for the class
 that provides all the functions that are part of the template including
@@ -74,7 +70,7 @@ create a <a class="reference internal" href="#kajiki.template._Template" title="
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.template.Template">
-<span class="sig-prename descclassname"><span class="pre">template.</span></span><span class="sig-name descname"><span class="pre">Template</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.template.Template" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">template.</span></span><span class="sig-name descname"><span class="pre">Template</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#kajiki.template.Template" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a <a class="reference internal" href="#kajiki.template._Template" title="kajiki.template._Template"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Template</span></code></a> subclass from an entity with <code class="docutils literal notranslate"><span class="pre">exposed</span></code> functions.</p>
 <p>Kajiki uses classes as containers of the exposed functions for convenience,
 but any object that can have the functions as attributes works.</p>
@@ -96,7 +92,7 @@ function:</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="kajiki.template._Template">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.template.</span></span><span class="sig-name descname"><span class="pre">_Template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.template.</span></span><span class="sig-name descname"><span class="pre">_Template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template" title="Link to this definition">¶</a></dt>
 <dd><p>Base Class for all compiled Kajiki Templates.</p>
 <p>All kajiki templates created from a <a class="reference internal" href="#kajiki.ir.TemplateNode" title="kajiki.ir.TemplateNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.ir.TemplateNode</span></code></a> will
 be subclasses of this class.</p>
@@ -119,13 +115,13 @@ or the gettext function used to translate text.</p></li>
 </div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.template._Template.defined">
-<span class="sig-name descname"><span class="pre">defined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template.defined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template.defined" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">defined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template.defined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template.defined" title="Link to this definition">¶</a></dt>
 <dd><p>Check if a variable was provided to the template or not</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.template._Template.render">
-<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template.render" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/template.html#_Template.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.template._Template.render" title="Link to this definition">¶</a></dt>
 <dd><p>Render the template to a string.</p>
 </dd></dl>
 
@@ -133,13 +129,13 @@ or the gettext function used to translate text.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="kajiki.xml_template._Compiler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_Compiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Compiler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Compiler" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_Compiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fragment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoblocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cdata_scripts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Compiler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Compiler" title="Link to this definition">¶</a></dt>
 <dd><p>Compiles a DOM tree into IR <a class="reference internal" href="#kajiki.ir.TemplateNode" title="kajiki.ir.TemplateNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.ir.TemplateNode</span></code></a>.</p>
 <p>Intermediate Representation is a tree of nodes that represent
 Python Code that should be generated to execute the template.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Compiler.compile">
-<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Compiler.compile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Compiler.compile" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Compiler.compile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Compiler.compile" title="Link to this definition">¶</a></dt>
 <dd><p>Compile the document provided by <a class="reference internal" href="#kajiki.xml_template._Parser" title="kajiki.xml_template._Parser"><code class="xref py py-class docutils literal notranslate"><span class="pre">_Parser</span></code></a>.</p>
 <p>Returns as <a class="reference internal" href="#kajiki.ir.TemplateNode" title="kajiki.ir.TemplateNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">kajiki.ir.TemplateNode</span></code></a> instance representing
 the whole tree of nodes as their intermediate representation.</p>
@@ -162,14 +158,14 @@ never be called twice or might lead to unexpected results.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser" title="Link to this definition">¶</a></dt>
 <dd><p>Parse an XML template into a Tree of DOM Nodes.</p>
 <p>Nodes should then be passed to a <cite>_Compiler</cite> to be
 converted into the intermediate representation and
 then to Python Code.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.characters">
-<span class="sig-name descname"><span class="pre">characters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.characters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.characters" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">characters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.characters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.characters" title="Link to this definition">¶</a></dt>
 <dd><p>Receive notification of character data.</p>
 <p>The Parser will call this method to report each chunk of
 character data. SAX parsers may return all contiguous
@@ -181,7 +177,7 @@ Locator provides useful information.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.endElement">
-<span class="sig-name descname"><span class="pre">endElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElement" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">endElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElement" title="Link to this definition">¶</a></dt>
 <dd><p>Signals the end of an element in non-namespace mode.</p>
 <p>The name parameter contains the name of the element type, just
 as with the startElement event.</p>
@@ -189,7 +185,7 @@ as with the startElement event.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.endElementNS">
-<span class="sig-name descname"><span class="pre">endElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElementNS" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">endElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElementNS" title="Link to this definition">¶</a></dt>
 <dd><p>Signals the end of an element in namespace mode.</p>
 <p>The name parameter contains the name of the element type, just
 as with the startElementNS event.</p>
@@ -197,7 +193,7 @@ as with the startElementNS event.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.endPrefixMapping">
-<span class="sig-name descname"><span class="pre">endPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endPrefixMapping" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">endPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endPrefixMapping" title="Link to this definition">¶</a></dt>
 <dd><p>End the scope of a prefix-URI mapping.</p>
 <p>See startPrefixMapping for details. This event will always
 occur after the corresponding endElement event, but the order
@@ -206,13 +202,13 @@ of endPrefixMapping events is not otherwise guaranteed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.parse">
-<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.parse" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.parse" title="Link to this definition">¶</a></dt>
 <dd><p>Parse an XML/HTML document to its DOM representation.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.processingInstruction">
-<span class="sig-name descname"><span class="pre">processingInstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.processingInstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.processingInstruction" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">processingInstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.processingInstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.processingInstruction" title="Link to this definition">¶</a></dt>
 <dd><p>Receive notification of a processing instruction.</p>
 <p>The Parser will invoke this method once for each processing
 instruction found: note that processing instructions may occur
@@ -224,7 +220,7 @@ using this method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.skippedEntity">
-<span class="sig-name descname"><span class="pre">skippedEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.skippedEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.skippedEntity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">skippedEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.skippedEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.skippedEntity" title="Link to this definition">¶</a></dt>
 <dd><p>Receive notification of a skipped entity.</p>
 <p>The Parser will invoke this method once for each entity
 skipped. Non-validating processors may skip entities if they
@@ -238,7 +234,7 @@ properties.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.startDocument">
-<span class="sig-name descname"><span class="pre">startDocument</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startDocument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startDocument" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">startDocument</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startDocument"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startDocument" title="Link to this definition">¶</a></dt>
 <dd><p>Receive notification of the beginning of a document.</p>
 <p>The SAX parser will invoke this method only once, before any
 other methods in this interface or in DTDHandler (except for
@@ -247,7 +243,7 @@ setDocumentLocator).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.startElement">
-<span class="sig-name descname"><span class="pre">startElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElement" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">startElement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElement" title="Link to this definition">¶</a></dt>
 <dd><p>Signals the start of an element in non-namespace mode.</p>
 <p>The name parameter contains the raw XML 1.0 name of the
 element type as a string and the attrs parameter holds an
@@ -257,7 +253,7 @@ the element.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.startElementNS">
-<span class="sig-name descname"><span class="pre">startElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElementNS" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">startElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElementNS" title="Link to this definition">¶</a></dt>
 <dd><p>Signals the start of an element in namespace mode.</p>
 <p>The name parameter contains the name of the element type as a
 (uri, localname) tuple, the qname parameter the raw XML 1.0
@@ -270,7 +266,7 @@ no namespace.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.startPrefixMapping">
-<span class="sig-name descname"><span class="pre">startPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startPrefixMapping" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">startPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startPrefixMapping" title="Link to this definition">¶</a></dt>
 <dd><p>Begin the scope of a prefix-URI Namespace mapping.</p>
 <p>The information from this event is not necessary for normal
 Namespace processing: the SAX XML reader will automatically
@@ -295,7 +291,7 @@ not guaranteed.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="kajiki.xml_template._DomTransformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_DomTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_DomTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._DomTransformer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kajiki.xml_template.</span></span><span class="sig-name descname"><span class="pre">_DomTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_DomTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._DomTransformer" title="Link to this definition">¶</a></dt>
 <dd><p>Applies standard Kajiki transformations to a parsed document.</p>
 <p>Given a document generated by <code class="xref py py-class docutils literal notranslate"><span class="pre">Parser</span></code> it applies some
 node transformations that are necessary before applying the
@@ -305,7 +301,7 @@ and expanding <code class="docutils literal notranslate"><span class="pre">py:</
 <p>The Transformer mutates the original document.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._DomTransformer.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_DomTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._DomTransformer.transform" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_DomTransformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._DomTransformer.transform" title="Link to this definition">¶</a></dt>
 <dd><p>Applies all the DOM transformations to the document.</p>
 <p>Calling this twice will do nothing as the result is persisted.</p>
 </dd></dl>
@@ -313,7 +309,7 @@ and expanding <code class="docutils literal notranslate"><span class="pre">py:</
 </dd></dl>
 
 <section id="basic-expressions">
-<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Permalink to this heading">¶</a></h2>
+<h2>Basic Expressions<a class="headerlink" href="#basic-expressions" title="Link to this heading">¶</a></h2>
 <p>Let’s start with a hello world template:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Hello, World!
 </pre></div>
@@ -353,7 +349,7 @@ as in “hello_arithmetic.txt”:</p>
 <p>If you wish to include a literal $, simply prefix it with a backslash.</p>
 </section>
 <section id="control-flow">
-<h2>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this heading">¶</a></h2>
+<h2>Control Flow<a class="headerlink" href="#control-flow" title="Link to this heading">¶</a></h2>
 <p>Kajiki provides several tags that affect the rendering of a template.  The
 following template “control_flow.txt” illustrates:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A{%for i in range(5)%}
@@ -488,7 +484,7 @@ that allows for line-oriented control flow as seen in
 <p>This syntax yields exactly the same results as “control_flow_ws.txt” above.</p>
 </section>
 <section id="python-blocks">
-<h2>Python Blocks<a class="headerlink" href="#python-blocks" title="Permalink to this heading">¶</a></h2>
+<h2>Python Blocks<a class="headerlink" href="#python-blocks" title="Link to this heading">¶</a></h2>
 <p>You can insert literal Python code into your template using the following syntax
 in “simple_py_block.txt”:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>{%py%}\
@@ -544,7 +540,7 @@ Hello
 </div>
 </section>
 <section id="functions-and-imports">
-<h2>Functions and Imports<a class="headerlink" href="#functions-and-imports" title="Permalink to this heading">¶</a></h2>
+<h2>Functions and Imports<a class="headerlink" href="#functions-and-imports" title="Link to this heading">¶</a></h2>
 <p>Kajiki provides for code reuse via the %def and %import directives.  First, let’s
 see %def in action in “simple_function.txt”:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>%def evenness(n)
@@ -640,7 +636,7 @@ Quoth the raven, &quot;Nevermore 4.&quot;
 </div>
 </section>
 <section id="includes">
-<h2>Includes<a class="headerlink" href="#includes" title="Permalink to this heading">¶</a></h2>
+<h2>Includes<a class="headerlink" href="#includes" title="Link to this heading">¶</a></h2>
 <p>Sometimes you just want to pull the text of another template into your template
 verbatim.  For this, you use the %include directive as in “include_example.txt”:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>This is my story:
@@ -668,7 +664,7 @@ Isn&#39;t it good?
 </div>
 </section>
 <section id="inheritance">
-<h2>Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this heading">¶</a></h2>
+<h2>Inheritance<a class="headerlink" href="#inheritance" title="Link to this heading">¶</a></h2>
 <p>Kajiki supports a concept of inheritance whereby child templates can extend
 parent templates, replacing their methods and “blocks” (to be defined below).
 For instance, consider the following template “parent.txt”:</p>
@@ -851,8 +847,8 @@ Rick
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/runtime.rst.txt"

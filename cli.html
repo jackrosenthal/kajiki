@@ -1,20 +1,16 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Command Line Interface &#8212; Kajiki 0.9.3.dev1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=1816cb3c"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Kajiki Runtime" href="runtime.html" />
@@ -36,12 +32,12 @@
           <div class="body" role="main">
             
   <section id="command-line-interface">
-<h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this heading">¶</a></h1>
+<h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">¶</a></h1>
 <p>Kajiki includes a simple command line interface, useful for testing
 templates, integrating into shell scripts or a <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>, or even
 wire up to your email software.</p>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>kajiki [options...] file_or_package [output_file]
 </pre></div>
 </div>
@@ -52,7 +48,7 @@ filename.</p>
 <p>By default, the template result will be written to standard output,
 unless <code class="docutils literal notranslate"><span class="pre">output_file</span></code> is given.</p>
 <section id="specifying-mode">
-<h3>Specifying Mode<a class="headerlink" href="#specifying-mode" title="Permalink to this heading">¶</a></h3>
+<h3>Specifying Mode<a class="headerlink" href="#specifying-mode" title="Link to this heading">¶</a></h3>
 <p>Kajiki will auto-detect the mode (i.e., text vs. xml) based on the
 file extension:</p>
 <table class="docutils align-default">
@@ -81,7 +77,7 @@ the auto-detection process, you may pass the <code class="docutils literal notra
 flag.  Supported values are <code class="docutils literal notranslate"><span class="pre">text</span></code>, <code class="docutils literal notranslate"><span class="pre">xml</span></code>, <code class="docutils literal notranslate"><span class="pre">html</span></code>, or <code class="docutils literal notranslate"><span class="pre">html5</span></code>.</p>
 </section>
 <section id="setting-template-variables">
-<h3>Setting Template Variables<a class="headerlink" href="#setting-template-variables" title="Permalink to this heading">¶</a></h3>
+<h3>Setting Template Variables<a class="headerlink" href="#setting-template-variables" title="Link to this heading">¶</a></h3>
 <p>To set a template variable, pass the flag <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">KEY=VALUE</span></code> (or
 <code class="docutils literal notranslate"><span class="pre">--var</span> <span class="pre">KEY=VALUE</span></code>), where <code class="docutils literal notranslate"><span class="pre">KEY</span></code> is the variable name, and
 <code class="docutils literal notranslate"><span class="pre">VALUE</span></code> is the value you want it to take.</p>
@@ -89,7 +85,7 @@ flag.  Supported values are <code class="docutils literal notranslate"><span cla
 times.</p>
 </section>
 <section id="extending-the-load-path">
-<h3>Extending the Load Path<a class="headerlink" href="#extending-the-load-path" title="Permalink to this heading">¶</a></h3>
+<h3>Extending the Load Path<a class="headerlink" href="#extending-the-load-path" title="Link to this heading">¶</a></h3>
 <p>By default, the command line interface will add the directory of the
 file to render to the load path.</p>
 <p>For example, consider the following directory structure:</p>
@@ -109,7 +105,7 @@ file to render to the load path.</p>
 <p>Since the file to render is automatically be added to the load path,
 if you wanted to include <code class="docutils literal notranslate"><span class="pre">contact.xml</span></code> from <code class="docutils literal notranslate"><span class="pre">about.xml</span></code>, you could
 do this:</p>
-<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;py:include</span> <span class="na">href=</span><span class="s">&quot;contact.xml&quot;</span> <span class="nt">/&gt;</span>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;py:include</span><span class="w"> </span><span class="na">href=</span><span class="s">&quot;contact.xml&quot;</span><span class="w"> </span><span class="nt">/&gt;</span>
 </pre></div>
 </div>
 <p>Now suppose you also want to be able to include <code class="docutils literal notranslate"><span class="pre">main.xml</span></code> from
@@ -211,8 +207,8 @@ directories to the load path.</p>
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |
       <a href="_sources/cli.rst.txt"

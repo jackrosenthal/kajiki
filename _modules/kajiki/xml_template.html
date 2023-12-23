@@ -1,19 +1,15 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>kajiki.xml_template &#8212; Kajiki 0.9.3.dev1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../_static/documentation_options.js?v=1816cb3c"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -61,7 +57,7 @@
     <span class="n">strip_text</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">base_globals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Given XML source code of a Kajiki Templates parses and returns</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Given XML source code of a Kajiki Templates parses and returns</span>
 <span class="sd">    a template class.</span>
 
 <span class="sd">    The source code is parsed to its DOM representation by</span>
@@ -107,8 +103,10 @@
     <span class="k">return</span> <span class="n">inner</span>
 
 
-<div class="viewcode-block" id="_Compiler"><a class="viewcode-back" href="../../runtime.html#kajiki._Compiler">[docs]</a><span class="k">class</span> <span class="nc">_Compiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compiles a DOM tree into IR :class:`kajiki.ir.TemplateNode`.</span>
+<div class="viewcode-block" id="_Compiler">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Compiler">[docs]</a>
+<span class="k">class</span> <span class="nc">_Compiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compiles a DOM tree into IR :class:`kajiki.ir.TemplateNode`.</span>
 
 <span class="sd">    Intermediate Representation is a tree of nodes that represent</span>
 <span class="sd">    Python Code that should be generated to execute the template.</span>
@@ -144,8 +142,10 @@
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># The template might contain an unknown DTD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;xml&quot;</span>  <span class="c1"># by default</span>
 
-<div class="viewcode-block" id="_Compiler.compile"><a class="viewcode-back" href="../../runtime.html#kajiki._Compiler.compile">[docs]</a>    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compile the document provided by :class:`._Parser`.</span>
+<div class="viewcode-block" id="_Compiler.compile">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Compiler.compile">[docs]</a>
+    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compile the document provided by :class:`._Parser`.</span>
 
 <span class="sd">        Returns as :class:`kajiki.ir.TemplateNode` instance representing</span>
 <span class="sd">        the whole tree of nodes as their intermediate representation.</span>
@@ -198,6 +198,7 @@
         <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="n">node</span></div>
 
+
     <span class="k">def</span> <span class="nf">_anno</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dom_node</span><span class="p">,</span> <span class="n">ir_node</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">ir_node</span><span class="o">.</span><span class="n">lineno</span><span class="p">:</span>
             <span class="k">return</span>
@@ -223,7 +224,7 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">_compile_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert a DOM node to its intermediate representation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a DOM node to its intermediate representation.</span>
 
 <span class="sd">        Calls specific compile functions for special nodes and any</span>
 <span class="sd">        directive that was expanded by :meth:`._DomTransformer._expand_directives`.</span>
@@ -252,7 +253,7 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compile plain XML nodes.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compile plain XML nodes.</span>
 
 <span class="sd">        When compiling a node also take care of directives that</span>
 <span class="sd">        only modify the node itself (``py:strip``, ``py:attrs``</span>
@@ -347,12 +348,12 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:replace nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:replace nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExprNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">))</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_pi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert &lt;?py and &lt;?python nodes to their intermediate representation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert &lt;?py and &lt;?python nodes to their intermediate representation.</span>
 
 <span class="sd">        Any code identified by :class:`.ir.PythonNode` as ``module_level``</span>
 <span class="sd">        (it starts with % character) will be registered in compiler registry</span>
@@ -367,7 +368,7 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:import nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:import nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;href&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ImportNode</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;alias&quot;</span><span class="p">))</span>
@@ -376,7 +377,7 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_extends</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:extends nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:extends nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_child</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;href&quot;</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ExtendNode</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
@@ -385,13 +386,13 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_include</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:include nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:include nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="n">href</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;href&quot;</span><span class="p">)</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">IncludeNode</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:block nodes to their intermediate representation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:block nodes to their intermediate representation.</span>
 
 <span class="sd">        Any compiled block will be registered in the compiler functions</span>
 <span class="sd">        registry to be provided to the template.</span>
@@ -410,7 +411,7 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:def nodes to their intermediate representation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:def nodes to their intermediate representation.</span>
 
 <span class="sd">        Any compiled definition will be registered in the compiler functions</span>
 <span class="sd">        registry to be provided to the template.</span>
@@ -425,7 +426,7 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:call nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:call nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s2">&quot;args&quot;</span><span class="p">):</span>
             <span class="n">defn</span> <span class="o">=</span> <span class="s2">&quot;$caller(&quot;</span> <span class="o">+</span> <span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;args&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -438,7 +439,7 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compile text nodes to their intermediate representation&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compile text nodes to their intermediate representation&quot;&quot;&quot;</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">parentNode</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">parentNode</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">HTML_CDATA_TAGS</span><span class="p">:</span>
             <span class="c1"># script and style should always be untranslatable.</span>
@@ -452,23 +453,23 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert comments to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert comments to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;!&quot;</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">(</span><span class="s2">&quot;&lt;!-- </span><span class="si">%s</span><span class="s2"> --&gt;&quot;</span> <span class="o">%</span> <span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:for nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:for nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">ForNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;each&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:with nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:with nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">WithNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;vars&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_switch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:switch nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:switch nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="n">body</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Filter out empty text nodes and report unsupported nodes</span>
@@ -489,17 +490,17 @@
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:case nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:case nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">CaseNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_if</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:if nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:if nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">IfNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_else</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert py:else nodes to their intermediate representation.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:else nodes to their intermediate representation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">parentNode</span><span class="p">,</span> <span class="s2">&quot;tagName&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;py:nop&quot;</span>
             <span class="ow">and</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">parentNode</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s2">&quot;py:switch&quot;</span><span class="p">)</span>
@@ -522,8 +523,9 @@
                 <span class="k">yield</span> <span class="n">x</span></div>
 
 
+
 <span class="k">def</span> <span class="nf">make_text_node</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">guard</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return a TranslatableTextNode if the text is not empty,</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a TranslatableTextNode if the text is not empty,</span>
 <span class="sd">    otherwise a regular TextNode.</span>
 
 <span class="sd">    This avoid spending the cost of translating empty nodes.</span>
@@ -534,7 +536,7 @@
 
 
 <span class="k">class</span> <span class="nc">_TextCompiler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Separates expressions such as ${some_var} from the ordinary text</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Separates expressions such as ${some_var} from the ordinary text</span>
 <span class="sd">    around them in the template source and generates :class:`.ir.ExprNode`</span>
 <span class="sd">    instances and :class:`.ir.TextNode` instances accordingly.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -662,8 +664,10 @@
             <span class="p">)</span>
 
 
-<div class="viewcode-block" id="_Parser"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser">[docs]</a><span class="k">class</span> <span class="nc">_Parser</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">ContentHandler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Parse an XML template into a Tree of DOM Nodes.</span>
+<div class="viewcode-block" id="_Parser">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser">[docs]</a>
+<span class="k">class</span> <span class="nc">_Parser</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">ContentHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse an XML template into a Tree of DOM Nodes.</span>
 
 <span class="sd">    Nodes should then be passed to a `_Compiler` to be</span>
 <span class="sd">    converted into the intermediate representation and</span>
@@ -673,7 +677,7 @@
     <span class="n">DTD</span> <span class="o">=</span> <span class="s1">&#39;&lt;!DOCTYPE kajiki SYSTEM &quot;kajiki.dtd&quot;&gt;&#39;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;XML defines only a few entities; HTML defines many more.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;XML defines only a few entities; HTML defines many more.</span>
 <span class="sd">        The XML parser errors out when it finds HTML entities, unless the</span>
 <span class="sd">        template contains a reference to an external DTD (in which case</span>
 <span class="sd">        skippedEntity() gets called, this is what we want). In other words,</span>
@@ -697,8 +701,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">source</span><span class="p">[:</span><span class="n">position</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">DTD</span> <span class="o">+</span> <span class="n">source</span><span class="p">[</span><span class="n">position</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_stack</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="_Parser.parse"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Parse an XML/HTML document to its DOM representation.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="_Parser.parse">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.parse">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse an XML/HTML document to its DOM representation.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span> <span class="o">=</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">sax</span><span class="o">.</span><span class="n">make_parser</span><span class="p">()</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">setFeature</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">feature_external_pes</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">setFeature</span><span class="p">(</span><span class="n">sax</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">feature_external_ges</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -732,11 +738,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span></div>
 
+
     <span class="c1"># ContentHandler implementation</span>
-<div class="viewcode-block" id="_Parser.startDocument"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startDocument">[docs]</a>    <span class="k">def</span> <span class="nf">startDocument</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="_Parser.startDocument">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startDocument">[docs]</a>
+    <span class="k">def</span> <span class="nf">startDocument</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.startElement"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElement">[docs]</a>    <span class="k">def</span> <span class="nf">startElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="_Parser.startElement">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElement">[docs]</a>
+    <span class="k">def</span> <span class="nf">startElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
         <span class="n">el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">el</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -744,11 +756,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.endElement"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endElement">[docs]</a>    <span class="k">def</span> <span class="nf">endElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+
+<div class="viewcode-block" id="_Parser.endElement">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endElement">[docs]</a>
+    <span class="k">def</span> <span class="nf">endElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="n">popped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">name</span> <span class="o">==</span> <span class="n">popped</span><span class="o">.</span><span class="n">tagName</span></div>
 
-<div class="viewcode-block" id="_Parser.characters"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.characters">[docs]</a>    <span class="k">def</span> <span class="nf">characters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+
+<div class="viewcode-block" id="_Parser.characters">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.characters">[docs]</a>
+    <span class="k">def</span> <span class="nf">characters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
         <span class="n">should_escape</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_stack</span>
         <span class="k">if</span> <span class="n">should_escape</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">sax</span><span class="o">.</span><span class="n">saxutils</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
@@ -757,12 +775,18 @@
         <span class="n">node</span><span class="o">.</span><span class="n">escaped</span> <span class="o">=</span> <span class="n">should_escape</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.processingInstruction"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.processingInstruction">[docs]</a>    <span class="k">def</span> <span class="nf">processingInstruction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+
+<div class="viewcode-block" id="_Parser.processingInstruction">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.processingInstruction">[docs]</a>
+    <span class="k">def</span> <span class="nf">processingInstruction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="o">.</span><span class="n">createProcessingInstruction</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="n">node</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parser</span><span class="o">.</span><span class="n">getLineNumber</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_els</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.skippedEntity"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.skippedEntity">[docs]</a>    <span class="k">def</span> <span class="nf">skippedEntity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+
+<div class="viewcode-block" id="_Parser.skippedEntity">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.skippedEntity">[docs]</a>
+    <span class="k">def</span> <span class="nf">skippedEntity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="c1"># Deals with an HTML entity such as &amp;nbsp; (XML itself defines</span>
         <span class="c1"># very few entities.)</span>
 
@@ -779,17 +803,30 @@
             <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">characters</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">entities</span><span class="o">.</span><span class="n">html5</span><span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="_Parser.startElementNS"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElementNS">[docs]</a>    <span class="k">def</span> <span class="nf">startElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+
+<div class="viewcode-block" id="_Parser.startElementNS">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startElementNS">[docs]</a>
+    <span class="k">def</span> <span class="nf">startElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;startElementNS&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.endElementNS"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endElementNS">[docs]</a>    <span class="k">def</span> <span class="nf">endElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+
+<div class="viewcode-block" id="_Parser.endElementNS">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endElementNS">[docs]</a>
+    <span class="k">def</span> <span class="nf">endElementNS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">qname</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;startElementNS&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.startPrefixMapping"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startPrefixMapping">[docs]</a>    <span class="k">def</span> <span class="nf">startPrefixMapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+
+<div class="viewcode-block" id="_Parser.startPrefixMapping">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.startPrefixMapping">[docs]</a>
+    <span class="k">def</span> <span class="nf">startPrefixMapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">uri</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;startPrefixMapping&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="_Parser.endPrefixMapping"><a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endPrefixMapping">[docs]</a>    <span class="k">def</span> <span class="nf">endPrefixMapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
+
+<div class="viewcode-block" id="_Parser.endPrefixMapping">
+<a class="viewcode-back" href="../../runtime.html#kajiki._Parser.endPrefixMapping">[docs]</a>
+    <span class="k">def</span> <span class="nf">endPrefixMapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>  <span class="c1"># pragma no cover</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;endPrefixMapping&quot;</span><span class="p">)</span></div>
+
 
     <span class="c1"># LexicalHandler implementation</span>
     <span class="k">def</span> <span class="nf">comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
@@ -818,8 +855,11 @@
         <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="_DomTransformer"><a class="viewcode-back" href="../../runtime.html#kajiki._DomTransformer">[docs]</a><span class="k">class</span> <span class="nc">_DomTransformer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Applies standard Kajiki transformations to a parsed document.</span>
+
+<div class="viewcode-block" id="_DomTransformer">
+<a class="viewcode-back" href="../../runtime.html#kajiki._DomTransformer">[docs]</a>
+<span class="k">class</span> <span class="nc">_DomTransformer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies standard Kajiki transformations to a parsed document.</span>
 
 <span class="sd">    Given a document generated by :class:`.Parser` it applies some</span>
 <span class="sd">    node transformations that are necessary before applying the</span>
@@ -836,8 +876,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="n">doc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_strip_text</span> <span class="o">=</span> <span class="n">strip_text</span>
 
-<div class="viewcode-block" id="_DomTransformer.transform"><a class="viewcode-back" href="../../runtime.html#kajiki._DomTransformer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies all the DOM transformations to the document.</span>
+<div class="viewcode-block" id="_DomTransformer.transform">
+<a class="viewcode-back" href="../../runtime.html#kajiki._DomTransformer.transform">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies all the DOM transformations to the document.</span>
 
 <span class="sd">        Calling this twice will do nothing as the result is persisted.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -851,9 +893,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strip_text_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span></div>
 
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_merge_text_nodes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merges consecutive TextNodes into a single TextNode.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merges consecutive TextNodes into a single TextNode.</span>
 
 <span class="sd">        Nodes are replaced with a new node whose data contains the</span>
 <span class="sd">        concatenation of all replaced nodes data.</span>
@@ -889,7 +932,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_extract_nodes_leading_and_trailing_spaces</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Extract the leading and trailing spaces of TextNodes to</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract the leading and trailing spaces of TextNodes to</span>
 <span class="sd">        separate nodes.</span>
 
 <span class="sd">        This is explicitly intended to make i18n easier, as we don&#39;t</span>
@@ -937,7 +980,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_strip_text_nodes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Strips empty characters in all text nodes.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Strips empty characters in all text nodes.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">childNodes</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Text</span><span class="p">):</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="s2">&quot;_cdata&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
@@ -954,7 +997,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_expand_directives</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Expands directives attached to nodes into separate nodes.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expands directives attached to nodes into separate nodes.</span>
 
 <span class="sd">        This will convert all instances of::</span>
 
@@ -1009,12 +1052,13 @@
         <span class="k">return</span> <span class="n">tree</span></div>
 
 
+
 <span class="k">class</span> <span class="nc">XMLTemplateError</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">KajikiTemplateError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class for all Parse/Compile errors.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all Parse/Compile errors.&quot;&quot;&quot;</span>
 
 
 <span class="k">class</span> <span class="nc">XMLTemplateCompileError</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Error for failed template constraints.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Error for failed template constraints.</span>
 
 <span class="sd">    This is used to signal directives in contexts where</span>
 <span class="sd">    they are invalid or any kajiki template constraint</span>
@@ -1026,7 +1070,7 @@
 
 
 <span class="k">class</span> <span class="nc">XMLTemplateParseError</span><span class="p">(</span><span class="n">XMLTemplateError</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Error while parsing template XML.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Error while parsing template XML.</span>
 
 <span class="sd">    Signals an invalid XML error in the provided template code.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1110,8 +1154,8 @@
       &copy;2010-2021, Rick Copeland, Nando Florestan, Alessandro Molina, and Jack Rosenthal.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 
