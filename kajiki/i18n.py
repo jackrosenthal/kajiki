@@ -11,7 +11,8 @@ def gettext(s):
 def extract(fileobj, keywords, comment_tags, options):
     """Babel entry point that extracts translation strings from XML templates."""
     from .template import KajikiSyntaxError
-    from .xml_template import _Compiler, _DomTransformer, _Parser
+    from .xml_template import _DomTransformer, _Parser
+    from .compiler import Compiler
 
     try:
         from babel.messages.extract import extract_python
@@ -26,7 +27,7 @@ def extract(fileobj, keywords, comment_tags, options):
         source = source.decode("utf-8")
     doc = _Parser(filename="<string>", source=source).parse()
     doc = _DomTransformer(doc, strip_text=options.get("strip_text", False)).transform()
-    compiler = _Compiler(
+    compiler = Compiler(
         filename="<string>",
         doc=doc,
         mode=options.get("mode", "xml"),
