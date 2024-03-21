@@ -28,12 +28,145 @@ def make_text_node(text, guard=None):
     return ir.TextNode(text, guard)
 
 
+class TextCompiler(object):
+    """Separates expressions such as ${some_var} from the ordinary text
+    around them in the template source and generates :class:`.ir.ExprNode`
+    instances and :class:`.ir.TextNode` instances accordingly.
+    """
+
+    def __init__(
+        self,
+        filename,
+        source,
+        lineno,
+        node_type=make_text_node,
+        in_html_attr=False,
+        compiler_instance=None,
+    ):
+        self.filename = filename
+        self.source = source
+        self.orig_lineno = lineno
+        self.lineno = 0
+        self.pos = 0
+        self.node_type = node_type
+        self.in_html_attr = in_html_attr
+        self.compiler_instance = compiler_instance
+        self.doc = self.compiler_instance.doc
+
+    def text(self, text):
+        node = self.node_type(text)
+        node.lineno = self.real_lineno
+        self.lineno += text.count("\n")
+        return node
+
+    def expr(self, text):
+        # *safe* being True here avoids escaping twice, since
+        # HTML attributes are always escaped in the end.
+        node = ir.ExprNode(text, safe=self.in_html_attr)
+        node.lineno = self.real_lineno
+        self.lineno += text.count("\n")
+        return node
+
+    @property
+    def real_lineno(self):
+        return self.orig_lineno + self.lineno
+
+    _pattern = r"""
+    \$(?:
+        (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
+        {(?P<expr_braced>) | # ${....
+        \$ # $$ -> $
+    )"""
+    _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
+
+    def __iter__(self):
+        source = self.source
+        for mo in self._re_pattern.finditer(source):
+            start = mo.start()
+            if start > self.pos:
+                yield self.text(source[self.pos : start])
+            self.pos = start
+            groups = mo.groupdict()
+            if groups["expr_braced"] is not None:
+                self.pos = mo.end()
+                yield self._get_braced_expr()
+            elif groups["expr_named"] is not None:
+                self.pos = mo.end()
+                yield self.expr(groups["expr_named"])
+            else:
+                # handle $$ and $ followed by anything that is neither a valid
+                # variable name or braced expression
+                self.pos = mo.end()
+                yield self.text("$")
+        if self.pos != len(source):
+            yield self.text(source[self.pos :])
+
+    def _get_braced_expr(self):
+        from kajiki.xml_template import XMLTemplateCompileError
+
+        # see https://github.com/nandoflorestan/kajiki/pull/38
+        # Trying to get the position of a closing } in braced expressions
+        # So, self.source can be something like `1+1=${1+1} ahah`
+        # in this case this function gets called only once with
+        # self.pos equal to 6 this function must return the result of
+        # self.expr('1+1') and must set self.pos to 9
+        def py_expr(end=None):
+            return self.source[self.pos : end]
+
+        try:
+            self.pos += len(py_expr()) - len(py_expr().lstrip())
+            compile(py_expr(), "find_}", "eval")
+        except SyntaxError as se:
+            end = sum(
+                [self.pos, se.offset]
+                + [
+                    len(line) + 1
+                    for idx, line in enumerate(py_expr().splitlines())
+                    if idx < se.lineno - 1
+                ]
+            )
+            if py_expr(end)[-1] != "}":
+                # for example unclosed strings
+                raise XMLTemplateCompileError(
+                    "Kajiki can't compile the python expression `%s`" % py_expr()[:-1],
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=self.lineno,
+                )
+            else:
+                # if the expression ends in a } then it may be valid
+                try:
+                    compile(py_expr(end - 1), "check_validity", "eval")
+                except SyntaxError:
+                    # for example + operators with a single operand
+                    raise XMLTemplateCompileError(
+                        "Kajiki detected an invalid python expression `%s`"
+                        % py_expr()[:-1],
+                        doc=self.doc,
+                        filename=self.filename,
+                        linen=self.lineno,
+                    )
+
+            py_text = py_expr(end - 1)
+            self.pos = end
+            return self.expr(py_text)
+        else:
+            raise XMLTemplateCompileError(
+                "Braced expression not terminated",
+                doc=self.doc,
+                filename=self.filename,
+                linen=self.lineno,
+            )
+
+
+
 class Compiler(object):
     """Compiles a DOM tree into IR :class:`kajiki.ir.TemplateNode`.
 
     Intermediate Representation is a tree of nodes that represent
     Python Code that should be generated to execute the template.
     """
+    text_compiler = TextCompiler
 
     def __init__(
         self,
@@ -198,7 +331,7 @@ class Compiler(object):
             node.removeAttribute("py:strip")
         yield ir.TextNode("<%s" % node.tagName, guard)
         for k, v in sorted(node.attributes.items()):
-            tc = TextCompiler(
+            tc = self.text_compiler(
                 self.filename,
                 v,
                 node.lineno,
@@ -364,7 +497,7 @@ class Compiler(object):
             # script and style should always be untranslatable.
             kwargs["node_type"] = ir.TextNode
 
-        tc = TextCompiler(
+        tc = self.text_compiler(
             self.filename, node.data, node.lineno, compiler_instance=self, **kwargs
         )
         for x in tc:
@@ -441,133 +574,3 @@ class Compiler(object):
             for x in self._compile_node(c):
                 yield x
 
-
-class TextCompiler(object):
-    """Separates expressions such as ${some_var} from the ordinary text
-    around them in the template source and generates :class:`.ir.ExprNode`
-    instances and :class:`.ir.TextNode` instances accordingly.
-    """
-
-    def __init__(
-        self,
-        filename,
-        source,
-        lineno,
-        node_type=make_text_node,
-        in_html_attr=False,
-        compiler_instance=None,
-    ):
-        self.filename = filename
-        self.source = source
-        self.orig_lineno = lineno
-        self.lineno = 0
-        self.pos = 0
-        self.node_type = node_type
-        self.in_html_attr = in_html_attr
-        self.compiler_instance = compiler_instance
-        self.doc = self.compiler_instance.doc
-
-    def text(self, text):
-        node = self.node_type(text)
-        node.lineno = self.real_lineno
-        self.lineno += text.count("\n")
-        return node
-
-    def expr(self, text):
-        # *safe* being True here avoids escaping twice, since
-        # HTML attributes are always escaped in the end.
-        node = ir.ExprNode(text, safe=self.in_html_attr)
-        node.lineno = self.real_lineno
-        self.lineno += text.count("\n")
-        return node
-
-    @property
-    def real_lineno(self):
-        return self.orig_lineno + self.lineno
-
-    _pattern = r"""
-    \$(?:
-        (?P<expr_named>[_a-z][_a-z0-9.]*) | # $foo.bar
-        {(?P<expr_braced>) | # ${....
-        \$ # $$ -> $
-    )"""
-    _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
-
-    def __iter__(self):
-        source = self.source
-        for mo in self._re_pattern.finditer(source):
-            start = mo.start()
-            if start > self.pos:
-                yield self.text(source[self.pos : start])
-            self.pos = start
-            groups = mo.groupdict()
-            if groups["expr_braced"] is not None:
-                self.pos = mo.end()
-                yield self._get_braced_expr()
-            elif groups["expr_named"] is not None:
-                self.pos = mo.end()
-                yield self.expr(groups["expr_named"])
-            else:
-                # handle $$ and $ followed by anything that is neither a valid
-                # variable name or braced expression
-                self.pos = mo.end()
-                yield self.text("$")
-        if self.pos != len(source):
-            yield self.text(source[self.pos :])
-
-    def _get_braced_expr(self):
-        from kajiki.xml_template import XMLTemplateCompileError
-
-        # see https://github.com/nandoflorestan/kajiki/pull/38
-        # Trying to get the position of a closing } in braced expressions
-        # So, self.source can be something like `1+1=${1+1} ahah`
-        # in this case this function gets called only once with
-        # self.pos equal to 6 this function must return the result of
-        # self.expr('1+1') and must set self.pos to 9
-        def py_expr(end=None):
-            return self.source[self.pos : end]
-
-        try:
-            self.pos += len(py_expr()) - len(py_expr().lstrip())
-            compile(py_expr(), "find_}", "eval")
-        except SyntaxError as se:
-            end = sum(
-                [self.pos, se.offset]
-                + [
-                    len(line) + 1
-                    for idx, line in enumerate(py_expr().splitlines())
-                    if idx < se.lineno - 1
-                ]
-            )
-            if py_expr(end)[-1] != "}":
-                # for example unclosed strings
-                raise XMLTemplateCompileError(
-                    "Kajiki can't compile the python expression `%s`" % py_expr()[:-1],
-                    doc=self.doc,
-                    filename=self.filename,
-                    linen=self.lineno,
-                )
-            else:
-                # if the expression ends in a } then it may be valid
-                try:
-                    compile(py_expr(end - 1), "check_validity", "eval")
-                except SyntaxError:
-                    # for example + operators with a single operand
-                    raise XMLTemplateCompileError(
-                        "Kajiki detected an invalid python expression `%s`"
-                        % py_expr()[:-1],
-                        doc=self.doc,
-                        filename=self.filename,
-                        linen=self.lineno,
-                    )
-
-            py_text = py_expr(end - 1)
-            self.pos = end
-            return self.expr(py_text)
-        else:
-            raise XMLTemplateCompileError(
-                "Braced expression not terminated",
-                doc=self.doc,
-                filename=self.filename,
-                linen=self.lineno,
-            )
