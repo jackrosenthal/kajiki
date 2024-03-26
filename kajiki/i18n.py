@@ -1,4 +1,5 @@
 from io import BytesIO
+from importlib import import_module
 from tokenize import TokenError
 
 from .ir import ExprNode, TranslatableTextNode
@@ -12,7 +13,6 @@ def extract(fileobj, keywords, comment_tags, options):
     """Babel entry point that extracts translation strings from XML templates."""
     from .template import KajikiSyntaxError
     from .xml_template import _DomTransformer, _Parser
-    from .compiler import Compiler
 
     try:
         from babel.messages.extract import extract_python
@@ -22,12 +22,17 @@ def extract(fileobj, keywords, comment_tags, options):
         extract_python = None
         extract_expr = False
 
+    compiler_class = options.get("compiler_class", "kajiki.compiler.Compiler")
+    module_name, class_name = compiler_class.rsplit(".", 1)
+    module = import_module(module_name.lstrip("."))
+    compiler = getattr(module, class_name)
+
     source = fileobj.read()
     if isinstance(source, bytes):
         source = source.decode("utf-8")
     doc = _Parser(filename="<string>", source=source).parse()
     doc = _DomTransformer(doc, strip_text=options.get("strip_text", False)).transform()
-    compiler = Compiler(
+    compiler = compiler(
         filename="<string>",
         doc=doc,
         mode=options.get("mode", "xml"),
