@@ -29,17 +29,7 @@ if at least one column jumps by more than 255 from one row to the next, more
 than one pair is written to the table. In case #b, there's no way to know
 from looking at the table later how many were written.	That's the delicate
 part.  A user of c_lnotab desiring to find the source line number
-corresponding to a bytecode address A should do something like this
-
-    lineno = addr = 0
-    for addr_incr, line_incr in c_lnotab:
-        addr += addr_incr
-        if addr > A:
-            return lineno
-        lineno += line_incr
-
-Note: this is no longer valid as of CPython 3.6.  After CPython 3.6,
-the line offset is signed, and this code should be used:
+corresponding to a bytecode address A should do something like this:
 
     lineno = addr = 0
     for addr_incr, line_incr in co_lnotab:
@@ -72,10 +62,6 @@ def lnotab(pairs, first_lineno=0):
             yield 0  # line
             byte_delta -= 255
         yield byte_delta
-        # The threshold of 0x80 is smaller than necessary on Python
-        # 3.4 and 3.5 (the value is treated as unsigned), but won't
-        # produce an incorrect lnotab.  On Python 3.6+, 0x80 is the
-        # correct value.
         while line_delta >= 0x80:
             yield 0x7F  # line
             yield 0  # byte
