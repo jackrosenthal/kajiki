@@ -5,16 +5,13 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-          architecture: x64
-      - run: pip install -e ".[docs]"
-      - run: sphinx-build -a docs/ docs/_build/html
+      - uses: actions/checkout@v4
+      - name: Install Hatch
+        uses: pypa/hatch@257e27e51a6a5616ed08a39a408a21c35c9931bc
+      - run: hatch run docs:build
       - run: touch docs/_build/html/.nojekyll
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: htmldocs
           path: docs/_build/html
@@ -24,9 +21,9 @@ jobs:
     if: "github.event_name == 'push' && github.ref == 'refs/heads/master'"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: htmldocs
           path: html

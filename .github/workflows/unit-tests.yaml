@@ -2,40 +2,10 @@ name: Unit Tests
 on: [push, pull_request]
 jobs:
   unit-tests:
-    name: "Python ${{ matrix.versions.python }}"
-    runs-on: "${{ matrix.versions.os }}"
-    strategy:
-      matrix:
-        versions:
-          - python: 3.4.10
-            os: ubuntu-18.04
-          - python: 3.5.10
-            os: ubuntu-20.04
-          - python: 3.6.15
-            os: ubuntu-20.04
-          - python: 3.7.12
-            os: ubuntu-20.04
-          - python: 3.8.12
-            os: ubuntu-20.04
-          - python: 3.9.12
-            os: ubuntu-20.04
-          - python: 3.10.4
-            os: ubuntu-20.04
-          - python: 3.11.0-alpha - 3.11.0
-            os: ubuntu-20.04
-          - python: pypy-3.6
-            os: ubuntu-20.04
-          - python: pypy-3.7
-            os: ubuntu-20.04
-          - python: pypy-3.8
-            os: ubuntu-20.04
-          - python: pypy-3.9
-            os: ubuntu-20.04
+    runs-on: "ubuntu-24.04"
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "${{ matrix.versions.python }}"
-          architecture: x64
-      - run: pip install -e ".[testing]"
-      - run: pytest -v
+      - uses: actions/checkout@v4
+      - name: Install Hatch
+        uses: pypa/hatch@257e27e51a6a5616ed08a39a408a21c35c9931bc
+      - name: Run Tests
+        run: hatch test -a
