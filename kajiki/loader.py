@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib.resources
 import os
 from pathlib import Path
@@ -69,7 +71,8 @@ class FileLoader(Loader):
             "html5": lambda **kw: XMLTemplate(mode="html5", **kw),
         }
 
-    def _find_resource(self, name):
+    def _filename(self, name: str) -> str | Path | None:
+        """Get the filename of the requested resource."""
         for base in self.path:
             path = Path(base) / name
             if path.is_file():
@@ -77,6 +80,18 @@ class FileLoader(Loader):
 
         msg = f"{name} not found in any of {self.path}"
         raise FileNotFoundError(msg)
+
+    def _find_resource(self, name: str) -> Path:
+        """Locate the loadable resource and return a Path to it."""
+        filename = self._filename(name)
+        if not filename:
+            msg = f"{self!r}._filename returned {filename!r}"
+            raise FileNotFoundError(msg)
+        path = Path(filename)
+        if not path.is_file():
+            msg = f"{filename} doesn't exist or isn't a file."
+            raise FileNotFoundError(msg)
+        return path
 
     def _load(self, name, encoding="utf-8", **kwargs):
         """Load a template from file."""
