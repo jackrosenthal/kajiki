@@ -258,7 +258,12 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">DedentNode</span><span class="p">):</span>
             <span class="n">cur_indent</span> <span class="o">-=</span> <span class="mi">4</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">py</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">cur_indent</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">IndentNode</span><span class="p">):</span>
+                <span class="n">cur_indent</span> <span class="o">+=</span> <span class="mi">4</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">DedentNode</span><span class="p">):</span>
+                <span class="n">cur_indent</span> <span class="o">-=</span> <span class="mi">4</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">cur_indent</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
@@ -499,6 +504,40 @@
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;elif local.__kj__.case(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">):&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MatchNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structural Pattern Matching Node&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
+
+    <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;match (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">):&quot;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">IndentNode</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
+        <span class="k">yield</span> <span class="n">DedentNode</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">MatchCaseNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structural Pattern Matching Case Node&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decl</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
+
+    <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;case </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">IndentNode</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
+        <span class="k">yield</span> <span class="n">DedentNode</span><span class="p">()</span>
 
 
 <span class="k">class</span> <span class="nc">IfNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>

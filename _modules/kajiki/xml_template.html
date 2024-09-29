@@ -250,6 +250,7 @@
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">codecs</span> <span class="kn">import</span> <span class="nb">open</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">version_info</span>
 <span class="kn">from</span> <span class="nn">xml</span> <span class="kn">import</span> <span class="n">sax</span>
 <span class="kn">from</span> <span class="nn">xml.dom</span> <span class="kn">import</span> <span class="n">minidom</span> <span class="k">as</span> <span class="n">dom</span>
 <span class="kn">from</span> <span class="nn">xml.sax</span> <span class="kn">import</span> <span class="n">SAXParseException</span>
@@ -683,9 +684,49 @@
         <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">SwitchNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">),</span> <span class="o">*</span><span class="n">body</span><span class="p">)</span>
 
     <span class="nd">@annotate</span>
+    <span class="k">def</span> <span class="nf">_compile_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:match nodes to their IR.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;At least Python 3.10 is required to use the py:match directive&quot;</span>
+            <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                <span class="n">msg</span><span class="p">,</span>
+                <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                <span class="n">linen</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Filter out empty text nodes and report unsupported nodes</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">TextNode</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">MatchCaseNode</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;py:match directive can only contain py:case nodes and cannot be placed on a tag.&quot;</span>
+                <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                    <span class="n">msg</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                    <span class="n">linen</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">body</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">MatchNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">),</span> <span class="o">*</span><span class="n">body</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_case</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert py:case nodes to their intermediate representation.&quot;&quot;&quot;</span>
-        <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">CaseNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">CaseNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">ir</span><span class="o">.</span><span class="n">MatchCaseNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">),</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compile_nop</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;case must have either value or match attribute, the former for py:switch, the latter for py:match&quot;</span>
+            <span class="k">raise</span> <span class="n">XMLTemplateCompileError</span><span class="p">(</span>
+                <span class="n">msg</span><span class="p">,</span>
+                <span class="n">doc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                <span class="n">linen</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span>
+            <span class="p">)</span>
 
     <span class="nd">@annotate</span>
     <span class="k">def</span> <span class="nf">_compile_if</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
@@ -1198,7 +1239,7 @@
 <span class="sd">            &lt;/py:if&gt;</span>
 
 <span class="sd">        This ensures that whenever a template is processed there is no</span>
-<span class="sd">        different between the two formats as the Compiler will always</span>
+<span class="sd">        difference between the two formats as the Compiler will always</span>
 <span class="sd">        receive the latter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">dom</span><span class="o">.</span><span class="n">Document</span><span class="p">):</span>
@@ -1207,7 +1248,11 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">&quot;tagName&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">tree</span>
         <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="ow">in</span> <span class="n">QDIRECTIVES_DICT</span><span class="p">:</span>
-            <span class="n">tree</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="n">QDIRECTIVES_DICT</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">tagName</span><span class="p">]))</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">QDIRECTIVES_DICT</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">tagName</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">attrs</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">tagName</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="n">attr</span><span class="p">))</span>
             <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="o">=</span> <span class="s2">&quot;py:nop&quot;</span>
         <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">tagName</span> <span class="o">!=</span> <span class="s2">&quot;py:nop&quot;</span> <span class="ow">and</span> <span class="n">tree</span><span class="o">.</span><span class="n">hasAttribute</span><span class="p">(</span><span class="s2">&quot;py:extends&quot;</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s2">&quot;py:extends&quot;</span><span class="p">)</span>
@@ -1224,7 +1269,17 @@
             <span class="c1"># nsmap = (parent is not None) and parent.nsmap or tree.nsmap</span>
             <span class="n">el</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">ownerDocument</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">directive</span><span class="p">)</span>
             <span class="n">el</span><span class="o">.</span><span class="n">lineno</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">lineno</span>
-            <span class="k">if</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="c1"># eg: handle bare py:case tags</span>
+                <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+                    <span class="n">el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">directive</span> <span class="o">==</span> <span class="s2">&quot;py:case&quot;</span> <span class="ow">and</span> <span class="n">tree</span><span class="o">.</span><span class="n">nodeName</span> <span class="o">!=</span> <span class="s2">&quot;py:case&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">parentNode</span><span class="o">.</span><span class="n">nodeName</span> <span class="o">==</span> <span class="s2">&quot;py:match&quot;</span> <span class="ow">or</span> <span class="s2">&quot;py:match&quot;</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">parentNode</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+                        <span class="n">at</span> <span class="o">=</span> <span class="s2">&quot;on&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">at</span> <span class="o">=</span> <span class="s2">&quot;value&quot;</span>
+                    <span class="n">el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">attr</span><span class="p">:</span>
                 <span class="n">el</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
             <span class="c1"># el.setsourceline = tree.sourceline</span>
             <span class="n">parent</span><span class="o">.</span><span class="n">replaceChild</span><span class="p">(</span><span class="n">newChild</span><span class="o">=</span><span class="n">el</span><span class="p">,</span> <span class="n">oldChild</span><span class="o">=</span><span class="n">tree</span><span class="p">)</span>

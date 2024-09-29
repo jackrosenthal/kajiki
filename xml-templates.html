@@ -422,6 +422,32 @@ tags whose tagname is prefixed by <cite>py:</cite>.</p>
 </pre></div>
 </div>
 </section>
+<section id="py-match-py-case">
+<h3>py:match, py:case<a class="headerlink" href="#py-match-py-case" title="Link to this heading">¶</a></h3>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">py:switch</span></code> this makes use of <a class="reference external" href="https://peps.python.org/pep-0622/">PEP622</a>
+Structural Pattern Matching:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">pytest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span> <span class="n">pytest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s1">&#39;pep622 unsupported&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Template</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">XMLTemplate</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;&lt;div&gt;</span>
+<span class="gp">... </span><span class="s1">$i is &lt;py:match on=&quot;i % 2&quot;&gt;</span>
+<span class="gp">... </span><span class="s1">&lt;py:case match=&quot;0&quot;&gt;even&lt;/py:case&gt;</span>
+<span class="gp">... </span><span class="s1">&lt;py:case match=&quot;_&quot;&gt;odd&lt;/py:case&gt;</span>
+<span class="gp">... </span><span class="s1">&lt;/py:match&gt;&lt;/div&gt;&#39;&#39;&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+<span class="go">&lt;div&gt;</span>
+<span class="go">4 is even&lt;/div&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Template</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+<span class="go">&lt;div&gt;</span>
+<span class="go">3 is odd&lt;/div&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">py:match</span></code> compiles directly to Python’s <code class="docutils literal notranslate"><span class="pre">match</span></code> syntax, and will
+therefore not work on versions less than 3.10.  Only use this syntax if your
+project targets Python 3.10 or newer.</p>
+</div>
+</section>
 <section id="py-for">
 <h3>py:for<a class="headerlink" href="#py-for" title="Link to this heading">¶</a></h3>
 <p>Repeatedly render the content for each item in an iterable:</p>
@@ -716,67 +742,72 @@ inheritance hierarchy:</p>
 <td><p>✅</p></td>
 <td><p>test</p></td>
 </tr>
-<tr class="row-odd"><td><p>py:case</p></td>
+<tr class="row-odd"><td><p>py:match</p></td>
+<td><p>❌</p></td>
 <td><p>✅</p></td>
-<td><p>✅</p></td>
-<td><p>value</p></td>
+<td><p>on</p></td>
 </tr>
-<tr class="row-even"><td><p>py:for</p></td>
+<tr class="row-even"><td><p>py:case</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>value or match (for usage with py:switch or py:match)</p></td>
+</tr>
+<tr class="row-odd"><td><p>py:for</p></td>
 <td><p>✅</p></td>
 <td><p>✅</p></td>
 <td><p>each</p></td>
 </tr>
-<tr class="row-odd"><td><p>py:def</p></td>
+<tr class="row-even"><td><p>py:def</p></td>
 <td><p>✅</p></td>
 <td><p>✅</p></td>
 <td><p>function</p></td>
 </tr>
-<tr class="row-even"><td><p>py:call</p></td>
+<tr class="row-odd"><td><p>py:call</p></td>
 <td><p>❌</p></td>
 <td><p>✅</p></td>
 <td><p>args, function</p></td>
 </tr>
-<tr class="row-odd"><td><p>py:include</p></td>
+<tr class="row-even"><td><p>py:include</p></td>
 <td><p>❌</p></td>
 <td><p>✅</p></td>
 <td><p>href</p></td>
 </tr>
-<tr class="row-even"><td><p>py:import</p></td>
+<tr class="row-odd"><td><p>py:import</p></td>
 <td><p>❌</p></td>
 <td><p>✅</p></td>
 <td><p>href</p></td>
 </tr>
-<tr class="row-odd"><td><p>py:with</p></td>
+<tr class="row-even"><td><p>py:with</p></td>
 <td><p>✅</p></td>
 <td><p>✅</p></td>
 <td><p>vars</p></td>
 </tr>
-<tr class="row-even"><td><p>py:attrs</p></td>
+<tr class="row-odd"><td><p>py:attrs</p></td>
 <td><p>✅</p></td>
 <td><p>❌</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>py:strip</p></td>
+<tr class="row-even"><td><p>py:strip</p></td>
 <td><p>✅</p></td>
 <td><p>❌</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>py:content</p></td>
+<tr class="row-odd"><td><p>py:content</p></td>
 <td><p>✅</p></td>
 <td><p>❌</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>py:replace</p></td>
+<tr class="row-even"><td><p>py:replace</p></td>
 <td><p>✅</p></td>
 <td><p>✅</p></td>
 <td><p>value</p></td>
 </tr>
-<tr class="row-even"><td><p>py:extends</p></td>
+<tr class="row-odd"><td><p>py:extends</p></td>
 <td><p>❌</p></td>
 <td><p>✅</p></td>
 <td><p>href</p></td>
 </tr>
-<tr class="row-odd"><td><p>py:block</p></td>
+<tr class="row-even"><td><p>py:block</p></td>
 <td><p>✅</p></td>
 <td><p>✅</p></td>
 <td><p>name</p></td>
@@ -925,6 +956,7 @@ Kajiki takes XML as input.</p>
 <li><a class="reference internal" href="#control-flow">Control Flow</a><ul>
 <li><a class="reference internal" href="#py-if-py-else">py:if, py:else</a></li>
 <li><a class="reference internal" href="#py-switch-py-case-py-else">py:switch, py:case, py:else</a></li>
+<li><a class="reference internal" href="#py-match-py-case">py:match, py:case</a></li>
 <li><a class="reference internal" href="#py-for">py:for</a></li>
 <li><a class="reference internal" href="#py-def">py:def</a></li>
 <li><a class="reference internal" href="#py-call">py:call</a></li>
