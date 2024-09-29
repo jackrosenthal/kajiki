@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-
 import os
-import sys
-import traceback
-from unittest import TestCase, main
+from unittest import TestCase
+
+import pytest
 
 from kajiki import FileLoader, MockLoader, TextTemplate
 
@@ -27,7 +25,7 @@ class TestBasic(TestCase):
         rsp = tpl({"name": "Rick"}).render()
         assert rsp == "Hello, Rick\n", rsp
 
-    def test_expr_None(self):
+    def test_expr_none(self):
         tpl = TextTemplate(source="Hello, ${name}\n")
         rsp = tpl({"name": None}).render()
         assert rsp == "Hello, \n", rsp
@@ -123,10 +121,7 @@ Nevermore $n\\
 %end"""
         )
         rsp = tpl({"name": "Rick"}).render()
-        assert (
-            rsp == 'Quoth the raven, "Nevermore 0."\n'
-            'Quoth the raven, "Nevermore 1."\n'
-        ), rsp
+        assert rsp == 'Quoth the raven, "Nevermore 0."\n' 'Quoth the raven, "Nevermore 1."\n', rsp
 
 
 class TestImport(TestCase):
@@ -391,22 +386,13 @@ class TestDebug(TestCase):
     def test_debug(self):
         loader = FileLoader(path=os.path.join(os.path.dirname(__file__), "data"))
         tpl = loader.import_("debug.txt")
-        try:
+
+        with pytest.raises(ValueError, match="Test error") as exc_info:
             tpl().render()
-        except ValueError:
-            exc_info = sys.exc_info()
-            stack = traceback.extract_tb(exc_info[2])
-        else:
-            msg = "Should have raised ValueError"
-            raise AssertionError(msg)
+
         # Verify we have stack trace entries in the template
-        for fn, _lno, _func, _line in stack:
-            if fn.endswith("debug.txt"):
+        for tb_entry in exc_info.traceback:
+            if tb_entry.path.name == "debug.txt":
                 break
         else:
-            msg = "Stacktrace is all python"
-            raise AssertionError(msg)
-
-
-if __name__ == "__main__":
-    main()
+            pytest.fail("Stacktrace is all python")
