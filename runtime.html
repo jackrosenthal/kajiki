@@ -81,13 +81,14 @@ function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Example</span><span class="p">:</span>
     <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">__main__</span><span class="p">():</span>
-        <span class="k">yield</span> <span class="s1">&#39;Hi&#39;</span>
+        <span class="k">yield</span> <span class="s2">&quot;Hi&quot;</span>
+
 
 <span class="n">t</span> <span class="o">=</span> <span class="n">kajiki</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="n">Example</span><span class="p">)</span>
 <span class="n">output</span> <span class="o">=</span> <span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-<span class="s1">&#39;Hi&#39;</span>
+<span class="s2">&quot;Hi&quot;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -187,7 +188,7 @@ as with the startElement event.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.endElementNS">
-<span class="sig-name descname"><span class="pre">endElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElementNS" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">endElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endElementNS" title="Link to this definition">¶</a></dt>
 <dd><p>Signals the end of an element in namespace mode.</p>
 <p>The name parameter contains the name of the element type, just
 as with the startElementNS event.</p>
@@ -195,7 +196,7 @@ as with the startElementNS event.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.endPrefixMapping">
-<span class="sig-name descname"><span class="pre">endPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endPrefixMapping" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">endPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.endPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.endPrefixMapping" title="Link to this definition">¶</a></dt>
 <dd><p>End the scope of a prefix-URI mapping.</p>
 <p>See startPrefixMapping for details. This event will always
 occur after the corresponding endElement event, but the order
@@ -255,7 +256,7 @@ the element.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.startElementNS">
-<span class="sig-name descname"><span class="pre">startElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElementNS" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">startElementNS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startElementNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startElementNS" title="Link to this definition">¶</a></dt>
 <dd><p>Signals the start of an element in namespace mode.</p>
 <p>The name parameter contains the name of the element type as a
 (uri, localname) tuple, the qname parameter the raw XML 1.0
@@ -268,7 +269,7 @@ no namespace.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kajiki.xml_template._Parser.startPrefixMapping">
-<span class="sig-name descname"><span class="pre">startPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startPrefixMapping" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">startPrefixMapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kajiki/xml_template.html#_Parser.startPrefixMapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kajiki.xml_template._Parser.startPrefixMapping" title="Link to this definition">¶</a></dt>
 <dd><p>Begin the scope of a prefix-URI Namespace mapping.</p>
 <p>The information from this event is not necessary for normal
 Namespace processing: the SAX XML reader will automatically

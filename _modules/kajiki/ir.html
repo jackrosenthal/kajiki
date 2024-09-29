@@ -34,7 +34,7 @@
 <span></span><span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
 
-<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">default_alias_for</span><span class="p">,</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">gen_name</span><span class="p">,</span> <span class="n">window</span>
+<span class="kn">from</span> <span class="nn">kajiki.util</span> <span class="kn">import</span> <span class="n">default_alias_for</span><span class="p">,</span> <span class="n">flattener</span><span class="p">,</span> <span class="n">gen_name</span><span class="p">,</span> <span class="n">window</span>
 
 
 <span class="k">def</span> <span class="nf">generate_python</span><span class="p">(</span><span class="n">ir</span><span class="p">):</span>
@@ -77,14 +77,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">body</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">body_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">optimize</span><span class="p">(</span><span class="n">flattener</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">flattener</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">))):</span>
-            <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">yield from</span> <span class="n">optimize</span><span class="p">(</span><span class="n">flattener</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">flattener</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">)))</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span>
         <span class="k">yield</span> <span class="n">IndentNode</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
         <span class="k">yield</span> <span class="n">DedentNode</span><span class="p">()</span>
 
 
@@ -143,10 +141,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = local.__kj__.import_(</span><span class="si">%r</span><span class="s2">, </span><span class="si">%r</span><span class="s2">, self.__globals__)&quot;</span>
-            <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="si">}</span><span class="s2"> = local.__kj__.import_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span><span class="si">!r}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="si">!r}</span><span class="s2">, self.__globals__)&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">IncludeNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
@@ -155,10 +150,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span> <span class="o">=</span> <span class="n">tpl_name</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-            <span class="s2">&quot;yield local.__kj__.import_(</span><span class="si">%r</span><span class="s2">, None, self.__globals__).__main__()&quot;</span>
-            <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;yield local.__kj__.import_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span><span class="si">!r}</span><span class="s2">, None, self.__globals__).__main__()&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ExtendNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
@@ -167,7 +159,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span> <span class="o">=</span> <span class="n">tpl_name</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;yield local.__kj__.extend(</span><span class="si">%r</span><span class="s2">).__main__()&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;yield local.__kj__.extend(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tpl_name</span><span class="si">!r}</span><span class="s2">).__main__()&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">DefNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
@@ -179,7 +171,7 @@
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;def </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span>
@@ -214,13 +206,12 @@
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;@__kj__.flattener.decorate&quot;</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;def </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span>
         <span class="k">yield</span> <span class="n">IndentNode</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
         <span class="k">yield</span> <span class="n">DedentNode</span><span class="p">()</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">CallTail</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">call</span><span class="p">)</span>
 
@@ -231,11 +222,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;for </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">WithNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
-
     <span class="n">assignment_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?:^|;)\s*([^;=]+)=(?!=)&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
 
     <span class="k">class</span> <span class="nc">WithTail</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
@@ -244,12 +234,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="o">=</span> <span class="n">var_names</span>
 
         <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-                <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">,) = local.__kj__.pop_with()&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">),)</span>
-            <span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">,) = local.__kj__.pop_with()&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)))</span>
             <span class="c1"># yield self.line(&#39;if %s == (): del %s&#39; % (v, v))</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="o">*</span><span class="n">body</span><span class="p">):</span>  <span class="c1"># noqa: A002</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
         <span class="n">assignments</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assignment_pattern</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
@@ -262,17 +250,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">lhs</span> <span class="k">for</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">assignments</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-            <span class="s2">&quot;local.__kj__.push_with(locals(), [</span><span class="si">%s</span><span class="s2">])&quot;</span>
-            <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">),)</span>
-        <span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;local.__kj__.push_with(locals(), [</span><span class="si">{}</span><span class="s2">])&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">&quot;&#39;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">WithTail</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
 
 
@@ -286,13 +270,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;local.__kj__.push_switch(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;local.__kj__.push_switch(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;if False: pass&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="bp">self</span>
-        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">x</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
         <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">SwitchTail</span><span class="p">()</span>
 
 
@@ -302,7 +285,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;elif local.__kj__.case(</span><span class="si">%s</span><span class="s2">):&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;elif local.__kj__.case(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">):&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">IfNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
@@ -311,7 +294,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">decl</span> <span class="o">=</span> <span class="n">decl</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;if </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;if </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">decl</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">ElseNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
@@ -331,9 +314,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">guard</span> <span class="o">=</span> <span class="n">guard</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;yield </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;yield </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;if </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;if </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 
@@ -341,12 +324,9 @@
 <span class="k">class</span> <span class="nc">TranslatableTextNode</span><span class="p">(</span><span class="n">TextNode</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;yield local.__kj__.gettext(</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;yield </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;yield local.__kj__.gettext(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="si">!r}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">text</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;yield </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="si">!r}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;if </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;if </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 
@@ -356,16 +336,16 @@
 <span class="sd">    is executed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># noqa: FBT002</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">safe</span> <span class="o">=</span> <span class="n">safe</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;yield </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;yield </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;yield self.__kj__.escape(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;yield self.__kj__.escape(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">AttrNode</span><span class="p">(</span><span class="n">HierNode</span><span class="p">):</span>
@@ -379,12 +359,9 @@
         <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">gen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">genname</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">gen_name</span><span class="p">()</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = self.__kj__.collect(</span><span class="si">%s</span><span class="s2">())&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="n">gen</span><span class="p">))</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-                <span class="s2">&quot;for </span><span class="si">%s</span><span class="s2"> in self.__kj__.render_attrs({</span><span class="si">%r</span><span class="s2">:</span><span class="si">%s</span><span class="s2">}, </span><span class="si">%r</span><span class="s2">):&quot;</span>
-                <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">attr</span><span class="p">,</span> <span class="n">gen</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;    yield </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gen</span><span class="si">}</span><span class="s2"> = self.__kj__.collect(</span><span class="si">{</span><span class="n">gen</span><span class="si">}</span><span class="s2">())&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;for </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> in self.__kj__.render_attrs(</span><span class="se">{{</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">attr</span><span class="si">!r}</span><span class="s2">:</span><span class="si">{</span><span class="n">gen</span><span class="si">}</span><span class="se">}}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">):&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    yield </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">guard</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;xml&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -394,21 +371,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">genname</span> <span class="o">=</span> <span class="n">gen_name</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">py</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;def </span><span class="si">%s</span><span class="s2">():&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">genname</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">genname</span><span class="si">}</span><span class="s2">():&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">:</span>
-            <span class="n">new_body</span> <span class="o">=</span> <span class="n">IfNode</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">,</span> <span class="n">AttrNode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new_body</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">x</span>
+            <span class="n">new_body</span> <span class="o">=</span> <span class="n">IfNode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">,</span> <span class="n">AttrNode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">))</span>
+            <span class="k">yield from</span> <span class="n">new_body</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span>
             <span class="k">yield</span> <span class="n">IndentNode</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">():</span>
-                    <span class="k">yield</span> <span class="n">part</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">body_iter</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">TextNode</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">DedentNode</span><span class="p">()</span>
@@ -426,14 +399,11 @@
         <span class="n">x</span> <span class="o">=</span> <span class="n">gen_name</span><span class="p">()</span>
 
         <span class="k">def</span> <span class="nf">_body</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span>
-                <span class="s2">&quot;for </span><span class="si">%s</span><span class="s2"> in self.__kj__.render_attrs(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%r</span><span class="s2">):&quot;</span>
-                <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;    yield </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;for </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> in self.__kj__.render_attrs(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">):&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    yield </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="s2">&quot;if </span><span class="si">%s</span><span class="s2">:&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;if </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">guard</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">_body</span><span class="p">():</span>
                 <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">indent</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -447,7 +417,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">module_level</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">blocks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">body</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">TextNode</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">TextNode</span><span class="p">)</span>  <span class="c1"># noqa: S101</span>
             <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
         <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">blocks</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">text</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;%&quot;</span><span class="p">:</span>
@@ -467,18 +437,14 @@
             <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">rest</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
                 <span class="n">prefix</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="p">)]</span>
-            <span class="k">assert</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>  <span class="c1"># noqa: S101</span>
             <span class="k">yield</span> <span class="n">line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="p">:]</span>
 
 
 <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">iter_node</span><span class="p">):</span>
     <span class="n">last_node</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">iter_node</span><span class="p">:</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="n">TextNode</span>
-            <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">last_node</span><span class="p">)</span> <span class="o">==</span> <span class="n">TextNode</span>
-            <span class="ow">and</span> <span class="n">last_node</span><span class="o">.</span><span class="n">guard</span> <span class="o">==</span> <span class="n">node</span><span class="o">.</span><span class="n">guard</span>
-        <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="n">TextNode</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">last_node</span><span class="p">)</span> <span class="o">==</span> <span class="n">TextNode</span> <span class="ow">and</span> <span class="n">last_node</span><span class="o">.</span><span class="n">guard</span> <span class="o">==</span> <span class="n">node</span><span class="o">.</span><span class="n">guard</span><span class="p">:</span>
             <span class="n">last_node</span><span class="o">.</span><span class="n">text</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">text</span>
             <span class="c1"># Erase this node by not yielding it.</span>
             <span class="k">continue</span>
@@ -502,16 +468,11 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indent</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lineno</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indent</span><span class="p">)</span>
-                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span>
-                <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"># </span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lineno</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indent</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indent</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"># </span><span class="si">%s</span><span class="s2">:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lineno</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indent</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_text</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lineno</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_lineno</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span>
 </pre></div>
 
           </div>
