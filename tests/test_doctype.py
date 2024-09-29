@@ -9,16 +9,16 @@ XHTML1 = (
 
 
 @pytest.mark.parametrize(
-    ["uri", "name", "rendering_mode", "stringified"],
+    ('uri', 'name', 'rendering_mode', 'stringified'),
     [
-        ["", "html5", "html5", "<!DOCTYPE html>"],
-        [None, "xhtml5", "xml", "<!DOCTYPE html>"],
-        [
+        ("", "html5", "html5", "<!DOCTYPE html>"),
+        (None, "xhtml5", "xml", "<!DOCTYPE html>"),
+        (
             "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd",
             "xhtml1transitional",
             "xml",
             XHTML1,
-        ],
+        ),
     ],
 )
 def test_dtd_by_uri(uri, name, rendering_mode, stringified):

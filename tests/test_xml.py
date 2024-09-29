@@ -64,7 +64,7 @@ class TestExpand(TestCase):
             if node.tagName == "div":
                 node = node.childNodes[0]
                 continue
-            assert node.tagName == tagname, "%s != %s" % (node.tagName, tagname)
+            assert node.tagName == tagname, f"{node.tagName} != {tagname}"
             if attr:
                 assert len(node.attributes) == 1
                 assert node.hasAttribute(attr)
@@ -328,12 +328,10 @@ $i is <py:switch test="i % 4">
                 "<div><div>False</div></div>",
             )
         except XMLTemplateCompileError as e:
-            self.assertTrue(
-                "py:switch directive can only contain py:case and py:else nodes"
-                in str(e)
-            )
+            assert "py:switch directive can only contain py:case and py:else nodes" in str(e)
         else:
-            self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
+            msg = "Should have raised XMLTemplateParseError"
+            raise AssertionError(msg)
 
 
 class TestElse(TestCase):
@@ -348,12 +346,10 @@ class TestElse(TestCase):
                 """<div>False</div>""",
             )
         except XMLTemplateCompileError as e:
-            self.assertTrue(
-                "py:else directive must be inside a py:switch or directly after py:if"
-                in str(e)
-            )
+            assert "py:else directive must be inside a py:switch or directly after py:if" in str(e)
         else:
-            self.assertTrue(False, msg="Should have raised XMLTemplateParseError")
+            msg = "Should have raised XMLTemplateParseError"
+            raise AssertionError(msg)
 
     def test_pyiftag_pyelse_continuation(self):
         perform(
@@ -498,7 +494,7 @@ class TestImport(TestCase):
             }
         )
         tpl = loader.import_("tpl.html")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp
             == """<div>
@@ -544,7 +540,7 @@ class TestImport(TestCase):
             }
         )
         tpl = loader.import_("tpl.html")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp
             == """<div>
@@ -578,7 +574,7 @@ class TestImport(TestCase):
             }
         )
         tpl = loader.import_("tpl.html")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == "<html><body><p>This is the body</p>\n"
             "<p>The included template must also access Kajiki globals and "
@@ -615,7 +611,7 @@ class TestImport(TestCase):
             }
         )
         tpl = loader.import_("tpl.html")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == "<!DOCTYPE html>\n<html><body><p>This is the body</p>\n"
             "<p>The included template must also access Kajiki globals and "
@@ -658,7 +654,7 @@ ${parent.body()}
             }
         )
         tpl = loader.import_("child.html")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp
             == """<div>
@@ -691,9 +687,9 @@ child.id() = <span>mid</span>
             }
         )
         tpl = loader.import_("child.html")
-        rsp = tpl(dict(p=0)).render()
+        rsp = tpl({"p": 0}).render()
         assert rsp == "<div><span>Parent 0</span></div>", rsp
-        rsp = tpl(dict(p=1)).render()
+        rsp = tpl({"p": 1}).render()
         assert rsp == "<div><span>Parent 1</span></div>", rsp
 
     def test_block(self):
@@ -939,15 +935,15 @@ class TestAttributes(TestCase):
 
     def test_strip(self):
         TPL = '<div><h1 py:strip="header">Header</h1></div>'
-        perform(TPL, "<div>Header</div>", context=dict(header=True))
-        perform(TPL, "<div><h1>Header</h1></div>", context=dict(header=False))
+        perform(TPL, "<div>Header</div>", context={"header": True})
+        perform(TPL, "<div><h1>Header</h1></div>", context={"header": False})
         TPL = """<div><p py:strip="">It's...</p></div>"""
         perform(TPL, "<div>It's...</div>")
 
     def test_html_attrs(self):
         TPL = '<input type="checkbox" checked="$checked"/>'
-        context0 = dict(checked=None)
-        context1 = dict(checked=True)
+        context0 = {"checked": None}
+        context1 = {"checked": True}
         perform(TPL, '<input type="checkbox"/>', context0, mode="xml")
         perform(TPL, '<input checked="True" type="checkbox"/>', context1, mode="xml")
         perform(TPL, '<input type="checkbox">', context0, mode="html")
@@ -975,7 +971,7 @@ class TestAttributes(TestCase):
 
     def test_escape_attr_values(self):
         """Escape static and dynamic attribute values."""
-        context = dict(url="https://domain.com/path?a=1&b=2")
+        context = {"url": "https://domain.com/path?a=1&b=2"}
         source = """<a title='"Ha!"' href="$url">Link</a>"""
         output = (
             '<a href="https://domain.com/path?a=1&amp;b=2" '
@@ -991,16 +987,18 @@ class TestDebug(TestCase):
         tpl = loader.import_("debug.html")
         try:
             tpl().render()
-            assert False, "Should have raised ValueError"
+            msg = "Should have raised ValueError"
+            raise AssertionError(msg)
         except ValueError:
             exc_info = sys.exc_info()
             stack = traceback.extract_tb(exc_info[2])
         # Verify we have stack trace entries in the template
-        for fn, lno, func, line in stack:
+        for fn, _lno, _func, _line in stack:
             if fn.endswith("debug.html"):
                 break
         else:
-            assert False, "Stacktrace is all python"
+            msg = "Stacktrace is all python"
+            raise AssertionError(msg)
 
 
 class TestPackageLoader(TestCase):
@@ -1016,17 +1014,17 @@ class TestBuiltinFunctions(TestCase):
 <div py:if="defined('albatross')">$albatross</div>\
 <p py:if="defined('parrot')">$parrot</p></div>""",
             expected_output="<div><p>Bereft of life, it rests in peace</p></div>",
-            context=dict(parrot="Bereft of life, it rests in peace"),
+            context={"parrot": "Bereft of life, it rests in peace"},
         )
 
     def test_value_of(self):
         TPL = "<p>${value_of('albatross', 'Albatross!!!')}</p>"
-        perform(TPL, expected_output="<p>It's</p>", context=dict(albatross="It's"))
+        perform(TPL, expected_output="<p>It's</p>", context={"albatross": "It's"})
         perform(TPL, expected_output="<p>Albatross!!!</p>")
 
     def test_literal(self):
         """Escape by default; literal() marks as safe."""
-        context = dict(albatross="<em>Albatross!!!</em>")
+        context = {"albatross": "<em>Albatross!!!</em>"}
         expected_output = "<p><em>Albatross!!!</em></p>"
         perform("<p>${literal(albatross)}</p>", expected_output, context)
         perform("<p>${Markup(albatross)}</p>", expected_output, context)
@@ -1050,12 +1048,12 @@ class TestTranslation(TestCase):
         for n in _Compiler("<string>", doc).compile():
             text = getattr(n, "text", "")
             if text in ("hello world", "hello style"):
-                self.assertFalse(isinstance(n, TranslatableTextNode))
+                assert not isinstance(n, TranslatableTextNode)
 
         for n in _Compiler("<string>", doc, cdata_scripts=False).compile():
             text = getattr(n, "text", "")
             if text in ("hello world", "hello style"):
-                self.assertFalse(isinstance(n, TranslatableTextNode))
+                assert not isinstance(n, TranslatableTextNode)
 
     def test_extract_translate(self):
         src = """<xml><div>Hi</div><p>
@@ -1075,7 +1073,7 @@ class TestTranslation(TestCase):
             for _, _, msgid, _ in i18n.extract(
                 BytesIO(src.encode("utf-8")), None, None, {"strip_text": strip_text}
             ):
-                messages[msgid] = "TRANSLATED(%s)" % msgid
+                messages[msgid] = f"TRANSLATED({msgid})"
 
             # Provide a fake translation function
             default_gettext = i18n.gettext
@@ -1098,7 +1096,7 @@ class TestTranslation(TestCase):
         for _, _, msgid, _ in i18n.extract(
             BytesIO(src.encode("utf-8")), [], None, {"extract_python": True}
         ):
-            messages[msgid] = "TRANSLATED(%s)" % msgid
+            messages[msgid] = f"TRANSLATED({msgid})"
 
         # Provide a fake translation function
         default_gettext = i18n.gettext
@@ -1119,13 +1117,14 @@ class TestTranslation(TestCase):
         except XMLTemplateCompileError as e:
             assert "_('hi' +)" in str(e)
         else:
-            assert False, "Should have raised"
+            msg = "Should have raised"
+            raise AssertionError(msg)
 
     def test_substituting_gettext_with_lambda(self):
         src = """<xml>hi</xml>"""
         expected = """<xml>spam</xml>"""
 
-        perform(src, expected, context=dict(gettext=lambda x: "spam"))
+        perform(src, expected, context={"gettext": lambda x: "spam"})
 
     def test_substituting_gettext_with_lambda_extending(self):
         loader = MockLoader(
@@ -1137,7 +1136,7 @@ class TestTranslation(TestCase):
             }
         )
         tpl = loader.import_("child.html")
-        rsp = tpl(dict(gettext=lambda _: "egg")).render()
+        rsp = tpl({"gettext": lambda _: "egg"}).render()
         assert rsp == """<div>egg</div><div>egg</div>""", rsp
 
     def test_substituting_gettext_with_lambda_extending_twice(self):
@@ -1153,24 +1152,24 @@ class TestTranslation(TestCase):
             }
         )
         tpl = loader.import_("child.html")
-        rsp = tpl(dict(variable="spam", gettext=lambda _: "egg")).render()
+        rsp = tpl({"variable": "spam", "gettext": lambda _: "egg"}).render()
         # variables must not be translated
         assert rsp == """<div>egg</div><div>spam</div><div>egg</div>""", rsp
 
     def test_substituting_gettext_with_lambda_extending_file(self):
         loader = FileLoader(
             path=os.path.join(os.path.dirname(__file__), "data"),
-            base_globals=dict(gettext=lambda x: "egg"),
+            base_globals={"gettext": lambda x: "egg"},
         )
         tpl = loader.import_("file_child.html")
-        rsp = tpl(dict()).render()
+        rsp = tpl({}).render()
         assert rsp == """<div>egg</div><div>egg</div>""", rsp
 
     def test_without_substituting_gettext_with_lambda_extending_file(self):
         # this should use i18n.gettext
         loader = FileLoader(path=os.path.join(os.path.dirname(__file__), "data"))
         tpl = loader.import_("file_child.html")
-        rsp = tpl(dict()).render()
+        rsp = tpl({}).render()
         assert rsp == """<div>parent</div><div>child</div>""", rsp
 
 
@@ -1181,7 +1180,7 @@ class TestDOMTransformations(TestCase):
         ).parse()
         doc = kajiki.xml_template._DomTransformer(doc, strip_text=False).transform()
         text_data = [n.data for n in doc.firstChild.childNodes]
-        self.assertEqual(["  ", "text", "  "], text_data)
+        assert ["  ", "text", "  "] == text_data
 
     def test_empty_text_extraction_lineno(self):
         doc = kajiki.xml_template._Parser(
@@ -1194,9 +1193,7 @@ class TestDOMTransformations(TestCase):
         ).parse()
         doc = kajiki.xml_template._DomTransformer(doc, strip_text=False).transform()
         linenos = [n.lineno for n in doc.firstChild.childNodes]
-        self.assertEqual(
-            [1, 3, 3], linenos
-        )  # Last node starts on same line as it starts with \n
+        assert [1, 3, 3] == linenos  # Last node starts on same line as it starts with \n
 
 
 class TestErrorReporting(TestCase):
@@ -1211,7 +1208,7 @@ class TestErrorReporting(TestCase):
             except KajikiSyntaxError as exc:
                 assert "-->         for i i range(1, 2):" in str(exc), exc
             else:
-                assert False
+                raise AssertionError
 
     def test_code_error(self):
         for strip_text in (False, True):
@@ -1225,7 +1222,7 @@ class TestErrorReporting(TestCase):
                 last_line = exn_info[-2]
                 assert "${3/0}" in last_line
             else:
-                assert False
+                raise AssertionError
 
 
 class TestBracketsInExpression(TestCase):
@@ -1254,7 +1251,8 @@ class TestBracketsInExpression(TestCase):
     def test_raise_unclosed_string(self):
         try:
             XMLTemplate('<x>${"ciao}</x>')
-            assert False, "must raise"
+            msg = "must raise"
+            raise AssertionError(msg)
         except XMLTemplateCompileError as e:
             # assert "can't compile" in str(e), e  # different between pypy and cpython
             assert '"ciao' in str(e), e
@@ -1262,7 +1260,8 @@ class TestBracketsInExpression(TestCase):
     def test_raise_plus_with_an_operand(self):
         try:
             XMLTemplate('<x>${"ciao" + }</x>')
-            assert False, "must raise"
+            msg = "must raise"
+            raise AssertionError(msg)
         except XMLTemplateCompileError as e:
             assert "detected an invalid python expression" in str(e), e
             assert '"ciao" +' in str(e), e
@@ -1270,14 +1269,16 @@ class TestBracketsInExpression(TestCase):
     def test_unclosed_braced(self):
         try:
             XMLTemplate('<x>${"ciao"</x>')
-            assert False, "must raise"
+            msg = "must raise"
+            raise AssertionError(msg)
         except XMLTemplateCompileError as e:
             assert "Braced expression not terminated" in str(e), e
 
     def test_leading_opening_brace(self):
         try:
             XMLTemplate('<x>${{"a", "b"}</x>')
-            assert False, "must raise"
+            msg = "must raise"
+            raise AssertionError(msg)
         except XMLTemplateCompileError as e:
             assert "Braced expression not terminated" in str(e), e
 
@@ -1296,7 +1297,8 @@ class TestMultipleChildrenInDOM(TestCase):
         except XMLTemplateParseError as e:
             assert "junk after document element" in str(e), e
         else:
-            assert False, "should have raised"
+            msg = "should have raised"
+            raise AssertionError(msg)
 
     def test_only_comment(self):
         try:
@@ -1304,7 +1306,8 @@ class TestMultipleChildrenInDOM(TestCase):
         except XMLTemplateParseError as e:
             assert "no element found" in str(e), e
         else:
-            assert False, "should have raised"
+            msg = "should have raised"
+            raise AssertionError(msg)
 
 
 class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
@@ -1315,7 +1318,8 @@ class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
 ><py:def function="echo(x)">$x</py:def
 >${echo('hello'))}</div>"""
             )
-            assert False, "should raise"
+            msg = "should raise"
+            raise AssertionError(msg)
         except XMLTemplateCompileError:
             pass
 

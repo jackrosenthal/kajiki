@@ -105,15 +105,15 @@ html_theme = "alabaster"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = dict(
-    description="Fast XML and text templates for Python",
-    logo="marlin.png",
-    logo_name=True,
-    github_banner=True,
-    github_button=True,
-    github_user="jackrosenthal",
-    github_repo="kajiki",
-)
+html_theme_options = {
+    "description": "Fast XML and text templates for Python",
+    "logo": "marlin.png",
+    "logo_name": True,
+    "github_banner": True,
+    "github_button": True,
+    "github_user": "jackrosenthal",
+    "github_repo": "kajiki",
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []

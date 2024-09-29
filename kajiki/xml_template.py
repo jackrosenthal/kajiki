@@ -59,8 +59,7 @@ def XMLTemplate(
         autoblocks=autoblocks,
         cdata_scripts=cdata_scripts,
     ).compile()
-    t = template.from_ir(ir_, base_globals=base_globals)
-    return t
+    return template.from_ir(ir_, base_globals=base_globals)
 
 
 def annotate(gen):
@@ -134,8 +133,9 @@ class _Compiler:
             n for n in self.doc.childNodes if not isinstance(n, dom.Comment)
         ]
         if len(templateNodes) != 1:
+            msg = "expected a single root node in document"
             raise XMLTemplateCompileError(
-                "expected a single root node in document", self.doc, self.filename, 0
+                msg, self.doc, self.filename, 0
             )
 
         body = list(self._compile_node(templateNodes[0]))
@@ -176,9 +176,12 @@ class _Compiler:
         if node.hasAttribute("py:autoblock"):
             guard = node.getAttribute("py:autoblock").lower()
             if guard not in ("false", "true"):
-                raise ValueError(
+                msg = (
                     "py:autoblock is evaluated at compile time "
                     "and only accepts True/False constants"
+                )
+                raise ValueError(
+                    msg
                 )
             if guard == "false":
                 # We throw away the attribute so it doesn't remain in rendered nodes.
@@ -209,7 +212,7 @@ class _Compiler:
         elif node.tagName.startswith("py:"):
             # Handle directives
             compiler = getattr(
-                self, "_compile_%s" % node.tagName.split(":")[-1], self._compile_xml
+                self, "_compile_{}".format(node.tagName.split(":")[-1]), self._compile_xml
             )
             return compiler(node)
         else:
@@ -239,9 +242,9 @@ class _Compiler:
             if guard == "":  # py:strip="" means yes, do strip the tag
                 guard = "False"
             else:
-                guard = "not (%s)" % guard
+                guard = f"not ({guard})"
             node.removeAttribute("py:strip")
-        yield ir.TextNode("<%s" % node.tagName, guard)
+        yield ir.TextNode(f"<{node.tagName}", guard)
         for k, v in sorted(node.attributes.items()):
             tc = _TextCompiler(
                 self.filename,
@@ -264,7 +267,7 @@ class _Compiler:
         if content:
             yield ir.TextNode(">", guard)
             yield ir.ExprNode(content)
-            yield ir.TextNode("</%s>" % node.tagName, guard)
+            yield ir.TextNode(f"</{node.tagName}>", guard)
         elif node.childNodes:
             yield ir.TextNode(">", guard)
             if self.cdata_scripts and node.tagName in HTML_CDATA_TAGS:
@@ -297,14 +300,14 @@ class _Compiler:
                 self.mode.startswith("html")
                 and node.tagName in HTML_OPTIONAL_END_TAGS
             ):
-                yield ir.TextNode("</%s>" % node.tagName, guard)
+                yield ir.TextNode(f"</{node.tagName}>", guard)
         elif node.tagName in HTML_REQUIRED_END_TAGS:
-            yield ir.TextNode("></%s>" % node.tagName, guard)
+            yield ir.TextNode(f"></{node.tagName}>", guard)
         elif self.mode.startswith("html"):
             if node.tagName in HTML_OPTIONAL_END_TAGS:
                 yield ir.TextNode(">", guard)
             else:
-                yield ir.TextNode("></%s>" % node.tagName, guard)
+                yield ir.TextNode(f"></{node.tagName}>", guard)
         else:
             yield ir.TextNode("/>", guard)
 
@@ -343,8 +346,7 @@ class _Compiler:
         self.is_child = True
         href = node.getAttribute("href")
         yield ir.ExtendNode(href)
-        for x in self._compile_nop(node):
-            yield x
+        yield from self._compile_nop(node)
 
     @annotate
     def _compile_include(self, node):
@@ -367,7 +369,7 @@ class _Compiler:
         self.functions[decl] = body
         if self.is_child:
             parent_block = "parent." + fname
-            body.insert(0, ir.PythonNode(ir.TextNode("parent_block=%s" % parent_block)))
+            body.insert(0, ir.PythonNode(ir.TextNode(f"parent_block={parent_block}")))
         else:
             yield ir.ExprNode(decl)
 
@@ -410,14 +412,13 @@ class _Compiler:
         tc = _TextCompiler(
             self.filename, node.data, node.lineno, compiler_instance=self, **kwargs
         )
-        for x in tc:
-            yield x
+        yield from tc
 
     @annotate
     def _compile_comment(self, node):
         """Convert comments to their intermediate representation."""
         if not node.data.startswith("!"):
-            yield ir.TextNode("<!-- %s -->" % node.data)
+            yield ir.TextNode(f"<!-- {node.data} -->")
 
     @annotate
     def _compile_for(self, node):
@@ -439,9 +440,12 @@ class _Compiler:
             if isinstance(n, ir.TextNode) and not n.text.strip():
                 continue
             elif not isinstance(n, (ir.CaseNode, ir.ElseNode)):
-                raise XMLTemplateCompileError(
+                msg = (
                     "py:switch directive can only contain py:case and py:else nodes "
-                    "and cannot be placed on a tag.",
+                    "and cannot be placed on a tag."
+                )
+                raise XMLTemplateCompileError(
+                    msg,
                     doc=self.doc,
                     filename=self.filename,
                     linen=node.lineno,
@@ -468,9 +472,12 @@ class _Compiler:
             and not node.parentNode.hasAttribute("py:switch")
             and getattr(node.previousSibling, "tagName", "") != "py:if"
         ):
-            raise XMLTemplateCompileError(
+            msg = (
                 "py:else directive must be inside a py:switch or directly after py:if "
-                "without text or spaces in between",
+                "without text or spaces in between"
+            )
+            raise XMLTemplateCompileError(
+                msg,
                 doc=self.doc,
                 filename=self.filename,
                 linen=node.lineno,
@@ -481,8 +488,7 @@ class _Compiler:
     @annotate
     def _compile_nop(self, node):
         for c in node.childNodes:
-            for x in self._compile_node(c):
-                yield x
+            yield from self._compile_node(c)
 
 
 def make_text_node(text, guard=None):
@@ -593,8 +599,9 @@ class _TextCompiler:
             )
             if py_expr(end)[-1] != "}":
                 # for example unclosed strings
+                msg = f"Kajiki can't compile the python expression `{py_expr()[:-1]}`"
                 raise XMLTemplateCompileError(
-                    "Kajiki can't compile the python expression `%s`" % py_expr()[:-1],
+                    msg,
                     doc=self.doc,
                     filename=self.filename,
                     linen=self.lineno,
@@ -605,9 +612,9 @@ class _TextCompiler:
                     compile(py_expr(end - 1), "check_validity", "eval")
                 except SyntaxError:
                     # for example + operators with a single operand
+                    msg = f"Kajiki detected an invalid python expression `{py_expr()[:-1]}`"
                     raise XMLTemplateCompileError(
-                        "Kajiki detected an invalid python expression `%s`"
-                        % py_expr()[:-1],
+                        msg,
                         doc=self.doc,
                         filename=self.filename,
                         linen=self.lineno,
@@ -617,8 +624,9 @@ class _TextCompiler:
             self.pos = end
             return self.expr(py_text)
         else:
+            msg = "Braced expression not terminated"
             raise XMLTemplateCompileError(
-                "Braced expression not terminated",
+                msg,
                 doc=self.doc,
                 filename=self.filename,
                 linen=self.lineno,
@@ -650,7 +658,8 @@ class _Parser(sax.ContentHandler):
         """
         sax.ContentHandler.__init__(self)
         if not isinstance(source, str):
-            raise TypeError("The template source must be a unicode string.")
+            msg = "The template source must be a unicode string."
+            raise TypeError(msg)
         self._els = []
         self._doc = dom.Document()
         self._filename = filename
@@ -743,16 +752,20 @@ class _Parser(sax.ContentHandler):
         return self.characters(html.entities.html5[name])
 
     def startElementNS(self, name, qname, attrs):  # pragma no cover
-        raise NotImplementedError("startElementNS")
+        msg = "startElementNS"
+        raise NotImplementedError(msg)
 
     def endElementNS(self, name, qname):  # pragma no cover
-        raise NotImplementedError("startElementNS")
+        msg = "startElementNS"
+        raise NotImplementedError(msg)
 
     def startPrefixMapping(self, prefix, uri):  # pragma no cover
-        raise NotImplementedError("startPrefixMapping")
+        msg = "startPrefixMapping"
+        raise NotImplementedError(msg)
 
     def endPrefixMapping(self, prefix):  # pragma no cover
-        raise NotImplementedError("endPrefixMapping")
+        msg = "endPrefixMapping"
+        raise NotImplementedError(msg)
 
     # LexicalHandler implementation
     def comment(self, text):

@@ -21,7 +21,7 @@ class TestBasic(TestCase):
 
     def test(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "Hello, Rick\n", rsp
 
 
@@ -47,7 +47,7 @@ class TestSwitch(TestCase):
 
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict()).render()
+        rsp = tpl({}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
@@ -75,7 +75,7 @@ class TestFunction(TestCase):
 
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
@@ -108,7 +108,7 @@ class TestCall(TestCase):
 
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'
@@ -158,7 +158,7 @@ class TestImport(TestCase):
         self.tpl = loader.import_("tpl.txt")
 
     def test_import(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert (
             rsp == "0 is even half of 0 is even\n"
             "1 is odd half of 1 is odd\n"
@@ -191,7 +191,7 @@ class TestInclude(TestCase):
         self.tpl = loader.import_("tpl.txt")
 
     def test_include(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert rsp == "a\n# header\nb\n", rsp
 
 
@@ -256,7 +256,7 @@ class TestExtends(TestCase):
         self.tpl = loader.import_("child.txt")
 
     def test_extends(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert (
             rsp == "# Header name=Rick\n"
             "## Child Body\n"
@@ -292,9 +292,9 @@ class TestDynamicExtends(TestCase):
         self.tpl = loader.import_("child.txt")
 
     def test_extends(self):
-        rsp = self.tpl(dict(p=0)).render()
+        rsp = self.tpl({"p": 0}).render()
         assert rsp == "Parent 0", rsp
-        rsp = self.tpl(dict(p=1)).render()
+        rsp = self.tpl({"p": 1}).render()
         assert rsp == "Parent 1", rsp
 
 

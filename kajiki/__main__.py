@@ -15,8 +15,9 @@ def _kv_pair(pair):
     """
     key, sep, value = pair.partition("=")
     if not sep:
+        msg = f"Expected a KEY=VALUE pair, got {pair}"
         raise argparse.ArgumentTypeError(
-            f"Expected a KEY=VALUE pair, got {pair}"
+            msg
         )
     return key, value
 

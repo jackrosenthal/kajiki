@@ -52,16 +52,16 @@ class _Template:
             context = {}
         self._context = context
         base_globals = self.base_globals or {}
-        self.__globals__ = dict(
-            local=self,
-            self=self,
-            defined=lambda x: x in self.__globals__,
-            literal=literal,
-            Markup=literal,
-            gettext=i18n.gettext,
-            __builtins__=__builtins__,
-            __kj__=kajiki,
-        )
+        self.__globals__ = {
+            "local": self,
+            "self": self,
+            "defined": lambda x: x in self.__globals__,
+            "literal": literal,
+            "Markup": literal,
+            "gettext": i18n.gettext,
+            "__builtins__": __builtins__,
+            "__kj__": kajiki,
+        }
         self.__globals__.update(base_globals)
         for k, v in self.__methods__:
             v = v.bind_instance(self)
@@ -245,7 +245,7 @@ class _Template:
                 if mode.startswith("html") and k in HTML_EMPTY_ATTRS:
                     yield " " + k.lower()
                 else:
-                    yield ' %s="%s"' % (k, self._escape(v))
+                    yield f' {k}="{self._escape(v)}"'
 
     def _collect(self, it):
         result = []
@@ -263,7 +263,7 @@ class _Template:
 
     @classmethod
     def annotate_lnotab(cls, py_to_tpl):
-        for name, meth in cls.__methods__:
+        for _name, meth in cls.__methods__:
             meth.annotate_lnotab(cls.filename, py_to_tpl, dict(py_to_tpl))
 
     def defined(self, name):
@@ -311,7 +311,7 @@ def from_ir(ir_node, base_globals=None):
     or replace default ones
     """
     if base_globals is None:
-        base_globals = dict()
+        base_globals = {}
     py_lines = list(generate_python(ir_node))
     py_text = "\n".join(map(str, py_lines))
     py_linenos = []
@@ -323,7 +323,7 @@ def from_ir(ir_node, base_globals=None):
             py_linenos.append((py_lineno, lno))
             py_lineno += 1
         last_lineno = lno
-    dct = dict(kajiki=kajiki)
+    dct = {"kajiki": kajiki}
     try:
         exec(py_text, dct)
     except (SyntaxError, IndentationError) as e:  # pragma no cover
@@ -358,9 +358,9 @@ class TplFunc:
 
     def __repr__(self):  # pragma no cover
         if self._inst:
-            return "<bound tpl_function %r of %r>" % (self._func.__name__, self._inst)
+            return f"<bound tpl_function {self._func.__name__!r} of {self._inst!r}>"
         else:
-            return "<unbound tpl_function %r>" % (self._func.__name__)
+            return f"<unbound tpl_function {self._func.__name__!r}>"
 
     def __call__(self, *args, **kwargs):
         if self._bound_func is None:
@@ -445,8 +445,7 @@ def patch_code_file_lines(code, filename, firstlineno, lnotab):
 class KajikiTemplateError(Exception):
     def __init__(self, msg, source, filename, linen, coln):
         super().__init__(
-            "[%s:%s] %s\n%s"
-            % (filename, linen, msg, self._get_source_snippet(source, linen))
+            f"[{filename}:{linen}] {msg}\n{self._get_source_snippet(source, linen)}"
         )
         self.filename = filename
         self.linenum = linen

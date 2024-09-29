@@ -74,7 +74,7 @@ class DocumentTypeDeclaration:
             self._cached_str = " ".join(alist) + ">"
         return self._cached_str
 
-    by_uri = dict()  # We store the public DTDs here.
+    by_uri = {}  # We store the public DTDs here.
 
     @classmethod
     def matching(cls, dtd_string):

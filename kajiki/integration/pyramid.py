@@ -105,7 +105,7 @@ class PyramidKajikiLoader(Loader):
             system.update(value)
         except (TypeError, ValueError):
             raise ValueError(
-                "The Kajiki template renderer was passed a " "non-dictionary as value."
+                "The Kajiki template renderer was passed a non-dictionary as value."
             )
         # self._save_template_as_python(template, system, name)  # to debug
         return template(system).render()
@@ -134,12 +134,12 @@ class PyramidKajikiLoader(Loader):
         return self(
             is_fragment=True,
             value=dic,
-            system=dict(
-                renderer_name=renderer_name,
-                request=request or view.request,
-                view=view,
-                context=dic,
-            ),
+            system={
+                "renderer_name": renderer_name,
+                "request": request or view.request,
+                "view": view,
+                "context": dic,
+            },
         )
 
 

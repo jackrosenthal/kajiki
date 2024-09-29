@@ -37,7 +37,7 @@ def main_mocks(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ["filename", "load_path"],
+    ("filename", "load_path"),
     [
         ("filename.txt", "."),
         ("/path/to/filename.xml", "/path/to"),

@@ -60,14 +60,14 @@ class FileLoader(Loader):
         self._autoescape_text = autoescape_text
         self._xml_autoblocks = xml_autoblocks
         self._template_options = template_options
-        self.extension_map = dict(
-            txt=lambda *a, **kw: TextTemplate(
+        self.extension_map = {
+            "txt": lambda *a, **kw: TextTemplate(
                 autoescape=self._autoescape_text, *a, **kw
             ),
-            xml=XMLTemplate,
-            html=lambda *a, **kw: XMLTemplate(mode="html", *a, **kw),
-            html5=lambda *a, **kw: XMLTemplate(mode="html5", *a, **kw),
-        )
+            "xml": XMLTemplate,
+            "html": lambda *a, **kw: XMLTemplate(mode="html", *a, **kw),
+            "html5": lambda *a, **kw: XMLTemplate(mode="html5", *a, **kw),
+        }
 
     def _find_resource(self, name):
         for base in self.path:
@@ -75,7 +75,8 @@ class FileLoader(Loader):
             if path.is_file():
                 return path
 
-        raise FileNotFoundError(f"{name} not found in any of {self.path}")
+        msg = f"{name} not found in any of {self.path}"
+        raise FileNotFoundError(msg)
 
     def _load(self, name, encoding="utf-8", *args, **kwargs):
         """Load a template from file."""
@@ -119,7 +120,8 @@ class PackageLoader(FileLoader):
         package_resource = importlib.resources.files(package)
 
         if package_resource.is_file():
-            raise OSError(f"{package} refers to a module, not a package.")
+            msg = f"{package} refers to a module, not a package."
+            raise OSError(msg)
 
         for resource in package_resource.iterdir():
             if not resource.is_file():
@@ -133,4 +135,5 @@ class PackageLoader(FileLoader):
                 if match_ext == ext:
                     return resource
 
-        raise FileNotFoundError("Unknown template %r" % name)
+        msg = f"Unknown template {name!r}"
+        raise FileNotFoundError(msg)

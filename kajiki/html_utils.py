@@ -1,5 +1,4 @@
-HTML_EMPTY_ATTRS = set(
-    [
+HTML_EMPTY_ATTRS = {
         "checked",
         "disabled",
         "readonly",
@@ -9,10 +8,7 @@ HTML_EMPTY_ATTRS = set(
         "ismap",
         "declare",
         "defer",
-    ]
-)
-HTML_OPTIONAL_END_TAGS = set(
-    ["area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param"]
-)
-HTML_REQUIRED_END_TAGS = set(["script"])
-HTML_CDATA_TAGS = set(("script", "style"))
+    }
+HTML_OPTIONAL_END_TAGS = {"area", "base", "br", "col", "hr", "img", "input", "link", "meta", "param"}
+HTML_REQUIRED_END_TAGS = {"script"}
+HTML_CDATA_TAGS = {"script", "style"}

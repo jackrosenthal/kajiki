@@ -44,14 +44,12 @@ class HierNode(Node):
         self.body = tuple(x for x in body if x is not None)
 
     def body_iter(self):
-        for x in optimize(flattener(map(flattener, self.body))):
-            yield x
+        yield from optimize(flattener(map(flattener, self.body)))
 
     def __iter__(self):
         yield self
         yield IndentNode()
-        for x in self.body_iter():
-            yield x
+        yield from self.body_iter()
         yield DedentNode()
 
 
@@ -108,8 +106,7 @@ class ImportNode(Node):
 
     def py(self):
         yield self.line(
-            "%s = local.__kj__.import_(%r, %r, self.__globals__)"
-            % (self.alias, self.tpl_name, self.alias)
+            f"{self.alias} = local.__kj__.import_({self.tpl_name!r}, {self.alias!r}, self.__globals__)"
         )
 
 
@@ -120,8 +117,7 @@ class IncludeNode(Node):
 
     def py(self):
         yield self.line(
-            "yield local.__kj__.import_(%r, None, self.__globals__).__main__()"
-            % (self.tpl_name)
+            f"yield local.__kj__.import_({self.tpl_name!r}, None, self.__globals__).__main__()"
         )
 
 
@@ -131,7 +127,7 @@ class ExtendNode(Node):
         self.tpl_name = tpl_name
 
     def py(self):
-        yield self.line("yield local.__kj__.extend(%r).__main__()" % (self.tpl_name))
+        yield self.line(f"yield local.__kj__.extend({self.tpl_name!r}).__main__()")
 
 
 class DefNode(HierNode):
@@ -143,7 +139,7 @@ class DefNode(HierNode):
 
     def py(self):
         yield self.line(self.prefix)
-        yield self.line("def %s:" % (self.decl))
+        yield self.line(f"def {self.decl}:")
 
     def __iter__(self):
         yield self
@@ -178,13 +174,12 @@ class CallNode(HierNode):
 
     def py(self):
         yield self.line("@__kj__.flattener.decorate")
-        yield self.line("def %s:" % (self.decl))
+        yield self.line(f"def {self.decl}:")
 
     def __iter__(self):
         yield self
         yield IndentNode()
-        for x in self.body_iter():
-            yield x
+        yield from self.body_iter()
         yield DedentNode()
         yield self.CallTail(self.call)
 
@@ -195,7 +190,7 @@ class ForNode(HierNode):
         self.decl = decl
 
     def py(self):
-        yield self.line("for %s:" % (self.decl))
+        yield self.line(f"for {self.decl}:")
 
 
 class WithNode(HierNode):
@@ -209,7 +204,7 @@ class WithNode(HierNode):
 
         def py(self):
             yield self.line(
-                "(%s,) = local.__kj__.pop_with()" % (",".join(self.var_names),)
+                "({},) = local.__kj__.pop_with()".format(",".join(self.var_names))
             )
             # yield self.line('if %s == (): del %s' % (v, v))
 
@@ -227,16 +222,14 @@ class WithNode(HierNode):
 
     def py(self):
         yield self.line(
-            "local.__kj__.push_with(locals(), [%s])"
-            % (",".join('"%s"' % k for k in self.var_names),)
+            "local.__kj__.push_with(locals(), [{}])".format(",".join(f'"{k}"' for k in self.var_names))
         )
         for k, v in self.vars:
-            yield self.line("%s = %s" % (k, v))
+            yield self.line(f"{k} = {v}")
 
     def __iter__(self):
         yield self
-        for x in self.body_iter():
-            yield x
+        yield from self.body_iter()
         yield self.WithTail(self.var_names)
 
 
@@ -250,13 +243,12 @@ class SwitchNode(HierNode):
         self.decl = decl
 
     def py(self):
-        yield self.line("local.__kj__.push_switch(%s)" % self.decl)
+        yield self.line(f"local.__kj__.push_switch({self.decl})")
         yield self.line("if False: pass")
 
     def __iter__(self):
         yield self
-        for x in self.body_iter():
-            yield x
+        yield from self.body_iter()
         yield self.SwitchTail()
 
 
@@ -266,7 +258,7 @@ class CaseNode(HierNode):
         self.decl = decl
 
     def py(self):
-        yield self.line("elif local.__kj__.case(%s):" % self.decl)
+        yield self.line(f"elif local.__kj__.case({self.decl}):")
 
 
 class IfNode(HierNode):
@@ -275,7 +267,7 @@ class IfNode(HierNode):
         self.decl = decl
 
     def py(self):
-        yield self.line("if %s:" % self.decl)
+        yield self.line(f"if {self.decl}:")
 
 
 class ElseNode(HierNode):
@@ -295,9 +287,9 @@ class TextNode(Node):
         self.guard = guard
 
     def py(self):
-        s = "yield %r" % self.text
+        s = f"yield {self.text!r}"
         if self.guard:
-            yield self.line("if %s: %s" % (self.guard, s))
+            yield self.line(f"if {self.guard}: {s}")
         else:
             yield self.line(s)
 
@@ -305,12 +297,9 @@ class TextNode(Node):
 class TranslatableTextNode(TextNode):
     def py(self):
         text = self.text.strip()
-        if text:
-            s = "yield local.__kj__.gettext(%r)" % self.text
-        else:
-            s = "yield %r" % self.text
+        s = f"yield local.__kj__.gettext({self.text!r})" if text else f"yield {self.text!r}"
         if self.guard:
-            yield self.line("if %s: %s" % (self.guard, s))
+            yield self.line(f"if {self.guard}: {s}")
         else:
             yield self.line(s)
 
@@ -327,9 +316,9 @@ class ExprNode(Node):
 
     def py(self):
         if self.safe:
-            yield self.line("yield %s" % self.text)
+            yield self.line(f"yield {self.text}")
         else:
-            yield self.line("yield self.__kj__.escape(%s)" % self.text)
+            yield self.line(f"yield self.__kj__.escape({self.text})")
 
 
 class AttrNode(HierNode):
@@ -343,12 +332,11 @@ class AttrNode(HierNode):
         def py(self):
             gen = self.p.genname
             x = gen_name()
-            yield self.line("%s = self.__kj__.collect(%s())" % (gen, gen))
+            yield self.line(f"{gen} = self.__kj__.collect({gen}())")
             yield self.line(
-                "for %s in self.__kj__.render_attrs({%r:%s}, %r):"
-                % (x, self.p.attr, gen, self.p.mode)
+                f"for {x} in self.__kj__.render_attrs({{{self.p.attr!r}:{gen}}}, {self.p.mode!r}):"
             )
-            yield self.line("    yield %s" % x)
+            yield self.line(f"    yield {x}")
 
     def __init__(self, attr, value, guard=None, mode="xml"):
         super().__init__(value)
@@ -358,21 +346,19 @@ class AttrNode(HierNode):
         self.genname = gen_name()
 
     def py(self):
-        yield self.line("def %s():" % self.genname)
+        yield self.line(f"def {self.genname}():")
 
     def __iter__(self):
         if self.guard:
             new_body = IfNode(
                 self.guard, AttrNode(self.attr, value=self.body, mode=self.mode)
             )
-            for x in new_body:
-                yield x
+            yield from new_body
         else:
             yield self
             yield IndentNode()
             if self.body:
-                for part in self.body_iter():
-                    yield part
+                yield from self.body_iter()
             else:
                 yield TextNode("")
             yield DedentNode()
@@ -391,13 +377,12 @@ class AttrsNode(Node):
 
         def _body():
             yield self.line(
-                "for %s in self.__kj__.render_attrs(%s, %r):"
-                % (x, self.attrs, self.mode)
+                f"for {x} in self.__kj__.render_attrs({self.attrs}, {self.mode!r}):"
             )
-            yield self.line("    yield %s" % x)
+            yield self.line(f"    yield {x}")
 
         if self.guard:
-            yield self.line("if %s:" % self.guard)
+            yield self.line(f"if {self.guard}:")
             for line in _body():
                 yield line.indent()
         else:
@@ -475,4 +460,4 @@ class PyLine:
             return (" " * self._indent) + self._text
 
     def __repr__(self):
-        return "%s:%s %s" % (self._filename, self._lineno, self)
+        return f"{self._filename}:{self._lineno} {self}"

@@ -11,5 +11,5 @@ DIRECTIVES = [
     ("block", "name"),
     ("extends", "href"),
 ]
-QDIRECTIVES = [("py:%s" % (k,), v) for k, v in DIRECTIVES]
+QDIRECTIVES = [(f"py:{k}", v) for k, v in DIRECTIVES]
 QDIRECTIVES_DICT = dict(QDIRECTIVES)

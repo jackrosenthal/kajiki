@@ -176,6 +176,7 @@ class _Scanner:
                 text = self.source[self.pos : self.pos + text_len - 1]
                 self.pos += text_len
                 return self.expr(text)
+        return None
 
 
 class _Parser:
@@ -223,11 +224,11 @@ class _Parser:
                     if token.tagname in stoptags:
                         yield token
                         break
-                    parser = getattr(self, "_parse_%s" % token.tagname)
+                    parser = getattr(self, f"_parse_{token.tagname}")
                     yield parser(token)
                 else:
-                    msg = "Parse error: %r unexpected" % token
-                    assert False, msg
+                    msg = f"Parse error: {token!r} unexpected"
+                    raise AssertionError(msg)
             except StopIteration:
                 yield None
                 break
@@ -250,7 +251,7 @@ class _Parser:
         call = token.body[e + 1 :].strip()
         body = list(self._parse_body("end"))
         return ir.CallNode(
-            "$caller%s" % arglist, call.replace("%caller", "$caller"), *body[:-1]
+            f"$caller{arglist}", call.replace("%caller", "$caller"), *body[:-1]
         )
 
     def _parse_if(self, token):
@@ -302,10 +303,7 @@ class _Parser:
 
     def _parse_py(self, token):
         body = token.body.strip()
-        if body:
-            body = [ir.TextNode(body), None]
-        else:
-            body = list(self._parse_body("end"))
+        body = [ir.TextNode(body), None] if body else list(self._parse_body("end"))
         node = ir.PythonNode(*body[:-1])
         if node.module_level:
             self.mod_py.append(node)
@@ -320,7 +318,7 @@ class _Parser:
         self.functions[decl] = body
         if self._is_child:
             parent_block = "parent." + fname
-            body.insert(0, ir.PythonNode(ir.TextNode("parent_block=%s" % parent_block)))
+            body.insert(0, ir.PythonNode(ir.TextNode(f"parent_block={parent_block}")))
             return None
         else:
             return ir.ExprNode(decl)
@@ -333,7 +331,7 @@ class _Token:
         self.text = text
 
     def __repr__(self):  # pragma no cover
-        return "<%s %r>" % (self.__class__.__name__, self.text)
+        return f"<{self.__class__.__name__} {self.text!r}>"
 
 
 class _Expr(_Token):

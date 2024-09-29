@@ -11,7 +11,7 @@ GOLDEN = DATA / "golden"
 
 
 @pytest.mark.parametrize(
-    ["args", "golden_file"],
+    ("args", "golden_file"),
     [
         (["-p", "kajiki_test_data.kitchensink"], "kitchensink1.html"),
         ([str(DATA / "kitchensink.html")], "kitchensink1.html"),

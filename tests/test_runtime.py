@@ -17,7 +17,7 @@ class TestBasic(TestCase):
         self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert rsp == "Hello,Rick\n", rsp
 
 
@@ -46,8 +46,8 @@ class TestFunction(TestCase):
     def setUp(self):
         class tpl:
             @kajiki.expose
-            def evenness(n):
-                if n % 2 == 0:
+            def evenness(self):
+                if self % 2 == 0:
                     yield "even"
                 else:
                     yield "odd"
@@ -63,7 +63,7 @@ class TestFunction(TestCase):
         self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
@@ -71,12 +71,12 @@ class TestCall(TestCase):
     def setUp(self):
         class tpl:
             @kajiki.expose
-            def quote(caller, speaker):
+            def quote(self, speaker):
                 for i in range(2):
                     yield "Quoth "
                     yield speaker
                     yield ', "'
-                    yield caller(i)
+                    yield self(i)
                     yield '."\n'
 
             @kajiki.expose
@@ -92,7 +92,7 @@ class TestCall(TestCase):
         self.tpl = kajiki.Template(tpl)
 
     def test_basic(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'
@@ -103,18 +103,18 @@ class TestImport(TestCase):
     def setUp(self):
         class lib_undec:
             @kajiki.expose
-            def evenness(n):
-                if n % 2 == 0:
+            def evenness(self):
+                if self % 2 == 0:
                     yield "even"
                 else:
                     yield "odd"
 
             @kajiki.expose
-            def half_evenness(n):
+            def half_evenness(self):
                 yield " half of "
-                yield local.__kj__.escape(n)
+                yield local.__kj__.escape(self)
                 yield " is "
-                yield evenness(n / 2)
+                yield evenness(self / 2)
 
         lib = kajiki.Template(lib_undec)
 
@@ -132,7 +132,7 @@ class TestImport(TestCase):
         self.tpl = kajiki.Template(tpl)
 
     def test_import(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert (
             rsp == "0 is even half of 0 is even\n"
             "1 is odd half of 1 is odd\n"
@@ -161,7 +161,7 @@ class TestInclude(TestCase):
         self.tpl = tpl
 
     def test_include(self):
-        rsp = self.tpl(dict(name="Rick")).render()
+        rsp = self.tpl({"name": "Rick"}).render()
         assert rsp == "a\n# header\nb\n", rsp
 
 
@@ -234,7 +234,7 @@ class TestExtends(TestCase):
         _self.child_tpl = child_tpl
 
     def test_extends(self):
-        rsp = self.child_tpl(dict(name="Rick")).render()
+        rsp = self.child_tpl({"name": "Rick"}).render()
         assert (
             rsp == "# Header name=Rick\n"
             "## Child Body\n"
@@ -273,9 +273,9 @@ class TestDynamicExtends(TestCase):
         _self.child_tpl = kajiki.Template(child_tpl)
 
     def test_extends(self):
-        rsp = self.child_tpl(dict(p=0)).render()
+        rsp = self.child_tpl({"p": 0}).render()
         assert rsp == "Parent 0", rsp
-        rsp = self.child_tpl(dict(p=1)).render()
+        rsp = self.child_tpl({"p": 1}).render()
         assert rsp == "Parent 1", rsp
 
 

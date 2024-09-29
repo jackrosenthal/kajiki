@@ -24,22 +24,22 @@ class TestBasic(TestCase):
 
     def test_expr_brace(self):
         tpl = TextTemplate(source="Hello, ${name}\n")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "Hello, Rick\n", rsp
 
     def test_expr_None(self):
         tpl = TextTemplate(source="Hello, ${name}\n")
-        rsp = tpl(dict(name=None)).render()
+        rsp = tpl({"name": None}).render()
         assert rsp == "Hello, \n", rsp
 
     def test_expr_brace_complex(self):
         tpl = TextTemplate(source="Hello, ${{'name':name}['name']}\n")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "Hello, Rick\n", rsp
 
     def test_expr_name(self):
         tpl = TextTemplate(source="Hello, $name\n")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "Hello, Rick\n", rsp
         tpl = TextTemplate(source="Hello, $obj.name\n")
 
@@ -47,7 +47,7 @@ class TestBasic(TestCase):
             pass
 
         Empty.name = "Rick"
-        rsp = tpl(dict(obj=Empty)).render()
+        rsp = tpl({"obj": Empty}).render()
         assert rsp == "Hello, Rick\n", rsp
 
     def test_expr_multiline(self):
@@ -66,7 +66,7 @@ class TestSwitch(TestCase):
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 %end"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
     def test_ljust(self):
@@ -75,14 +75,14 @@ $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 $i is {%switch i % 2 %}{%case 0%}even\n{%else%}odd\n{%end%}\\
 %end"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
         tpl = TextTemplate(
             """     {%-for i in range(2)%}\\
 $i is {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}
     {%-end%}"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
     def test_rstrip(self):
@@ -91,7 +91,7 @@ $i is {%switch i % 2 %}{%case 0%}even{%else%}odd{%end%}
 $i is {%switch i % 2 %}{%case 0-%}    even\n{%else%}odd\n{%end%}\\
 %end"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
@@ -106,7 +106,7 @@ $i is ${evenness(i)}
 %end
 """
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "0 is even\n1 is odd\n", rsp
 
 
@@ -122,7 +122,7 @@ Quoth $speaker, "${caller(i)}."
 Nevermore $n\\
 %end"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == 'Quoth the raven, "Nevermore 0."\n'
             'Quoth the raven, "Nevermore 1."\n'
@@ -151,7 +151,7 @@ $i is ${simple_function.evenness(i)}${simple_function.half_evenness(i)}
         )
         loader = MockLoader({"lib.txt": lib, "tpl.txt": tpl})
         tpl = loader.import_("tpl.txt")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == "0 is even half of 0 is even\n"
             "1 is odd half of 1 is odd\n"
@@ -180,7 +180,7 @@ $i is ${lib.evenness(i)}${lib.half_evenness(i)}
         )
         loader = MockLoader({"lib.txt": lib, "tpl.txt": tpl})
         tpl = loader.import_("tpl.txt")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == "0 is even half of 0 is even\n"
             "1 is odd half of 1 is odd\n"
@@ -201,7 +201,7 @@ b
             }
         )
         tpl = loader.import_("tpl.txt")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "a\n# header\nb\n", rsp
 
 
@@ -247,7 +247,7 @@ ${parent.body()}\\
         )
         loader = MockLoader({"parent.txt": parent, "mid.txt": mid, "child.txt": child})
         tpl = loader.import_("child.txt")
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert (
             rsp == "# Header name=Rick\n"
             "## Child Body\n"
@@ -275,9 +275,9 @@ ${parent.body()}\\
             }
         )
         tpl = loader.import_("child.txt")
-        rsp = tpl(dict(p=0)).render()
+        rsp = tpl({"p": 0}).render()
         assert rsp == "Parent 0", rsp
-        rsp = tpl(dict(p=1)).render()
+        rsp = tpl({"p": 1}).render()
         assert rsp == "Parent 1", rsp
 
     def test_block(self):
@@ -341,7 +341,7 @@ ${inner(x*2)}\\
 ${add(5)}
 """
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "15\n", rsp
 
 
@@ -353,7 +353,7 @@ import os
 %end
 ${os.path.join('a','b','c')}"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "a/b/c"
 
     def test_indent(self):
@@ -364,7 +364,7 @@ ${os.path.join('a','b','c')}"""
 %end
 ${os.path.join('a','b','c')}"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "a/b/c"
 
     def test_short(self):
@@ -372,7 +372,7 @@ ${os.path.join('a','b','c')}"""
             """%py import os
 ${os.path.join('a','b','c')}"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "a/b/c"
 
     def test_mod(self):
@@ -383,7 +383,7 @@ ${os.path.join('a','b','c')}\\
 %end
 ${test()}"""
         )
-        rsp = tpl(dict(name="Rick")).render()
+        rsp = tpl({"name": "Rick"}).render()
         assert rsp == "a/b/c"
 
 
@@ -397,13 +397,15 @@ class TestDebug(TestCase):
             exc_info = sys.exc_info()
             stack = traceback.extract_tb(exc_info[2])
         else:
-            assert False, "Should have raised ValueError"
+            msg = "Should have raised ValueError"
+            raise AssertionError(msg)
         # Verify we have stack trace entries in the template
-        for fn, lno, func, line in stack:
+        for fn, _lno, _func, _line in stack:
             if fn.endswith("debug.txt"):
                 break
         else:
-            assert False, "Stacktrace is all python"
+            msg = "Stacktrace is all python"
+            raise AssertionError(msg)
 
 
 if __name__ == "__main__":
