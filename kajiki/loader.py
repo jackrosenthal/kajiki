@@ -2,7 +2,7 @@ import importlib.resources
 import os
 from pathlib import Path
 
-from .util import default_alias_for
+from kajiki.util import default_alias_for
 
 
 class Loader:

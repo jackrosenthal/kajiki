@@ -7,10 +7,10 @@ from xml import sax
 from xml.dom import minidom as dom
 from xml.sax import SAXParseException
 
-from . import ir, template
-from .doctype import DocumentTypeDeclaration, extract_dtd
-from .html_utils import HTML_CDATA_TAGS, HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS
-from .markup_template import QDIRECTIVES, QDIRECTIVES_DICT
+from kajiki import ir, template
+from kajiki.doctype import DocumentTypeDeclaration, extract_dtd
+from kajiki.html_utils import HTML_CDATA_TAGS, HTML_OPTIONAL_END_TAGS, HTML_REQUIRED_END_TAGS
+from kajiki.markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 
 impl = dom.getDOMImplementation(" ")
 

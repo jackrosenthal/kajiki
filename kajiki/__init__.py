@@ -1,10 +1,10 @@
 """Kajiki public API."""
 
-from .loader import FileLoader, MockLoader, PackageLoader
-from .template import Template
-from .text import TextTemplate
-from .util import expose, flattener
-from .xml_template import XMLTemplate
+from kajiki.loader import FileLoader, MockLoader, PackageLoader
+from kajiki.template import Template
+from kajiki.text import TextTemplate
+from kajiki.util import expose, flattener
+from kajiki.xml_template import XMLTemplate
 
 __all__ = [
     "expose",

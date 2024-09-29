@@ -34,8 +34,8 @@ from pyramid.interfaces import IRenderer, ITemplateRenderer
 from pyramid.resource import abspath_from_resource_spec
 from zope.interface import implementer
 
-from .. import XMLTemplate
-from ..loader import Loader
+from kajiki import XMLTemplate
+from kajiki.loader import Loader
 
 
 def includeme(config):

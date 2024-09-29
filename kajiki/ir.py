@@ -1,7 +1,7 @@
 import re
 from itertools import chain
 
-from .util import default_alias_for, flattener, gen_name, window
+from kajiki.util import default_alias_for, flattener, gen_name, window
 
 
 def generate_python(ir):

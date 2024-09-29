@@ -7,12 +7,10 @@ from sys import version_info
 import linetable
 
 import kajiki
-from kajiki import i18n
-
-from . import lnotab
-from .html_utils import HTML_EMPTY_ATTRS
-from .ir import generate_python
-from .util import flattener, literal
+from kajiki import i18n, lnotab
+from kajiki.html_utils import HTML_EMPTY_ATTRS
+from kajiki.ir import generate_python
+from kajiki.util import flattener, literal
 
 
 class _obj:
