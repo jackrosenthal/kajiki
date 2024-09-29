@@ -103,11 +103,10 @@ class _Scanner:
             elif groups["tag_bare_invalid"] is not None:
                 continue
             else:
-                msg = "Syntax error %s:%s" % (self.filename, self.lineno)
-                for i, line in enumerate(self.source.splitlines()):
-                    print("%3d %s" % (i + 1, line))
-                print(msg)
-                assert False, groups
+                msg = f"Syntax error {self.filename}:{self.lineno}"
+                for i, line in enumerate(self.source.splitlines(), 1):
+                    msg += f"{i:3} {line}\n"
+                raise SyntaxError(msg)
         if self.pos != len(source):
             yield self.text(source[self.pos :])
 
@@ -228,7 +227,7 @@ class _Parser:
                     yield parser(token)
                 else:
                     msg = f"Parse error: {token!r} unexpected"
-                    raise AssertionError(msg)
+                    raise SyntaxError(msg)
             except StopIteration:
                 yield None
                 break
