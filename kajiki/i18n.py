@@ -44,4 +44,4 @@ def extract(fileobj, keywords, comment_tags, options):
                 ):
                     yield (node.lineno, e[1], e[2], e[3])
             except (TokenError, SyntaxError) as e:
-                raise KajikiSyntaxError(e, source, "<string>", node.lineno, 0)
+                raise KajikiSyntaxError(e, source, "<string>", node.lineno, 0) from e

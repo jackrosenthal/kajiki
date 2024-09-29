@@ -325,7 +325,7 @@ def from_ir(ir_node, base_globals=None):
     try:
         exec(py_text, dct)
     except (SyntaxError, IndentationError) as e:  # pragma no cover
-        raise KajikiSyntaxError(e.msg, py_text, e.filename, e.lineno, e.offset)
+        raise KajikiSyntaxError(e.msg, py_text, e.filename, e.lineno, e.offset) from e
     tpl = dct["template"]
     tpl.base_globals = base_globals.copy()
     tpl.base_globals.update(dct)

@@ -181,9 +181,7 @@ class _Compiler:
                     "py:autoblock is evaluated at compile time "
                     "and only accepts True/False constants"
                 )
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
             if guard == "false":
                 # We throw away the attribute so it doesn't remain in rendered nodes.
                 node.removeAttribute("py:autoblock")
@@ -605,7 +603,7 @@ class _TextCompiler:
                     doc=self.doc,
                     filename=self.filename,
                     linen=self.lineno,
-                )
+                ) from None
 
             # if the expression ends in a } then it may be valid
             try:
@@ -618,7 +616,7 @@ class _TextCompiler:
                     doc=self.doc,
                     filename=self.filename,
                     linen=self.lineno,
-                )
+                ) from None
 
             py_text = py_expr(end - 1)
             self.pos = end
@@ -691,15 +689,13 @@ class _Parser(sax.ContentHandler):
         try:
             parser.parse(source)
         except SAXParseException as e:
-            exc = XMLTemplateParseError(
+            raise XMLTemplateParseError(
                 e.getMessage(),
                 self._source,
                 self._filename,
                 e.getLineNumber(),
                 e.getColumnNumber(),
-            )
-            exc.__cause__ = None
-            raise exc
+            ) from None
 
         self._doc._source = self._source
         return self._doc
