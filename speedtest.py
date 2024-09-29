@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# ruff: noqa: T201
+
 import time
 from collections import defaultdict
 from contextlib import contextmanager
@@ -17,40 +19,30 @@ def timing(s):
     start = time.time()
     yield
     elapsed = time.time() - start
-    print("%s: %s s" % (s, elapsed))
+    print(f"{s}: {elapsed} s")
     timings[s] += elapsed
 
 
 with timing("compile.kajiki"):
     fpt = XMLTemplate(filename=FN)
-    # fpt.compile()
-with timing("compile.genshi"):
-    gt = MarkupTemplate(open(FN))
+with timing("compile.genshi"), open(FN) as f:
+    gt = MarkupTemplate(f)
 with timing("render.100.kajiki"):
-    fpt(dict(size=100)).render()
+    fpt({"size": 100}).render()
 with timing("render.100.genshi"):
     gt.generate(size=100).render()
 with timing("render.100.kajiki"):
-    fpt(dict(size=100)).render()
+    fpt({"size": 100}).render()
 with timing("render.100.genshi"):
     gt.generate(size=100).render()
 with timing("render.100.kajiki"):
-    fpt(dict(size=100)).render()
+    fpt({"size": 100}).render()
 with timing("render.100.genshi"):
     gt.generate(size=100).render()
 with timing("render.500.kajiki"):
-    fpt(dict(size=500)).render()
+    fpt({"size": 500}).render()
 with timing("render.500.genshi"):
     gt.generate(size=500).render()
-print(
-    "Compile kajiki speedup: %s"
-    % (timings["compile.genshi"] / timings["compile.kajiki"])
-)
-print(
-    "Render 100 kajiki speedup: %s"
-    % (timings["render.100.genshi"] / timings["render.100.kajiki"])
-)
-print(
-    "Render 500 kajiki speedup: %s"
-    % (timings["render.500.genshi"] / timings["render.500.kajiki"])
-)
+print("Compile kajiki speedup:", timings["compile.genshi"] / timings["compile.kajiki"])
+print("Render 100 kajiki speedup:", timings["render.100.genshi"] / timings["render.100.kajiki"])
+print("Render 500 kajiki speedup:", timings["render.500.genshi"] / timings["render.500.kajiki"])
