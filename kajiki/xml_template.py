@@ -16,15 +16,15 @@ from kajiki.markup_template import QDIRECTIVES, QDIRECTIVES_DICT
 impl = dom.getDOMImplementation(" ")
 
 
-def XMLTemplate(
+def XMLTemplate(  # noqa: N802
     source=None,
     filename=None,
     mode=None,
-    is_fragment=False,
+    is_fragment=False,  # noqa: FBT002
     encoding="utf-8",
     autoblocks=None,
-    cdata_scripts=True,
-    strip_text=False,
+    cdata_scripts=True,  # noqa: FBT002
+    strip_text=False,  # noqa: FBT002
     base_globals=None,
 ):
     """Given XML source code of a Kajiki Templates parses and returns
@@ -84,9 +84,9 @@ class _Compiler:
         filename,
         doc,
         mode=None,
-        is_fragment=False,
+        is_fragment=False,  # noqa: FBT002
         autoblocks=None,
-        cdata_scripts=True,
+        cdata_scripts=True,  # noqa: FBT002
     ):
         self.filename = filename
         self.doc = doc
@@ -101,7 +101,7 @@ class _Compiler:
         self.is_child = False
         # The rendering mode is either specified in the *mode* argument,
         # or inferred from the DTD:
-        self._dtd = DocumentTypeDeclaration.matching(self.doc._dtd)
+        self._dtd = DocumentTypeDeclaration.matching(self.doc._dtd)  # noqa: SLF001
         if mode:
             self.mode = mode
         elif self._dtd:
@@ -130,20 +130,18 @@ class _Compiler:
             registries of the compiler ``compile`` should
             never be called twice or might lead to unexpected results.
         """
-        templateNodes = [
+        templateNodes = [  # noqa: N806
             n for n in self.doc.childNodes if not isinstance(n, dom.Comment)
         ]
         if len(templateNodes) != 1:
             msg = "expected a single root node in document"
-            raise XMLTemplateCompileError(
-                msg, self.doc, self.filename, 0
-            )
+            raise XMLTemplateCompileError(msg, self.doc, self.filename, 0)
 
         body = list(self._compile_node(templateNodes[0]))
         # Never emit doctypes on fragments
         if not self.is_fragment and not self.is_child:
-            if self.doc._dtd:
-                dtd = self.doc._dtd
+            if self.doc._dtd:  # noqa: SLF001
+                dtd = self.doc._dtd  # noqa: SLF001
             elif self.mode == "html5":
                 dtd = "<!DOCTYPE html>"
             else:
@@ -177,10 +175,7 @@ class _Compiler:
         if node.hasAttribute("py:autoblock"):
             guard = node.getAttribute("py:autoblock").lower()
             if guard not in ("false", "true"):
-                msg = (
-                    "py:autoblock is evaluated at compile time "
-                    "and only accepts True/False constants"
-                )
+                msg = "py:autoblock is evaluated at compile time " "and only accepts True/False constants"
                 raise ValueError(msg)
             if guard == "false":
                 # We throw away the attribute so it doesn't remain in rendered nodes.
@@ -210,9 +205,7 @@ class _Compiler:
             return self._compile_block(node)
         if node.tagName.startswith("py:"):
             # Handle directives
-            compiler = getattr(
-                self, "_compile_{}".format(node.tagName.split(":")[-1]), self._compile_xml
-            )
+            compiler = getattr(self, "_compile_{}".format(node.tagName.split(":")[-1]), self._compile_xml)
             return compiler(node)
         return self._compile_xml(node)
 
@@ -237,7 +230,7 @@ class _Compiler:
         content = attrs = guard = None
         if node.hasAttribute("py:strip"):
             guard = node.getAttribute("py:strip")
-            if guard == "":  # py:strip="" means yes, do strip the tag
+            if guard == "":  # py:strip="" means yes, do strip the tag  # noqa: SIM108
                 guard = "False"
             else:
                 guard = f"not ({guard})"
@@ -252,7 +245,7 @@ class _Compiler:
                 in_html_attr=True,
                 compiler_instance=self,
             )
-            v = list(tc)
+            v = list(tc)  # noqa: PLW2901
             if k == "py:content":
                 content = node.getAttribute("py:content")
                 continue
@@ -277,11 +270,9 @@ class _Compiler:
                     # CDATA for scripts and styles are automatically managed.
                     if getattr(child, "_cdata", False):
                         continue
-                    assert isinstance(child, dom.Text)
+                    assert isinstance(child, dom.Text)  # noqa: S101
                     for x in self._compile_text(child):
-                        if (
-                            child.escaped
-                        ):  # If user declared CDATA no escaping happened.
+                        if child.escaped:  # If user declared CDATA no escaping happened.
                             x.text = html.unescape(x.text)
                         yield x
                 if self.mode == "xml":  # Finish escaping
@@ -294,10 +285,7 @@ class _Compiler:
                         continue
                     for x in self._compile_node(cn):
                         yield x
-            if not (
-                self.mode.startswith("html")
-                and node.tagName in HTML_OPTIONAL_END_TAGS
-            ):
+            if not (self.mode.startswith("html") and node.tagName in HTML_OPTIONAL_END_TAGS):
                 yield ir.TextNode(f"</{node.tagName}>", guard)
         elif node.tagName in HTML_REQUIRED_END_TAGS:
             yield ir.TextNode(f"></{node.tagName}>", guard)
@@ -393,11 +381,7 @@ class _Compiler:
             defn = "$caller(" + node.childNodes[0].getAttribute("args") + ")"
         else:
             defn = "$caller()"
-        yield ir.CallNode(
-            defn,
-            node.getAttribute("function").replace("%caller", "$caller"),
-            *self._compile_nop(node)
-        )
+        yield ir.CallNode(defn, node.getAttribute("function").replace("%caller", "$caller"), *self._compile_nop(node))
 
     @annotate
     def _compile_text(self, node):
@@ -407,9 +391,7 @@ class _Compiler:
             # script and style should always be untranslatable.
             kwargs["node_type"] = ir.TextNode
 
-        tc = _TextCompiler(
-            self.filename, node.data, node.lineno, compiler_instance=self, **kwargs
-        )
+        tc = _TextCompiler(self.filename, node.data, node.lineno, compiler_instance=self, **kwargs)
         yield from tc
 
     @annotate
@@ -438,10 +420,7 @@ class _Compiler:
             if isinstance(n, ir.TextNode) and not n.text.strip():
                 continue
             elif not isinstance(n, (ir.CaseNode, ir.ElseNode)):
-                msg = (
-                    "py:switch directive can only contain py:case and py:else nodes "
-                    "and cannot be placed on a tag."
-                )
+                msg = "py:switch directive can only contain py:case and py:else nodes " "and cannot be placed on a tag."
                 raise XMLTemplateCompileError(
                     msg,
                     doc=self.doc,
@@ -512,7 +491,7 @@ class _TextCompiler:
         source,
         lineno,
         node_type=make_text_node,
-        in_html_attr=False,
+        in_html_attr=False,  # noqa: FBT002
         compiler_instance=None,
     ):
         self.filename = filename
@@ -589,11 +568,7 @@ class _TextCompiler:
         except SyntaxError as se:
             end = sum(
                 [self.pos, se.offset]
-                + [
-                    len(line) + 1
-                    for idx, line in enumerate(py_expr().splitlines())
-                    if idx < se.lineno - 1
-                ]
+                + [len(line) + 1 for idx, line in enumerate(py_expr().splitlines()) if idx < se.lineno - 1]
             )
             if py_expr(end)[-1] != "}":
                 # for example unclosed strings
@@ -662,14 +637,14 @@ class _Parser(sax.ContentHandler):
         self._doc = dom.Document()
         self._filename = filename
         # Store the original DTD in the document for the compiler to use later
-        self._doc._dtd, position, source = extract_dtd(source)
+        self._doc._dtd, position, source = extract_dtd(source)  # noqa: SLF001
         # Use our own DTD just for XML parsing
         self._source = source[:position] + self.DTD + source[position:]
         self._cdata_stack = []
 
     def parse(self):
         """Parse an XML/HTML document to its DOM representation."""
-        self._parser = parser = sax.make_parser()
+        self._parser = parser = sax.make_parser()  # noqa: S317
         parser.setFeature(sax.handler.feature_external_pes, False)
         parser.setFeature(sax.handler.feature_external_ges, False)
         parser.setFeature(sax.handler.feature_namespaces, False)
@@ -690,14 +665,14 @@ class _Parser(sax.ContentHandler):
                 e.getColumnNumber(),
             ) from None
 
-        self._doc._source = self._source
+        self._doc._source = self._source  # noqa: SLF001
         return self._doc
 
     # ContentHandler implementation
-    def startDocument(self):
+    def startDocument(self):  # noqa: N802
         self._els.append(self._doc)
 
-    def startElement(self, name, attrs):
+    def startElement(self, name, attrs):  # noqa: N802
         el = self._doc.createElement(name)
         el.lineno = self._parser.getLineNumber()
         for k, v in attrs.items():
@@ -705,9 +680,9 @@ class _Parser(sax.ContentHandler):
         self._els[-1].appendChild(el)
         self._els.append(el)
 
-    def endElement(self, name):
+    def endElement(self, name):  # noqa: N802
         popped = self._els.pop()
-        assert name == popped.tagName
+        assert name == popped.tagName  # noqa: S101
 
     def characters(self, content):
         should_escape = not self._cdata_stack
@@ -718,12 +693,12 @@ class _Parser(sax.ContentHandler):
         node.escaped = should_escape
         self._els[-1].appendChild(node)
 
-    def processingInstruction(self, target, data):
+    def processingInstruction(self, target, data):  # noqa: N802
         node = self._doc.createProcessingInstruction(target, data)
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
 
-    def skippedEntity(self, name):
+    def skippedEntity(self, name):  # noqa: N802
         # Deals with an HTML entity such as &nbsp; (XML itself defines
         # very few entities.)
 
@@ -741,19 +716,19 @@ class _Parser(sax.ContentHandler):
         return self.characters(html.entities.html5[name])
 
     @abc.abstractmethod
-    def startElementNS(self, name, qname, attrs):
+    def startElementNS(self, name, qname, attrs):  # noqa: N802
         pass
 
     @abc.abstractmethod
-    def endElementNS(self, name, qname):
+    def endElementNS(self, name, qname):  # noqa: N802
         pass
 
     @abc.abstractmethod
-    def startPrefixMapping(self, prefix, uri):
+    def startPrefixMapping(self, prefix, uri):  # noqa: N802
         pass
 
     @abc.abstractmethod
-    def endPrefixMapping(self, prefix):
+    def endPrefixMapping(self, prefix):  # noqa: N802
         pass
 
     # LexicalHandler implementation
@@ -762,24 +737,24 @@ class _Parser(sax.ContentHandler):
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
 
-    def startCDATA(self):
+    def startCDATA(self):  # noqa: N802
         node = self._doc.createTextNode("<![CDATA[")
-        node._cdata = True
+        node._cdata = True  # noqa: SLF001
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
         self._cdata_stack.append(self._els[-1])
 
-    def endCDATA(self):
+    def endCDATA(self):  # noqa: N802
         node = self._doc.createTextNode("]]>")
-        node._cdata = True
+        node._cdata = True  # noqa: SLF001
         node.lineno = self._parser.getLineNumber()
         self._els[-1].appendChild(node)
         self._cdata_stack.pop()
 
-    def startDTD(self, name, pubid, sysid):
+    def startDTD(self, name, pubid, sysid):  # noqa: N802
         self._doc.doctype = impl.createDocumentType(name, pubid, sysid)
 
-    def endDTD(self):
+    def endDTD(self):  # noqa: N802
         pass
 
 
@@ -796,7 +771,7 @@ class _DomTransformer:
     The Transformer mutates the original document.
     """
 
-    def __init__(self, doc, strip_text=True):
+    def __init__(self, doc, strip_text=True):  # noqa: FBT002
         self._transformed = False
         self.doc = doc
         self._strip_text = strip_text
@@ -889,9 +864,7 @@ class _DomTransformer:
                         empty_text_len = len(child.data) - len(rstripped_data)
                         empty_text = child.data[-empty_text_len:]
                         end_node = child.ownerDocument.createTextNode(empty_text)
-                        end_node.lineno = child.lineno + child.data[
-                            :-empty_text_len
-                        ].count("\n")
+                        end_node.lineno = child.lineno + child.data[:-empty_text_len].count("\n")
                         end_node.escaped = child.escaped
                         tree.replaceChild(newChild=end_node, oldChild=child)
                         tree.insertBefore(newChild=child, refChild=end_node)
@@ -909,9 +882,7 @@ class _DomTransformer:
                     # Move lineno forward the amount of lines we are
                     # going to strip.
                     lstripped_data = child.data.lstrip()
-                    child.lineno += child.data[
-                        : len(child.data) - len(lstripped_data)
-                    ].count("\n")
+                    child.lineno += child.data[: len(child.data) - len(lstripped_data)].count("\n")
                     child.data = child.data.strip()
             else:
                 cls._strip_text_nodes(child)
@@ -943,9 +914,7 @@ class _DomTransformer:
         if not isinstance(getattr(tree, "tagName", None), str):
             return tree
         if tree.tagName in QDIRECTIVES_DICT:
-            tree.setAttribute(
-                tree.tagName, tree.getAttribute(QDIRECTIVES_DICT[tree.tagName])
-            )
+            tree.setAttribute(tree.tagName, tree.getAttribute(QDIRECTIVES_DICT[tree.tagName]))
             tree.tagName = "py:nop"
         if tree.tagName != "py:nop" and tree.hasAttribute("py:extends"):
             value = tree.getAttribute("py:extends")

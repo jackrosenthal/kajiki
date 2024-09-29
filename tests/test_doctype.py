@@ -9,7 +9,7 @@ XHTML1 = (
 
 
 @pytest.mark.parametrize(
-    ('uri', 'name', 'rendering_mode', 'stringified'),
+    ("uri", "name", "rendering_mode", "stringified"),
     [
         ("", "html5", "html5", "<!DOCTYPE html>"),
         (None, "xhtml5", "xml", "<!DOCTYPE html>"),
@@ -36,9 +36,4 @@ def test_extract_dtd():
     assert pos == 0
     assert rest == html
     dtd = DocumentTypeDeclaration.matching(extracted)  # Another function
-    assert (
-        dtd
-        is DocumentTypeDeclaration.by_uri[
-            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-        ]
-    )
+    assert dtd is DocumentTypeDeclaration.by_uri["http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"]

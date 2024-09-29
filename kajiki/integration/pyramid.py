@@ -3,7 +3,7 @@ Pyramid_ web framework.
 
 To enable it, add this to your Pyramid web app configuration::
 
-    config.include('kajiki.integration.pyramid')
+    config.include("kajiki.integration.pyramid")
 
 Also add something like the following to the
 application section of your Pyramid application's .ini file::
@@ -62,7 +62,7 @@ class PyramidKajikiLoader(Loader):
     def implementation(self):  # ITemplateRenderer implementation
         return self
 
-    def __init__(self, auto_reload=False, mode="html5"):
+    def __init__(self, auto_reload=False, mode="html5"):  # noqa: FBT002
         self.auto_reload = auto_reload
         self.mode = mode
         self._timestamps = {}
@@ -85,7 +85,7 @@ class PyramidKajikiLoader(Loader):
                 del self.modules[name]
         return super().import_(name, **kw)
 
-    def __call__(self, value, system, is_fragment=False):
+    def __call__(self, value, system, is_fragment=False):  # noqa: FBT002
         """IRenderer implementation.
 
         ``value`` is the result of the view.
@@ -105,9 +105,7 @@ class PyramidKajikiLoader(Loader):
             system.update(value)
         except (TypeError, ValueError) as e:
             msg = "The Kajiki template renderer was passed a non-dictionary as value."
-            raise ValueError(
-                msg
-            ) from e
+            raise ValueError(msg) from e
         return template(system).render()
 
     def fragment(self, renderer_name, dic, view=None, request=None):

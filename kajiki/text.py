@@ -41,17 +41,16 @@ _pattern = r"""
 _re_pattern = re.compile(_pattern, re.VERBOSE | re.IGNORECASE | re.MULTILINE)
 
 
-def TextTemplate(source=None, filename=None, autoescape=False, encoding="utf-8"):
-    assert source or filename, (
-        "You must either provide a *source* argument "
-        "or a *filename* argument to TextTemplate()."
+def TextTemplate(source=None, filename=None, autoescape=False, encoding="utf-8"):  # noqa: FBT002, N802
+    assert source or filename, (  # noqa: S101
+        "You must either provide a *source* argument " "or a *filename* argument to TextTemplate()."
     )
     if source is None:
         with codecs.open(filename, encoding=encoding) as f:
             source = f.read()
     if filename is None:
         filename = "<string>"
-    assert isinstance(
+    assert isinstance(  # noqa: S101
         source, str
     ), f"*source* must be a unicode string, not a {type(source)}"
     scanner = _Scanner(filename, source)
@@ -114,7 +113,7 @@ class _Scanner:
         return self._pos
 
     def _set_pos(self, value):
-        assert value >= getattr(self, "_pos", 0)
+        assert value >= getattr(self, "_pos", 0)  # noqa: S101
         self._pos = value
 
     pos = property(_get_pos, _set_pos)
@@ -143,7 +142,7 @@ class _Scanner:
 
     def _get_tag(self, tagname):
         end = self.source.find("%}", self.pos)
-        assert end > 0
+        assert end > 0  # noqa: S101
         body = self.source[self.pos : end]
         self.pos = end + 2
         if body.endswith("-"):
@@ -179,7 +178,7 @@ class _Scanner:
 
 
 class _Parser:
-    def __init__(self, tokenizer, autoescape=False):
+    def __init__(self, tokenizer, autoescape=False):  # noqa: FBT002
         self.tokenizer = tokenizer
         self.functions = collections.defaultdict(list)
         self.functions["__main__()"] = []
@@ -227,7 +226,7 @@ class _Parser:
                     yield parser(token)
                 else:
                     msg = f"Parse error: {token!r} unexpected"
-                    raise SyntaxError(msg)
+                    raise SyntaxError(msg)  # noqa: TRY004
             except StopIteration:
                 yield None
                 break
@@ -244,13 +243,11 @@ class _Parser:
     def _parse_call(self, token):
         b = token.body.find("(")
         e = token.body.find(")", b)
-        assert e > b > -1
+        assert e > b > -1  # noqa: S101
         arglist = token.body[b : e + 1]
         call = token.body[e + 1 :].strip()
         body = list(self._parse_body("end"))
-        return ir.CallNode(
-            f"$caller{arglist}", call.replace("%caller", "$caller"), *body[:-1]
-        )
+        return ir.CallNode(f"$caller{arglist}", call.replace("%caller", "$caller"), *body[:-1])
 
     def _parse_if(self, token):
         body = list(self._parse_body("end", "else"))
@@ -273,14 +270,14 @@ class _Parser:
         self.push_tok(stoptok)
         return ir.CaseNode(token.body, *body[:-1])
 
-    def _parse_else(self, token):
+    def _parse_else(self, token):  # noqa: ARG002
         body = list(self._parse_body("end"))
         return ir.ElseNode(*body[:-1])
 
     def _parse_extends(self, token):
         parts = shlex.split(token.body)
         fn = parts[0]
-        assert len(parts) == 1
+        assert len(parts) == 1  # noqa: S101
         self._is_child = True
         return ir.ExtendNode(fn)
 
@@ -288,14 +285,14 @@ class _Parser:
         parts = shlex.split(token.body)
         fn = parts[0]
         if len(parts) > 1:
-            assert parts[1] == "as"
+            assert parts[1] == "as"  # noqa: S101
             return ir.ImportNode(fn, parts[2])
         return ir.ImportNode(fn)
 
     def _parse_include(self, token):
         parts = shlex.split(token.body)
         fn = parts[0]
-        assert len(parts) == 1
+        assert len(parts) == 1  # noqa: S101
         return ir.IncludeNode(fn)
 
     def _parse_py(self, token):

@@ -51,28 +51,28 @@ expand 300, 300 to 255, 255, 45, 45,
 
 def lnotab(pairs, first_lineno=0):
     """Yields byte integers representing the pairs of integers passed in."""
-    assert first_lineno <= pairs[0][1]
+    assert first_lineno <= pairs[0][1]  # noqa: S101
     cur_byte, cur_line = 0, first_lineno
     for byte_off, line_off in pairs:
         byte_delta = byte_off - cur_byte
         line_delta = line_off - cur_line
-        assert byte_delta >= 0
-        while byte_delta > 255:
+        assert byte_delta >= 0  # noqa: S101
+        while byte_delta > 255:  # noqa: PLR2004
             yield 255  # byte
             yield 0  # line
             byte_delta -= 255
         yield byte_delta
-        while line_delta >= 0x80:
+        while line_delta >= 0x80:  # noqa: PLR2004
             yield 0x7F  # line
             yield 0  # byte
             line_delta -= 0x7F
-        while line_delta < -0x80:
+        while line_delta < -0x80:  # noqa: PLR2004
             yield 0x80  # line
             yield 0  # byte
             line_delta += 0x80
         if line_delta < 0:
             line_delta += 0x100
-            assert 0x80 <= line_delta <= 0xFF
+            assert 0x80 <= line_delta <= 0xFF  # noqa: S101, PLR2004
         yield line_delta
         cur_byte, cur_line = byte_off, line_off
 

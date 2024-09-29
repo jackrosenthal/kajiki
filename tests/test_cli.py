@@ -47,9 +47,7 @@ def main_mocks(monkeypatch):
 def test_simple_file_load(filename, load_path, capsys, main_mocks):
     main([filename])
 
-    main_mocks.file_loader_type.assert_called_once_with(
-        path=[load_path], force_mode=None
-    )
+    main_mocks.file_loader_type.assert_called_once_with(path=[load_path], force_mode=None)
     main_mocks.import_.assert_called_once_with(filename)
     main_mocks.template_type.assert_called_once_with({})
     main_mocks.render.assert_called_once_with()
@@ -134,6 +132,4 @@ def test_template_variables_bad(capsys):
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert captured.err.endswith(
-        "error: argument -v/--var: Expected a KEY=VALUE pair, got BADBADBAD\n"
-    )
+    assert captured.err.endswith("error: argument -v/--var: Expected a KEY=VALUE pair, got BADBADBAD\n")

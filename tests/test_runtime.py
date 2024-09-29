@@ -91,10 +91,7 @@ class TestCall(TestCase):
 
     def test_basic(self):
         rsp = self.tpl({"name": "Rick"}).render()
-        assert (
-            rsp == 'Quoth the raven, "Nevermore 0."\n'
-            'Quoth the raven, "Nevermore 1."\n'
-        ), rsp
+        assert rsp == 'Quoth the raven, "Nevermore 0."\n' 'Quoth the raven, "Nevermore 1."\n', rsp
 
 
 class TestImport(TestCase):

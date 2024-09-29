@@ -39,9 +39,7 @@ def extract(fileobj, keywords, comment_tags, options):
                 yield (node.lineno, "_", node.text, [])
         elif extract_expr and isinstance(node, ExprNode):
             try:
-                for e in extract_python(
-                    BytesIO(node.text.encode("utf-8")), keywords, comment_tags, options
-                ):
+                for e in extract_python(BytesIO(node.text.encode("utf-8")), keywords, comment_tags, options):
                     yield (node.lineno, e[1], e[2], e[3])
             except (TokenError, SyntaxError) as e:
                 raise KajikiSyntaxError(e, source, "<string>", node.lineno, 0) from e

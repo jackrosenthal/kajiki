@@ -42,7 +42,7 @@ class FileLoader(Loader):
         self,
         path,
         force_mode=None,
-        autoescape_text=False,
+        autoescape_text=False,  # noqa: FBT002
         xml_autoblocks=None,
         **template_options,
     ):
@@ -61,9 +61,7 @@ class FileLoader(Loader):
         self._xml_autoblocks = xml_autoblocks
         self._template_options = template_options
         self.extension_map = {
-            "txt": lambda **kw: TextTemplate(
-                autoescape=self._autoescape_text, **kw
-            ),
+            "txt": lambda **kw: TextTemplate(autoescape=self._autoescape_text, **kw),
             "xml": XMLTemplate,
             "html": lambda **kw: XMLTemplate(mode="html", **kw),
             "html5": lambda **kw: XMLTemplate(mode="html5", **kw),
@@ -106,9 +104,7 @@ class FileLoader(Loader):
             )
 
         ext = Path(resource.name).suffix.lstrip(".")
-        return self.extension_map[ext](
-            source=source, filename=str(resource), **options
-        )
+        return self.extension_map[ext](source=source, filename=str(resource), **options)
 
 
 class PackageLoader(FileLoader):

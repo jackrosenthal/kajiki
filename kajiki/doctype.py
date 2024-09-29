@@ -9,14 +9,15 @@ class DocumentTypeDeclaration:
     using :meth:`.matching` method:
 
     >>> from kajiki.doctype import DocumentTypeDeclaration
-    >>> dtd = DocumentTypeDeclaration("html4transitional",
-    ...                               "-//W3C//DTD HTML 4.01 Transitional//EN",
-    ...                               "http://www.w3.org/TR/html4/loose.dtd",
-    ...                               rendering_mode='html')
+    >>> dtd = DocumentTypeDeclaration(
+    ...     "html4transitional",
+    ...     "-//W3C//DTD HTML 4.01 Transitional//EN",
+    ...     "http://www.w3.org/TR/html4/loose.dtd",
+    ...     rendering_mode="html",
+    ... )
     >>> dtd.uri
     'http://www.w3.org/TR/html4/loose.dtd'
-    >>> DocumentTypeDeclaration.by_uri[
-    ...     "http://www.w3.org/TR/html4/loose.dtd"] = dtd
+    >>> DocumentTypeDeclaration.by_uri["http://www.w3.org/TR/html4/loose.dtd"] = dtd
     >>> match = DocumentTypeDeclaration.matching(
     ...     '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '
     ...     '"http://www.w3.org/TR/html4/loose.dtd">'
@@ -44,7 +45,7 @@ class DocumentTypeDeclaration:
         self.uri = uri
         self.rendering_mode = rendering_mode
         self.root_element = root_element
-        assert kind in (
+        assert kind in (  # noqa: S101
             "PUBLIC",
             "SYSTEM",
             "",
@@ -53,11 +54,7 @@ class DocumentTypeDeclaration:
         self._cached_str = None
 
         self.regex = re.compile(
-            str(self)
-            .replace(" ", r"\s+")
-            .replace(".", r"\.")
-            .replace("[", r"\[")
-            .replace("]", r"\]"),
+            str(self).replace(" ", r"\s+").replace(".", r"\.").replace("[", r"\[").replace("]", r"\]"),
             flags=re.IGNORECASE,
         )
 
@@ -74,7 +71,7 @@ class DocumentTypeDeclaration:
             self._cached_str = " ".join(alist) + ">"
         return self._cached_str
 
-    by_uri = {}  # We store the public DTDs here.
+    by_uri = {}  # We store the public DTDs here.  # noqa: RUF012
 
     @classmethod
     def matching(cls, dtd_string):
@@ -162,7 +159,7 @@ def extract_dtd(markup):
     these values might be an empty string:
 
     >>> markup = (
-    ...     '<!DOCTYPE HTML PUBLIC '
+    ...     "<!DOCTYPE HTML PUBLIC "
     ...     '"-//W3C//DTD HTML 4.01 Transitional//EN" '
     ...     '"http://www.w3.org/TR/html4/loose.dtd">'
     ...     '''<html>
@@ -172,7 +169,8 @@ def extract_dtd(markup):
     ...     <body>
     ...     ...
     ...     </body>
-    ...     </html>''')
+    ...     </html>'''
+    ... )
     >>> import kajiki.doctype
     >>> dtd, dtd_pos, markup_without_dtd = kajiki.doctype.extract_dtd(markup)
     >>> print(dtd)  # doctest: +NORMALIZE_WHITESPACE

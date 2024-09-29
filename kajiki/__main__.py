@@ -16,9 +16,7 @@ def _kv_pair(pair):
     key, sep, value = pair.partition("=")
     if not sep:
         msg = f"Expected a KEY=VALUE pair, got {pair}"
-        raise argparse.ArgumentTypeError(
-            msg
-        )
+        raise argparse.ArgumentTypeError(msg)
     return key, value
 
 
@@ -29,10 +27,7 @@ def main(argv=None):
         "--mode",
         dest="force_mode",
         choices=["text", "xml", "html", "html5"],
-        help=(
-            "Force a specific templating mode instead of auto-detecting "
-            "based on extension."
-        ),
+        help="Force a specific templating mode instead of auto-detecting based on extension.",
     )
     parser.add_argument(
         "-i",

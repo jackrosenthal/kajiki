@@ -9,7 +9,7 @@ def expose(func):
     return func
 
 
-class flattener:
+class flattener:  # noqa: N801
     def __init__(self, iterator):
         while type(iterator) == flattener:
             iterator = iterator.iterator
@@ -65,12 +65,12 @@ class NameGen:
     def gen(cls, hint):
         if not hasattr(cls.lcl, "inst"):
             cls.lcl.inst = NameGen()
-        return cls.lcl.inst._gen(hint)
+        return cls.lcl.inst._gen(hint)  # noqa: SLF001
 
     def _gen(self, hint):
         r = hint
         while r in self.names:
-            r = "%s_%d" % (hint, randint(0, len(self.names) * 10))
+            r = "%s_%d" % (hint, randint(0, len(self.names) * 10))  # noqa: S311
         self.names.add(r)
         return r
 

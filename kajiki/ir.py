@@ -105,9 +105,7 @@ class ImportNode(Node):
         self.alias = alias
 
     def py(self):
-        yield self.line(
-            f"{self.alias} = local.__kj__.import_({self.tpl_name!r}, {self.alias!r}, self.__globals__)"
-        )
+        yield self.line(f"{self.alias} = local.__kj__.import_({self.tpl_name!r}, {self.alias!r}, self.__globals__)")
 
 
 class IncludeNode(Node):
@@ -116,9 +114,7 @@ class IncludeNode(Node):
         self.tpl_name = tpl_name
 
     def py(self):
-        yield self.line(
-            f"yield local.__kj__.import_({self.tpl_name!r}, None, self.__globals__).__main__()"
-        )
+        yield self.line(f"yield local.__kj__.import_({self.tpl_name!r}, None, self.__globals__).__main__()")
 
 
 class ExtendNode(Node):
@@ -194,7 +190,6 @@ class ForNode(HierNode):
 
 
 class WithNode(HierNode):
-
     assignment_pattern = re.compile(r"(?:^|;)\s*([^;=]+)=(?!=)", re.M)
 
     class WithTail(Node):
@@ -203,12 +198,10 @@ class WithNode(HierNode):
             self.var_names = var_names
 
         def py(self):
-            yield self.line(
-                "({},) = local.__kj__.pop_with()".format(",".join(self.var_names))
-            )
+            yield self.line("({},) = local.__kj__.pop_with()".format(",".join(self.var_names)))
             # yield self.line('if %s == (): del %s' % (v, v))
 
-    def __init__(self, vars, *body):
+    def __init__(self, vars, *body):  # noqa: A002
         super().__init__(body)
         assignments = []
         matches = self.assignment_pattern.finditer(vars)
@@ -221,9 +214,7 @@ class WithNode(HierNode):
         self.var_names = [lhs for lhs, _ in assignments]
 
     def py(self):
-        yield self.line(
-            "local.__kj__.push_with(locals(), [{}])".format(",".join(f'"{k}"' for k in self.var_names))
-        )
+        yield self.line("local.__kj__.push_with(locals(), [{}])".format(",".join(f'"{k}"' for k in self.var_names)))
         for k, v in self.vars:
             yield self.line(f"{k} = {v}")
 
@@ -309,7 +300,7 @@ class ExprNode(Node):
     is executed.
     """
 
-    def __init__(self, text, safe=False):
+    def __init__(self, text, safe=False):  # noqa: FBT002
         super().__init__()
         self.text = text
         self.safe = safe
@@ -333,9 +324,7 @@ class AttrNode(HierNode):
             gen = self.p.genname
             x = gen_name()
             yield self.line(f"{gen} = self.__kj__.collect({gen}())")
-            yield self.line(
-                f"for {x} in self.__kj__.render_attrs({{{self.p.attr!r}:{gen}}}, {self.p.mode!r}):"
-            )
+            yield self.line(f"for {x} in self.__kj__.render_attrs({{{self.p.attr!r}:{gen}}}, {self.p.mode!r}):")
             yield self.line(f"    yield {x}")
 
     def __init__(self, attr, value, guard=None, mode="xml"):
@@ -350,9 +339,7 @@ class AttrNode(HierNode):
 
     def __iter__(self):
         if self.guard:
-            new_body = IfNode(
-                self.guard, AttrNode(self.attr, value=self.body, mode=self.mode)
-            )
+            new_body = IfNode(self.guard, AttrNode(self.attr, value=self.body, mode=self.mode))
             yield from new_body
         else:
             yield self
@@ -376,9 +363,7 @@ class AttrsNode(Node):
         x = gen_name()
 
         def _body():
-            yield self.line(
-                f"for {x} in self.__kj__.render_attrs({self.attrs}, {self.mode!r}):"
-            )
+            yield self.line(f"for {x} in self.__kj__.render_attrs({self.attrs}, {self.mode!r}):")
             yield self.line(f"    yield {x}")
 
         if self.guard:
@@ -396,7 +381,7 @@ class PythonNode(Node):
         self.module_level = False
         blocks = []
         for b in body:
-            assert isinstance(b, TextNode)
+            assert isinstance(b, TextNode)  # noqa: S101
             blocks.append(b.text)
         text = "".join(blocks)
         if text[0] == "%":
@@ -416,18 +401,14 @@ class PythonNode(Node):
             if prefix is None:
                 rest = line.lstrip()
                 prefix = line[: len(line) - len(rest)]
-            assert line.startswith(prefix)
+            assert line.startswith(prefix)  # noqa: S101
             yield line[len(prefix) :]
 
 
 def optimize(iter_node):
     last_node = None
     for node in iter_node:
-        if (
-            type(node) == TextNode
-            and type(last_node) == TextNode
-            and last_node.guard == node.guard
-        ):
+        if type(node) == TextNode and type(last_node) == TextNode and last_node.guard == node.guard:
             last_node.text += node.text
             # Erase this node by not yielding it.
             continue
@@ -451,11 +432,7 @@ class PyLine:
     def __str__(self):
         return (" " * self._indent) + self._text
         if self._lineno:
-            return (
-                (" " * self._indent)
-                + self._text
-                + "\t# %s:%d" % (self._filename, self._lineno)
-            )
+            return (" " * self._indent) + self._text + "\t# %s:%d" % (self._filename, self._lineno)
         return (" " * self._indent) + self._text
 
     def __repr__(self):
