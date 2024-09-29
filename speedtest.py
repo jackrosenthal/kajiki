@@ -9,7 +9,7 @@ from genshi.template import MarkupTemplate
 
 from kajiki import XMLTemplate
 
-FN = "kajiki/perf/tables.html"
+FN = "tests/data/tables.html"
 
 timings = defaultdict(float)
 
