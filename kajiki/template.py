@@ -421,7 +421,7 @@ class TplFunc:
 def patch_code_file_lines(code, filename, firstlineno, lnotab):
     code_args = (
         code.co_argcount,
-        code.co_posonlyargcount if version_info >= (3, 8) else "REMOVE",
+        code.co_posonlyargcount,
         code.co_kwonlyargcount,
         code.co_nlocals,
         code.co_stacksize,
