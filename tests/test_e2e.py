@@ -29,7 +29,7 @@ def test_golden_file(args, golden_file, capsys):
 
 
 def test_file_not_found():
-    with pytest.raises(IOError):
+    with pytest.raises(FileNotFoundError):
         main(["/does/not/exist.txt"])
 
 
