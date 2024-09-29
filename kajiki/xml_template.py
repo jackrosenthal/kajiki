@@ -1,3 +1,4 @@
+import abc
 import collections
 import html
 import io
@@ -751,21 +752,21 @@ class _Parser(sax.ContentHandler):
             name += ";"
         return self.characters(html.entities.html5[name])
 
-    def startElementNS(self, name, qname, attrs):  # pragma no cover
-        msg = "startElementNS"
-        raise NotImplementedError(msg)
+    @abc.abstractmethod
+    def startElementNS(self, name, qname, attrs):
+        pass
 
-    def endElementNS(self, name, qname):  # pragma no cover
-        msg = "startElementNS"
-        raise NotImplementedError(msg)
+    @abc.abstractmethod
+    def endElementNS(self, name, qname):
+        pass
 
-    def startPrefixMapping(self, prefix, uri):  # pragma no cover
-        msg = "startPrefixMapping"
-        raise NotImplementedError(msg)
+    @abc.abstractmethod
+    def startPrefixMapping(self, prefix, uri):
+        pass
 
-    def endPrefixMapping(self, prefix):  # pragma no cover
-        msg = "endPrefixMapping"
-        raise NotImplementedError(msg)
+    @abc.abstractmethod
+    def endPrefixMapping(self, prefix):
+        pass
 
     # LexicalHandler implementation
     def comment(self, text):
