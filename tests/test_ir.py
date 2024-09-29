@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from unittest import TestCase, main
+from unittest import TestCase
 
 import kajiki
 from kajiki import ir
@@ -109,10 +107,7 @@ class TestCall(TestCase):
     def test_basic(self):
         tpl = kajiki.template.from_ir(self.tpl)
         rsp = tpl({"name": "Rick"}).render()
-        assert (
-            rsp == 'Quoth the raven, "Nevermore 0."\n'
-            'Quoth the raven, "Nevermore 1."\n'
-        ), rsp
+        assert rsp == 'Quoth the raven, "Nevermore 0."\n' 'Quoth the raven, "Nevermore 1."\n', rsp
 
 
 class TestImport(TestCase):
@@ -169,9 +164,7 @@ class TestImport(TestCase):
 
 class TestInclude(TestCase):
     def setUp(self):
-        hdr = ir.TemplateNode(
-            defs=[ir.DefNode("__main__()", ir.TextNode("# header\n"))]
-        )
+        hdr = ir.TemplateNode(defs=[ir.DefNode("__main__()", ir.TextNode("# header\n"))])
         tpl = ir.TemplateNode(
             defs=[
                 ir.DefNode(
@@ -296,7 +289,3 @@ class TestDynamicExtends(TestCase):
         assert rsp == "Parent 0", rsp
         rsp = self.tpl({"p": 1}).render()
         assert rsp == "Parent 1", rsp
-
-
-if __name__ == "__main__":
-    main()
