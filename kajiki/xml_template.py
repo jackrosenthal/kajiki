@@ -676,14 +676,7 @@ class _Parser(sax.ContentHandler):
         parser.setProperty(sax.handler.property_lexical_handler, self)
         parser.setContentHandler(self)
         source = sax.xmlreader.InputSource()
-        # Sweet XMLReader.parse() documentation says:
-        # "As a limitation, the current implementation only accepts byte
-        # streams; processing of character streams is for further study."
-        # So if source is unicode, we pre-encode it:
-        # TODO Is this dance really necessary? Can't I just call a function?
-        byts = self._source.encode("utf-8")
-        source.setEncoding("utf-8")
-        source.setByteStream(io.BytesIO(byts))
+        source.setCharacterStream(io.StringIO(self._source))
         source.setSystemId(self._filename)
 
         try:
