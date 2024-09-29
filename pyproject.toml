@@ -78,3 +78,11 @@ dependencies = [
 
 [tool.hatch.envs.docs.scripts]
 build = "sphinx-build -M html docs docs/_build"
+
+[tool.hatch.envs.speedtest]
+dependencies = [
+    "genshi",
+]
+
+[tool.hatch.envs.speedtest.scripts]
+run = "./speedtest.py"

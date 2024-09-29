@@ -9,3 +9,11 @@ jobs:
         uses: pypa/hatch@257e27e51a6a5616ed08a39a408a21c35c9931bc
       - name: Run Tests
         run: hatch test -a
+  speedtest:
+    runs-on: "ubuntu-24.04"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Hatch
+        uses: pypa/hatch@257e27e51a6a5616ed08a39a408a21c35c9931bc
+      - name: Run Speedtest
+        run: hatch run speedtest:run
