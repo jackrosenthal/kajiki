@@ -8,7 +8,7 @@ version = "1.0.0.dev1"
 description = "Fast XML-based template engine with Genshi syntax and Jinja blocks"
 readme = "README.rst"
 license = "MIT"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 authors = [
     { name = "Rick Copeland", email = "rick446@usa.net" },
     { name = "Nando Florestan", email = "nandoflorestan@gmail.com" },
@@ -53,6 +53,7 @@ classifiers = [
 ]
 dependencies = [
     "linetable",
+    'importlib_resources; python_version < "3.9"',
 ]
 
 [project.urls]
@@ -70,7 +71,7 @@ extra-dependencies = [
 ]
 
 [[tool.hatch.envs.hatch-test.matrix]]
-python = ["3.9", "3.10", "3.11", "3.12"]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.default]
 installer = "uv"

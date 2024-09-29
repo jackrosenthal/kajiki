@@ -1,5 +1,7 @@
 """Test we don't break TurboGears' usage of our Python API."""
 
+from __future__ import annotations
+
 import dataclasses
 import wsgiref.util
 from pathlib import Path

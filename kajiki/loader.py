@@ -1,8 +1,13 @@
 from __future__ import annotations
 
-import importlib.resources
 import os
+import sys
 from pathlib import Path
+
+if sys.version_info < (3, 9):
+    import importlib_resources
+else:
+    import importlib.resources as importlib_resources
 
 from kajiki.util import default_alias_for
 
@@ -130,7 +135,7 @@ class PackageLoader(FileLoader):
 
     def _find_resource(self, name):
         package, module = name.rsplit(".", 1)
-        package_resource = importlib.resources.files(package)
+        package_resource = importlib_resources.files(package)
 
         if package_resource.is_file():
             msg = f"{package} refers to a module, not a package."
