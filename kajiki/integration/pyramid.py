@@ -108,21 +108,7 @@ class PyramidKajikiLoader(Loader):
             raise ValueError(
                 msg
             ) from e
-        # self._save_template_as_python(template, system, name)  # to debug
         return template(system).render()
-
-    def _save_template_as_python(
-        self, template, context, name, dir="kajiki_debug", encoding="utf-8"
-    ):
-        "Just a debugging device used in the development of Kajiki itself."
-        from codecs import open
-        from os import makedirs, path
-
-        makedirs(dir, exist_ok=True)
-        path = path.join(dir, name.replace(":", "-").replace("/", "_") + ".py")
-        with open(path, "w", encoding=encoding) as f:
-            f.write(template(context).py_text)
-        print("Compiled Kajiki template written to " + path)
 
     def fragment(self, renderer_name, dic, view=None, request=None):
         """Example usage from a class-based view:
