@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-
 import os
-import sys
 import traceback
 import xml.dom.minidom
 from io import BytesIO
-from unittest import TestCase, main
+from unittest import TestCase
+
+import pytest
 
 import kajiki
 from kajiki import FileLoader, MockLoader, PackageLoader, XMLTemplate, i18n
@@ -75,17 +74,13 @@ class TestExpand(TestCase):
             node = node.childNodes[0]
 
 
-def perform(source, expected_output, context=dict(name="Rick"), **options):
+def perform(source, expected_output, context=None, **options):
+    context = context or {"name": "Rick"}
     tpl = XMLTemplate(source, **options)
-    try:
-        rsp = tpl(context).render()
-        assert isinstance(rsp, str), "render() must return a unicode string."
-        assert rsp == expected_output, (rsp, expected_output)
-    except Exception as e:
-        print("\n" + tpl.py_text)
-        raise e
-    else:
-        return tpl
+    rsp = tpl(context).render()
+    assert isinstance(rsp, str), "render() must return a string."
+    assert rsp == expected_output, (rsp, expected_output)
+    return tpl
 
 
 class TestSimple(TestCase):
@@ -102,9 +97,7 @@ class TestSimple(TestCase):
         perform(src, src, mode="xml")
 
     def test_textarea_whitespace(self):
-        src = (
-            '<textarea name="foo">\nHey there.  \n\n    I am indented.\n' "</textarea>"
-        )
+        src = '<textarea name="foo">\nHey there.  \n\n    I am indented.\n' "</textarea>"
         perform(src, src, mode="html")
         perform(src, src, mode="xml")
 
@@ -121,19 +114,13 @@ class TestSimple(TestCase):
         """
         script = 'if (1 < 2) { doc.write("<p>Offen&nbsp;bach</p>"); }\n'
         src = f"<script><![CDATA[\n{script}]]></script>"
-        perform(
-            src, mode="html", expected_output=f"<script>\n{script}</script>"
-        )
-        perform(
-            src, f"<script>/*<![CDATA[*/\n{script}/*]]>*/</script>", mode="xml"
-        )
+        perform(src, mode="html", expected_output=f"<script>\n{script}</script>")
+        perform(src, f"<script>/*<![CDATA[*/\n{script}/*]]>*/</script>", mode="xml")
 
     def test_style_escaping(self):
         style = "html > body { display: none; }\n"
         src = f"<style><![CDATA[\n{style}]]></style>"
-        perform(
-            src, f"<style>/*<![CDATA[*/\n{style}/*]]>*/</style>", mode="xml"
-        )
+        perform(src, f"<style>/*<![CDATA[*/\n{style}/*]]>*/</style>", mode="xml")
         perform(src, f"<style>\n{style}</style>", mode="html")
 
     def test_script_variable(self):
@@ -142,21 +129,17 @@ class TestSimple(TestCase):
         perform(src, "<script>/*<![CDATA[*/ Rick /*]]>*/</script>", mode="xml")
         perform(src, "<script> Rick </script>", mode="html")
 
-    def test_CDATA_disabled(self):
+    def test_cdata_disabled(self):
         src = "<script> $name </script>"
         perform(src, "<script> Rick </script>", mode="xml", cdata_scripts=False)
         perform(src, "<script> Rick </script>", mode="html", cdata_scripts=False)
 
-    def test_CDATA_escaping(self):
+    def test_cdata_escaping(self):
         src = """<myxml><data><![CDATA[&gt;&#240; $name]]></data></myxml>"""
-        perform(
-            src, "<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>", mode="xml"
-        )
-        perform(
-            src, "<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>", mode="html"
-        )
+        perform(src, "<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>", mode="xml")
+        perform(src, "<myxml><data><![CDATA[&gt;&#240; Rick]]></data></myxml>", mode="html")
 
-    def test_CDATA_escaping_mixed(self):
+    def test_cdata_escaping_mixed(self):
         src = """<myxml><data><![CDATA[&gt;&#240; $name]]> &gt;</data></myxml>"""
         perform(
             src,
@@ -169,7 +152,7 @@ class TestSimple(TestCase):
             mode="html",
         )
 
-    def test_script_commented_CDATA(self):
+    def test_script_commented_cdata(self):
         script = 'if (1 < 2) { doc.write("<p>Offen&nbsp;bach</p>"); }\n'
         src = f"<script>/*<![CDATA[*/\n{script}/*]]>*/</script>"
         perform(
@@ -212,16 +195,15 @@ class TestSimple(TestCase):
             "<div>Hello, Rick</div>",
         )
 
-    def test_expr_multiline_and_IndentationError(self):
-        try:
+    def test_expr_multiline_and_indentation_error(self):
+        with pytest.raises(XMLTemplateCompileError) as e:
             XMLTemplate(
                 """<div>Hello, ${ 'pippo' +
                 'baudo'}</div>"""
             )().render()
-        except XMLTemplateCompileError as e:
-            assert "`'pippo' +\n                'baudo'`" in str(e), str(e)
-            assert "Hello" in str(e)
-            assert "baudo" in str(e)
+        assert "`'pippo' +\n                'baudo'`" in str(e.value)
+        assert "Hello" in str(e.value)
+        assert "baudo" in str(e.value)
 
     def test_expr_multiline_cdata(self):
         perform(
@@ -238,13 +220,7 @@ class TestSimple(TestCase):
         """
         js = "$(function () { alert('.ready()'); });"
         src = "<html><pre>" + js + "</pre><script>" + js + "</script></html>"
-        out = (
-            "<html><pre>"
-            + js
-            + "</pre><script>/*<![CDATA[*/"
-            + js
-            + "/*]]>*/</script></html>"
-        )
+        out = "<html><pre>" + js + "</pre><script>/*<![CDATA[*/" + js + "/*]]>*/</script></html>"
         perform(src, out)
 
     def test_jquery_shortcut_is_not_expr(self):
@@ -252,13 +228,7 @@ class TestSimple(TestCase):
 
         js = "$.extend({}, {foo: 'bar'})"
         src = "<html><pre>" + js + "</pre><script>" + js + "</script></html>"
-        out = (
-            "<html><pre>"
-            + js
-            + "</pre><script>/*<![CDATA[*/"
-            + js
-            + "/*]]>*/</script></html>"
-        )
+        out = "<html><pre>" + js + "</pre><script>/*<![CDATA[*/" + js + "/*]]>*/</script></html>"
         perform(src, out)
 
     def test_xml_entities(self):
@@ -267,7 +237,7 @@ class TestSimple(TestCase):
 
     def test_html_entities(self):
         source = "<div>Spam&nbsp;Spam &lt; Spam &gt; Spam &hellip;</div>"
-        output = "<div>Spam Spam &lt; Spam &gt; Spam \u2026</div>"
+        output = "<div>Spam\xa0Spam &lt; Spam &gt; Spam \u2026</div>"
         assert chr(32) in output  # normal space
         assert chr(160) in output  # non breaking space
         perform(source, output)
@@ -318,7 +288,7 @@ $i is <py:switch test="i % 4">
         )
 
     def test_switch_div(self):
-        try:
+        with pytest.raises(XMLTemplateCompileError) as e:
             perform(
                 """
         <div class="test" py:switch="5 == 3">
@@ -327,16 +297,12 @@ $i is <py:switch test="i % 4">
         </div>""",
                 "<div><div>False</div></div>",
             )
-        except XMLTemplateCompileError as e:
-            assert "py:switch directive can only contain py:case and py:else nodes" in str(e)
-        else:
-            msg = "Should have raised XMLTemplateParseError"
-            raise AssertionError(msg)
+        assert "py:switch directive can only contain py:case and py:else nodes" in str(e)
 
 
 class TestElse(TestCase):
     def test_pyif_pyelse(self):
-        try:
+        with pytest.raises(XMLTemplateCompileError) as e:
             perform(
                 """
             <div>
@@ -345,11 +311,7 @@ class TestElse(TestCase):
             </div>""",
                 """<div>False</div>""",
             )
-        except XMLTemplateCompileError as e:
-            assert "py:else directive must be inside a py:switch or directly after py:if" in str(e)
-        else:
-            msg = "Should have raised XMLTemplateParseError"
-            raise AssertionError(msg)
+        assert "py:else directive must be inside a py:switch or directly after py:if" in str(e)
 
     def test_pyiftag_pyelse_continuation(self):
         perform(
@@ -405,8 +367,7 @@ class TestWith(TestCase):
 
     def test_with_ordered_multiple(self):
         perform(
-            """<div py:with="a='foo';b=a * 2;c=b[::-1];d=c[:3]">"""
-            """$a $b $c $d</div>""",
+            """<div py:with="a='foo';b=a * 2;c=b[::-1];d=c[:3]">""" """$a $b $c $d</div>""",
             "<div>foo foofoo oofoof oof</div>",
         )
 
@@ -568,8 +529,7 @@ class TestImport(TestCase):
                     '${value_of("name")}</p>\n'
                 ),
                 "tpl.html": XMLTemplate(
-                    "<html><body><p>This is the body</p>\n"
-                    '<py:include href="included.html"/></body></html>'
+                    "<html><body><p>This is the body</p>\n" '<py:include href="included.html"/></body></html>'
                 ),
             }
         )
@@ -596,18 +556,16 @@ class TestImport(TestCase):
                 self.sources = sources
                 super().__init__({})
 
-            def _load(self, name, encoding="utf-8", *args, **kwargs):
-                return XMLTemplate(
-                    source=self.sources[name], mode="html5", *args, **kwargs
-                )
+            def _load(self, name, encoding="utf-8", **kwargs):
+                del encoding
+                return XMLTemplate(source=self.sources[name], mode="html5", **kwargs)
 
         loader = XMLSourceLoader(
             {
                 "included.html": "<p>The included template must also "
                 "access Kajiki globals and the template context: "
                 '${value_of("name")}</p>\n',
-                "tpl.html": "<html><body><p>This is the body</p>\n"
-                '<py:include href="included.html"/></body></html>',
+                "tpl.html": "<html><body><p>This is the body</p>\n" '<py:include href="included.html"/></body></html>',
             }
         )
         tpl = loader.import_("tpl.html")
@@ -909,8 +867,7 @@ import os
 class TestComment(TestCase):
     def test_basic(self):
         perform(
-            "<div><!-- This comment is preserved. -->"
-            "<!--! This comment is stripped. --></div>",
+            "<div><!-- This comment is preserved. -->" "<!--! This comment is stripped. --></div>",
             "<div><!--  This comment is preserved.  --></div>",
         )
 
@@ -934,29 +891,29 @@ class TestAttributes(TestCase):
         perform('<div py:attrs="dict(checked=None)"/>', "<div/>")
 
     def test_strip(self):
-        TPL = '<div><h1 py:strip="header">Header</h1></div>'
-        perform(TPL, "<div>Header</div>", context={"header": True})
-        perform(TPL, "<div><h1>Header</h1></div>", context={"header": False})
-        TPL = """<div><p py:strip="">It's...</p></div>"""
-        perform(TPL, "<div>It's...</div>")
+        tpl = '<div><h1 py:strip="header">Header</h1></div>'
+        perform(tpl, "<div>Header</div>", context={"header": True})
+        perform(tpl, "<div><h1>Header</h1></div>", context={"header": False})
+        tpl = """<div><p py:strip="">It's...</p></div>"""
+        perform(tpl, "<div>It's...</div>")
 
     def test_html_attrs(self):
-        TPL = '<input type="checkbox" checked="$checked"/>'
+        tpl = '<input type="checkbox" checked="$checked"/>'
         context0 = {"checked": None}
         context1 = {"checked": True}
-        perform(TPL, '<input type="checkbox"/>', context0, mode="xml")
-        perform(TPL, '<input checked="True" type="checkbox"/>', context1, mode="xml")
-        perform(TPL, '<input type="checkbox">', context0, mode="html")
-        perform(TPL, '<input checked type="checkbox">', context1, mode="html")
+        perform(tpl, '<input type="checkbox"/>', context0, mode="xml")
+        perform(tpl, '<input checked="True" type="checkbox"/>', context1, mode="xml")
+        perform(tpl, '<input type="checkbox">', context0, mode="html")
+        perform(tpl, '<input checked type="checkbox">', context1, mode="html")
         perform(
-            TPL,
+            tpl,
             '<!DOCTYPE html>\n<input checked type="checkbox">',
             context1,
             mode="html5",
             is_fragment=False,
         )
         perform(
-            "<!DOCTYPE html>\n" + TPL,
+            "<!DOCTYPE html>\n" + tpl,
             '<!DOCTYPE html>\n<input checked type="checkbox">',
             context1,
             mode=None,
@@ -965,18 +922,15 @@ class TestAttributes(TestCase):
 
     def test_xml_namespaces(self):
         """Namespaced attributes pass through."""
-        TPL = '<p xml:lang="en">English text</p>'
-        perform(TPL, TPL, mode="xml")
-        perform(TPL, TPL, mode="html")
+        tpl = '<p xml:lang="en">English text</p>'
+        perform(tpl, tpl, mode="xml")
+        perform(tpl, tpl, mode="html")
 
     def test_escape_attr_values(self):
         """Escape static and dynamic attribute values."""
         context = {"url": "https://domain.com/path?a=1&b=2"}
         source = """<a title='"Ha!"' href="$url">Link</a>"""
-        output = (
-            '<a href="https://domain.com/path?a=1&amp;b=2" '
-            'title="&quot;Ha!&quot;">Link</a>'
-        )
+        output = '<a href="https://domain.com/path?a=1&amp;b=2" ' 'title="&quot;Ha!&quot;">Link</a>'
         perform(source, output, context, mode="html")
         perform(source, output, context, mode="xml")
 
@@ -985,20 +939,15 @@ class TestDebug(TestCase):
     def test_debug(self):
         loader = FileLoader(path=os.path.join(os.path.dirname(__file__), "data"))
         tpl = loader.import_("debug.html")
-        try:
+        with pytest.raises(ValueError, match="Test error") as exc_info:
             tpl().render()
-            msg = "Should have raised ValueError"
-            raise AssertionError(msg)
-        except ValueError:
-            exc_info = sys.exc_info()
-            stack = traceback.extract_tb(exc_info[2])
+
         # Verify we have stack trace entries in the template
-        for fn, _lno, _func, _line in stack:
-            if fn.endswith("debug.html"):
+        for tb_entry in exc_info.traceback:
+            if tb_entry.path.name == "debug.html":
                 break
         else:
-            msg = "Stacktrace is all python"
-            raise AssertionError(msg)
+            pytest.fail("Stacktrace is all python")
 
 
 class TestPackageLoader(TestCase):
@@ -1018,9 +967,9 @@ class TestBuiltinFunctions(TestCase):
         )
 
     def test_value_of(self):
-        TPL = "<p>${value_of('albatross', 'Albatross!!!')}</p>"
-        perform(TPL, expected_output="<p>It's</p>", context={"albatross": "It's"})
-        perform(TPL, expected_output="<p>Albatross!!!</p>")
+        tpl = "<p>${value_of('albatross', 'Albatross!!!')}</p>"
+        perform(tpl, expected_output="<p>It's</p>", context={"albatross": "It's"})
+        perform(tpl, expected_output="<p>Albatross!!!</p>")
 
     def test_literal(self):
         """Escape by default; literal() marks as safe."""
@@ -1028,9 +977,7 @@ class TestBuiltinFunctions(TestCase):
         expected_output = "<p><em>Albatross!!!</em></p>"
         perform("<p>${literal(albatross)}</p>", expected_output, context)
         perform("<p>${Markup(albatross)}</p>", expected_output, context)
-        perform(
-            "<p>$albatross</p>", "<p>&lt;em&gt;Albatross!!!&lt;/em&gt;</p>", context
-        )
+        perform("<p>$albatross</p>", "<p>&lt;em&gt;Albatross!!!&lt;/em&gt;</p>", context)
         from kajiki.util import literal
 
         markup = '<b>"&amp;"</b>'
@@ -1039,10 +986,7 @@ class TestBuiltinFunctions(TestCase):
 
 class TestTranslation(TestCase):
     def test_scripts_non_translatable(self):
-        src = (
-            "<xml><div>Hi</div><script>hello world</script>"
-            "<style>hello style</style></xml>"
-        )
+        src = "<xml><div>Hi</div><script>hello world</script>" "<style>hello style</style></xml>"
         doc = _Parser("<string>", src).parse()
 
         for n in _Compiler("<string>", doc).compile():
@@ -1070,14 +1014,12 @@ class TestTranslation(TestCase):
         for strip_text in (False, True):
             # Build translation table
             messages = {}
-            for _, _, msgid, _ in i18n.extract(
-                BytesIO(src.encode("utf-8")), None, None, {"strip_text": strip_text}
-            ):
+            for _, _, msgid, _ in i18n.extract(BytesIO(src.encode("utf-8")), None, None, {"strip_text": strip_text}):
                 messages[msgid] = f"TRANSLATED({msgid})"
 
             # Provide a fake translation function
             default_gettext = i18n.gettext
-            i18n.gettext = lambda s: messages[s]
+            i18n.gettext = messages.__getitem__
             try:
                 perform(src, expected[strip_text], strip_text=strip_text)
             finally:
@@ -1093,9 +1035,7 @@ class TestTranslation(TestCase):
 
         # Build translation table
         messages = {"hi": "xi"}
-        for _, _, msgid, _ in i18n.extract(
-            BytesIO(src.encode("utf-8")), [], None, {"extract_python": True}
-        ):
+        for _, _, msgid, _ in i18n.extract(BytesIO(src.encode("utf-8")), [], None, {"extract_python": True}):
             messages[msgid] = f"TRANSLATED({msgid})"
 
         # Provide a fake translation function
@@ -1108,31 +1048,20 @@ class TestTranslation(TestCase):
 
     def test_extract_python_inside_invalid(self):
         src = """<xml><div>${_('hi' +)}</div></xml>"""
-        try:
-            list(
-                i18n.extract(
-                    BytesIO(src.encode("utf-8")), [], None, {"extract_python": True}
-                )
-            )
-        except XMLTemplateCompileError as e:
-            assert "_('hi' +)" in str(e)
-        else:
-            msg = "Should have raised"
-            raise AssertionError(msg)
+        with pytest.raises(XMLTemplateCompileError, match=r"_\('hi' \+\)"):
+            list(i18n.extract(BytesIO(src.encode("utf-8")), [], None, {"extract_python": True}))
 
     def test_substituting_gettext_with_lambda(self):
         src = """<xml>hi</xml>"""
         expected = """<xml>spam</xml>"""
 
-        perform(src, expected, context={"gettext": lambda x: "spam"})
+        perform(src, expected, context={"gettext": lambda _: "spam"})
 
     def test_substituting_gettext_with_lambda_extending(self):
         loader = MockLoader(
             {
                 "parent.html": XMLTemplate("""<div>parent</div>"""),
-                "child.html": XMLTemplate(
-                    """<py:extends href="parent.html"><div>child</div></py:extends>"""
-                ),
+                "child.html": XMLTemplate("""<py:extends href="parent.html"><div>child</div></py:extends>"""),
             }
         )
         tpl = loader.import_("child.html")
@@ -1143,12 +1072,8 @@ class TestTranslation(TestCase):
         loader = MockLoader(
             {
                 "parent.html": XMLTemplate("<div>parent</div>"),
-                "mid.html": XMLTemplate(
-                    '<py:extends href="parent.html"><div>${variable}</div></py:extends>'
-                ),
-                "child.html": XMLTemplate(
-                    '<py:extends href="mid.html"><div>child</div></py:extends>'
-                ),
+                "mid.html": XMLTemplate('<py:extends href="parent.html"><div>${variable}</div></py:extends>'),
+                "child.html": XMLTemplate('<py:extends href="mid.html"><div>child</div></py:extends>'),
             }
         )
         tpl = loader.import_("child.html")
@@ -1159,7 +1084,7 @@ class TestTranslation(TestCase):
     def test_substituting_gettext_with_lambda_extending_file(self):
         loader = FileLoader(
             path=os.path.join(os.path.dirname(__file__), "data"),
-            base_globals={"gettext": lambda x: "egg"},
+            base_globals={"gettext": lambda _: "egg"},
         )
         tpl = loader.import_("file_child.html")
         rsp = tpl({}).render()
@@ -1175,9 +1100,7 @@ class TestTranslation(TestCase):
 
 class TestDOMTransformations(TestCase):
     def test_empty_text_extraction(self):
-        doc = kajiki.xml_template._Parser(
-            "<string>", """<span>  text  </span>"""
-        ).parse()
+        doc = kajiki.xml_template._Parser("<string>", """<span>  text  </span>""").parse()
         doc = kajiki.xml_template._DomTransformer(doc, strip_text=False).transform()
         text_data = [n.data for n in doc.firstChild.childNodes]
         assert ["  ", "text", "  "] == text_data
@@ -1199,30 +1122,26 @@ class TestDOMTransformations(TestCase):
 class TestErrorReporting(TestCase):
     def test_syntax_error(self):
         for strip_text in (False, True):
-            try:
+            with pytest.raises(
+                KajikiSyntaxError,
+                match=r"-->         for i i range\(1, 2\):",
+            ):
                 perform(
                     '<div py:for="i i range(1, 2)">${i}</div>',
                     "",
                     strip_text=strip_text,
                 )
-            except KajikiSyntaxError as exc:
-                assert "-->         for i i range(1, 2):" in str(exc), exc
-            else:
-                raise AssertionError
 
     def test_code_error(self):
         for strip_text in (False, True):
-            try:
-                child = FileLoader(
-                    os.path.join(os.path.dirname(__file__), "data")
-                ).load("error.html", strip_text=strip_text)
+            child = FileLoader(os.path.join(os.path.dirname(__file__), "data")).load(
+                "error.html", strip_text=strip_text
+            )
+            with pytest.raises(ZeroDivisionError) as exc_info:
                 child().render()
-            except ZeroDivisionError:
-                exn_info = traceback.format_exception(*sys.exc_info())
-                last_line = exn_info[-2]
-                assert "${3/0}" in last_line
-            else:
-                raise AssertionError
+            formatted = traceback.format_exception(None, exc_info.value, exc_info.tb)
+            last_line = formatted[-2]
+            assert "${3/0}" in last_line
 
 
 class TestBracketsInExpression(TestCase):
@@ -1237,8 +1156,7 @@ class TestBracketsInExpression(TestCase):
 
     def test_complex(self):
         perform(
-            "<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'}"
-            " ${1+1}</div></xml>",
+            "<xml><div>${'ciao {  } {' + \"a {} b {{{{} w}}rar\"}${'sd{}'}" " ${1+1}</div></xml>",
             "<xml><div>ciao {  } {a {} b {{{{} w}}rarsd{} 2</div></xml>",
         )
 
@@ -1249,38 +1167,30 @@ class TestBracketsInExpression(TestCase):
         )
 
     def test_raise_unclosed_string(self):
-        try:
+        with pytest.raises(XMLTemplateCompileError) as e:
             XMLTemplate('<x>${"ciao}</x>')
-            msg = "must raise"
-            raise AssertionError(msg)
-        except XMLTemplateCompileError as e:
-            # assert "can't compile" in str(e), e  # different between pypy and cpython
-            assert '"ciao' in str(e), e
+        # assert "can't compile" in str(e)  # different between pypy and cpython
+        assert '"ciao' in str(e)
 
     def test_raise_plus_with_an_operand(self):
-        try:
+        with pytest.raises(XMLTemplateCompileError) as e:
             XMLTemplate('<x>${"ciao" + }</x>')
-            msg = "must raise"
-            raise AssertionError(msg)
-        except XMLTemplateCompileError as e:
-            assert "detected an invalid python expression" in str(e), e
-            assert '"ciao" +' in str(e), e
+        assert "detected an invalid python expression" in str(e)
+        assert '"ciao" +' in str(e)
 
     def test_unclosed_braced(self):
-        try:
+        with pytest.raises(
+            XMLTemplateCompileError,
+            match="Braced expression not terminated",
+        ):
             XMLTemplate('<x>${"ciao"</x>')
-            msg = "must raise"
-            raise AssertionError(msg)
-        except XMLTemplateCompileError as e:
-            assert "Braced expression not terminated" in str(e), e
 
     def test_leading_opening_brace(self):
-        try:
+        with pytest.raises(
+            XMLTemplateCompileError,
+            match="Braced expression not terminated",
+        ):
             XMLTemplate('<x>${{"a", "b"}</x>')
-            msg = "must raise"
-            raise AssertionError(msg)
-        except XMLTemplateCompileError as e:
-            assert "Braced expression not terminated" in str(e), e
 
 
 class TestMultipleChildrenInDOM(TestCase):
@@ -1292,55 +1202,33 @@ class TestMultipleChildrenInDOM(TestCase):
         assert res == "<x>2</x>"
 
     def test_multiple_nodes(self):
-        try:
+        with pytest.raises(XMLTemplateParseError, match="junk after document"):
             XMLTemplate("<!-- a --><x>${1+1}</x><y>${1+1}</y>")
-        except XMLTemplateParseError as e:
-            assert "junk after document element" in str(e), e
-        else:
-            msg = "should have raised"
-            raise AssertionError(msg)
 
     def test_only_comment(self):
-        try:
+        with pytest.raises(XMLTemplateParseError, match="no element found"):
             XMLTemplate("<!-- a -->")
-        except XMLTemplateParseError as e:
-            assert "no element found" in str(e), e
-        else:
-            msg = "should have raised"
-            raise AssertionError(msg)
 
 
 class TestSyntaxErrorCallingWithTrailingParenthesis(TestCase):
     def test_raise(self):
-        try:
+        with pytest.raises(XMLTemplateCompileError):
             XMLTemplate(
                 """<div py:strip="True"
 ><py:def function="echo(x)">$x</py:def
 >${echo('hello'))}</div>"""
             )
-            msg = "should raise"
-            raise AssertionError(msg)
-        except XMLTemplateCompileError:
-            pass
 
 
 class TestExtendsWithImport(TestCase):
     def test_extends_with_import(self):
-        loader = MockLoader({
-            'parent.html': XMLTemplate(
-                '<div>'
-                '<py:import href="lib.html"/>'
-                '${lib.foo()}'
-                '</div>'),
-            'lib.html': XMLTemplate(
-                '<div>'
-                '<py:def function="foo()"><b>foo</b></py:def>'
-                '</div>'),
-            'child.html': XMLTemplate('<py:extends href="parent.html"/>')})
-        child = loader.import_('child.html')
+        loader = MockLoader(
+            {
+                "parent.html": XMLTemplate("<div>" '<py:import href="lib.html"/>' "${lib.foo()}" "</div>"),
+                "lib.html": XMLTemplate("<div>" '<py:def function="foo()"><b>foo</b></py:def>' "</div>"),
+                "child.html": XMLTemplate('<py:extends href="parent.html"/>'),
+            }
+        )
+        child = loader.import_("child.html")
         r = child().render()
-        assert r == '<div><b>foo</b></div>'
-
-
-if __name__ == "__main__":
-    main()
+        assert r == "<div><b>foo</b></div>"
