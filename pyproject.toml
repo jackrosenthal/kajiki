@@ -64,6 +64,11 @@ include = [
     "/tests",
 ]
 
+[tool.hatch.envs.hatch-test]
+extra-dependencies = [
+    "TurboGears2 @ git+https://github.com/TurboGears/tg2.git@942335e4de87d36ec7dc480b1e0e41dc01e6f0ff",
+]
+
 [[tool.hatch.envs.hatch-test.matrix]]
 python = ["3.9", "3.10", "3.11", "3.12"]
 
