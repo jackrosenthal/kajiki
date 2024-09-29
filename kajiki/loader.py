@@ -1,10 +1,12 @@
+import functools
+import importlib.resources
 import os
-
-import pkg_resources
+from pathlib import Path
 
 from .util import default_alias_for
 
-class Loader(object):
+
+class Loader:
     def __init__(self):
         self.modules = {}
 
@@ -40,21 +42,21 @@ class FileLoader(Loader):
     def __init__(
         self,
         path,
-        reload=True,
         force_mode=None,
         autoescape_text=False,
         xml_autoblocks=None,
-        **template_options
+        **template_options,
     ):
         super().__init__()
         from kajiki import TextTemplate, XMLTemplate
 
         if isinstance(path, str):
             self.path = path.split(";")
+        elif isinstance(path, Path):
+            self.path = [path]
         else:
             self.path = path
-        self._timestamps = {}
-        self._reload = reload
+
         self._force_mode = force_mode
         self._autoescape_text = autoescape_text
         self._xml_autoblocks = xml_autoblocks
@@ -68,69 +70,68 @@ class FileLoader(Loader):
             html5=lambda *a, **kw: XMLTemplate(mode="html5", *a, **kw),
         )
 
-    def _filename(self, name):
+    def _find_resource(self, name):
         for base in self.path:
-            fn = os.path.join(base, name)
-            if os.path.exists(fn):
-                return fn
-        return None
+            path = Path(base) / name
+            if path.is_file():
+                return path
 
-    def import_(self, name, *args, **kwargs):
-        filename = self._filename(name)
-        if self._reload and name in self.modules:
-            mtime = os.stat(filename).st_mtime
-            if mtime > self._timestamps.get(name, 0):
-                del self.modules[name]
-        return super().import_(name, *args, **kwargs)
+        raise FileNotFoundError(f"{name} not found in any of {self.path}")
 
     def _load(self, name, encoding="utf-8", *args, **kwargs):
-        """Text templates are read in text mode and XML templates are read in
-        binary mode. Thus, the ``encoding`` argument is only used for reading
-        text template files.
-        """
+        """Load a template from file."""
         from kajiki import TextTemplate, XMLTemplate
 
         options = self._template_options.copy()
         options.update(kwargs)
 
-        filename = self._filename(name)
-        if filename is None:
-            raise IOError("Unknown template %r" % name)
-        self._timestamps[name] = os.stat(filename).st_mtime
+        resource = self._find_resource(name)
+        source = resource.read_text(encoding=encoding)
         if self._force_mode == "text":
             return TextTemplate(
-                filename=filename, autoescape=self._autoescape_text, *args, **options
+                source=source,
+                filename=str(resource),
+                autoescape=self._autoescape_text,
+                *args,
+                **options,
             )
         elif self._force_mode:
             return XMLTemplate(
-                filename=filename,
+                source=source,
+                filename=str(resource),
                 mode=self._force_mode,
                 autoblocks=self._xml_autoblocks,
                 *args,
-                **options
+                **options,
             )
         else:
-            ext = os.path.splitext(filename)[1][1:]
+            ext = Path(resource.name).suffix.lstrip(".")
             return self.extension_map[ext](
-                source=None, filename=filename, *args, **options
+                source=source, filename=str(resource), *args, **options
             )
 
 
 class PackageLoader(FileLoader):
-    def __init__(self, reload=True, force_mode=None):
-        super().__init__(None, reload, force_mode)
+    def __init__(self, force_mode=None):
+        super().__init__(None, force_mode=force_mode)
 
-    def _filename(self, name):
+    def _find_resource(self, name):
         package, module = name.rsplit(".", 1)
-        found = dict()
-        for fn in pkg_resources.resource_listdir(package, "."):
-            if fn == name:
-                return pkg_resources.resource_filename(package, fn)
-            root, ext = os.path.splitext(fn)
-            if root == module:
-                found[ext] = fn
-        for ext in (".xml", ".html", ".html5", ".txt"):
-            if ext in found:
-                return pkg_resources.resource_filename(package, found[ext])
-        else:
-            raise IOError("Unknown template %r" % name)
+        package_resource = importlib.resources.files(package)
+
+        if package_resource.is_file():
+            raise OSError(f"{package} refers to a module, not a package.")
+
+        for resource in package_resource.iterdir():
+            if not resource.is_file():
+                continue
+
+            root, ext = os.path.splitext(resource.name)
+            if root != module:
+                continue
+
+            for match_ext in (".xml", ".html", ".html5", ".txt"):
+                if match_ext == ext:
+                    return resource
+
+        raise FileNotFoundError("Unknown template %r" % name)
