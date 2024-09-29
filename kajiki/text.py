@@ -239,9 +239,8 @@ class _Parser:
         self._in_def = old_in_def
         if self._in_def:
             return ir.InnerDefNode(token.body, *body[:-1])
-        else:
-            self.functions[token.body.strip()] = body[:-1]
-            return None
+        self.functions[token.body.strip()] = body[:-1]
+        return None
 
     def _parse_call(self, token):
         b = token.body.find("(")
@@ -292,8 +291,7 @@ class _Parser:
         if len(parts) > 1:
             assert parts[1] == "as"
             return ir.ImportNode(fn, parts[2])
-        else:
-            return ir.ImportNode(fn)
+        return ir.ImportNode(fn)
 
     def _parse_include(self, token):
         parts = shlex.split(token.body)
@@ -308,8 +306,7 @@ class _Parser:
         if node.module_level:
             self.mod_py.append(node)
             return None
-        else:
-            return node
+        return node
 
     def _parse_block(self, token):
         fname = "_kj_block_" + token.body.strip()
@@ -320,8 +317,7 @@ class _Parser:
             parent_block = "parent." + fname
             body.insert(0, ir.PythonNode(ir.TextNode(f"parent_block={parent_block}")))
             return None
-        else:
-            return ir.ExprNode(decl)
+        return ir.ExprNode(decl)
 
 
 class _Token:

@@ -222,8 +222,7 @@ class _Template:
             # .replace("'", '&#39;'))
             # Above we do NOT escape the single quote; we don't need it because
             # all HTML attributes are double-quoted in our output.
-        else:
-            return uval
+        return uval
 
     _re_escape = re.compile(r'&|<|>|"')
 
@@ -258,8 +257,7 @@ class _Template:
                 result.append(str(part))
         if result:
             return "".join(result)
-        else:
-            return None
+        return None
 
     @classmethod
     def annotate_lnotab(cls, py_to_tpl):
@@ -359,8 +357,7 @@ class TplFunc:
     def __repr__(self):  # pragma no cover
         if self._inst:
             return f"<bound tpl_function {self._func.__name__!r} of {self._inst!r}>"
-        else:
-            return f"<unbound tpl_function {self._func.__name__!r}>"
+        return f"<unbound tpl_function {self._func.__name__!r}>"
 
     def __call__(self, *args, **kwargs):
         if self._bound_func is None:

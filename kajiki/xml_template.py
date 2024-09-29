@@ -202,22 +202,21 @@ class _Compiler:
         """
         if isinstance(node, dom.Comment):
             return self._compile_comment(node)
-        elif isinstance(node, dom.Text):
+        if isinstance(node, dom.Text):
             return self._compile_text(node)
-        elif isinstance(node, dom.ProcessingInstruction):
+        if isinstance(node, dom.ProcessingInstruction):
             return self._compile_pi(node)
-        elif self._is_autoblock(node):
+        if self._is_autoblock(node):
             # Set the name of the block equal to the tag itself.
             node.setAttribute("name", node.tagName)
             return self._compile_block(node)
-        elif node.tagName.startswith("py:"):
+        if node.tagName.startswith("py:"):
             # Handle directives
             compiler = getattr(
                 self, "_compile_{}".format(node.tagName.split(":")[-1]), self._compile_xml
             )
             return compiler(node)
-        else:
-            return self._compile_xml(node)
+        return self._compile_xml(node)
 
     @annotate
     def _compile_xml(self, node):
@@ -607,19 +606,19 @@ class _TextCompiler:
                     filename=self.filename,
                     linen=self.lineno,
                 )
-            else:
-                # if the expression ends in a } then it may be valid
-                try:
-                    compile(py_expr(end - 1), "check_validity", "eval")
-                except SyntaxError:
-                    # for example + operators with a single operand
-                    msg = f"Kajiki detected an invalid python expression `{py_expr()[:-1]}`"
-                    raise XMLTemplateCompileError(
-                        msg,
-                        doc=self.doc,
-                        filename=self.filename,
-                        linen=self.lineno,
-                    )
+
+            # if the expression ends in a } then it may be valid
+            try:
+                compile(py_expr(end - 1), "check_validity", "eval")
+            except SyntaxError:
+                # for example + operators with a single operand
+                msg = f"Kajiki detected an invalid python expression `{py_expr()[:-1]}`"
+                raise XMLTemplateCompileError(
+                    msg,
+                    doc=self.doc,
+                    filename=self.filename,
+                    linen=self.lineno,
+                )
 
             py_text = py_expr(end - 1)
             self.pos = end

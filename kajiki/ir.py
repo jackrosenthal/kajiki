@@ -456,8 +456,7 @@ class PyLine:
                 + self._text
                 + "\t# %s:%d" % (self._filename, self._lineno)
             )
-        else:
-            return (" " * self._indent) + self._text
+        return (" " * self._indent) + self._text
 
     def __repr__(self):
         return f"{self._filename}:{self._lineno} {self}"

@@ -224,7 +224,6 @@ def extract_dtd(markup):
             # The position for a prospective DTD is *after* the <?xml ...?> declaration,
             # because it's not allowed for there to be anything before it.
             return "", decl_match.end(), markup
-        else:
-            return "", 0, markup
+        return "", 0, markup
     found = match.group()
     return found, match.start(), markup.replace(found, "", 1)

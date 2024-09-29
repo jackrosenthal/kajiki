@@ -87,6 +87,7 @@ class FileLoader(Loader):
 
         resource = self._find_resource(name)
         source = resource.read_text(encoding=encoding)
+
         if self._force_mode == "text":
             return TextTemplate(
                 source=source,
@@ -94,7 +95,8 @@ class FileLoader(Loader):
                 autoescape=self._autoescape_text,
                 **options,
             )
-        elif self._force_mode:
+
+        if self._force_mode:
             return XMLTemplate(
                 source=source,
                 filename=str(resource),
@@ -102,11 +104,11 @@ class FileLoader(Loader):
                 autoblocks=self._xml_autoblocks,
                 **options,
             )
-        else:
-            ext = Path(resource.name).suffix.lstrip(".")
-            return self.extension_map[ext](
-                source=source, filename=str(resource), **options
-            )
+
+        ext = Path(resource.name).suffix.lstrip(".")
+        return self.extension_map[ext](
+            source=source, filename=str(resource), **options
+        )
 
 
 class PackageLoader(FileLoader):
