@@ -73,6 +73,7 @@ python = "3.12"
 
 [tool.hatch.envs.docs]
 dependencies = [
+    "furo",
     "sphinx",
 ]
 
