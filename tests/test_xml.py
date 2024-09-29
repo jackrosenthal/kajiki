@@ -1185,6 +1185,7 @@ class TestErrorReporting(TestCase):
                     strip_text=strip_text,
                 )
 
+    @pytest.mark.skipif(sys.implementation.name == "pypy", reason="lnotab has issues with pypy")
     def test_code_error(self):
         for strip_text in (False, True):
             child = FileLoader(os.path.join(os.path.dirname(__file__), "data")).load(
