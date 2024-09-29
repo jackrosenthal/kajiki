@@ -1,20 +1,18 @@
-#!/usr/bin/env python
-
-from unittest import TestCase, main
+from unittest import TestCase
 
 import kajiki
 
 
 class TestBasic(TestCase):
     def setUp(self):
-        class tpl:
+        class Tpl:
             @kajiki.expose
             def __main__():
                 yield "Hello,"
-                yield name
+                yield name  # noqa: F821
                 yield "\n"
 
-        self.tpl = kajiki.Template(tpl)
+        self.tpl = kajiki.Template(Tpl)
 
     def test_basic(self):
         rsp = self.tpl({"name": "Rick"}).render()
@@ -23,19 +21,19 @@ class TestBasic(TestCase):
 
 class TestSwitch(TestCase):
     def setUp(self):
-        class tpl:
+        class Tpl:
             @kajiki.expose
             def __main__():
                 for i in range(2):
-                    yield local.__kj__.escape(i)
+                    yield local.__kj__.escape(i)  # noqa: F821
                     yield " is "
-                    local.__kj__.push_switch(i % 2)
-                    if local.__kj__.case(0):
+                    local.__kj__.push_switch(i % 2)  # noqa: F821
+                    if local.__kj__.case(0):  # noqa: F821
                         yield "even\n"
                     else:
                         yield "odd\n"
 
-        self.tpl = kajiki.Template(tpl)
+        self.tpl = kajiki.Template(Tpl)
 
     def test_basic(self):
         rsp = self.tpl().render()
@@ -44,7 +42,7 @@ class TestSwitch(TestCase):
 
 class TestFunction(TestCase):
     def setUp(self):
-        class tpl:
+        class Tpl:
             @kajiki.expose
             def evenness(self):
                 if self % 2 == 0:
@@ -55,12 +53,12 @@ class TestFunction(TestCase):
             @kajiki.expose
             def __main__():
                 for i in range(2):
-                    yield local.__kj__.escape(i)
+                    yield local.__kj__.escape(i)  # noqa: F821
                     yield " is "
-                    yield evenness(i)
+                    yield evenness(i)  # noqa: F821
                     yield "\n"
 
-        self.tpl = kajiki.Template(tpl)
+        self.tpl = kajiki.Template(Tpl)
 
     def test_basic(self):
         rsp = self.tpl({"name": "Rick"}).render()
@@ -69,7 +67,7 @@ class TestFunction(TestCase):
 
 class TestCall(TestCase):
     def setUp(self):
-        class tpl:
+        class Tpl:
             @kajiki.expose
             def quote(self, speaker):
                 for i in range(2):
@@ -81,15 +79,15 @@ class TestCall(TestCase):
 
             @kajiki.expose
             def __main__():
-                @__kj__.flattener.decorate
+                @__kj__.flattener.decorate  # noqa: F821
                 def _kj_lambda(n):
                     yield "Nevermore "
-                    yield local.__kj__.escape(n)
+                    yield local.__kj__.escape(n)  # noqa: F821
 
-                yield quote(_kj_lambda, "the raven")
+                yield quote(_kj_lambda, "the raven")  # noqa: F821
                 del _kj_lambda
 
-        self.tpl = kajiki.Template(tpl)
+        self.tpl = kajiki.Template(Tpl)
 
     def test_basic(self):
         rsp = self.tpl({"name": "Rick"}).render()
@@ -101,7 +99,7 @@ class TestCall(TestCase):
 
 class TestImport(TestCase):
     def setUp(self):
-        class lib_undec:
+        class LibUndec:
             @kajiki.expose
             def evenness(self):
                 if self % 2 == 0:
@@ -112,24 +110,24 @@ class TestImport(TestCase):
             @kajiki.expose
             def half_evenness(self):
                 yield " half of "
-                yield local.__kj__.escape(self)
+                yield local.__kj__.escape(self)  # noqa: F821
                 yield " is "
-                yield evenness(self / 2)
+                yield evenness(self / 2)  # noqa: F821
 
-        lib = kajiki.Template(lib_undec)
+        lib = kajiki.Template(LibUndec)
 
-        class tpl:
+        class Tpl:
             @kajiki.expose
             def __main__():
                 simple_function = lib(dict(globals()))
                 for i in range(4):
-                    yield local.__kj__.escape(i)
+                    yield local.__kj__.escape(i)  # noqa: F821
                     yield " is "
                     yield simple_function.evenness(i)
                     yield simple_function.half_evenness(i)
                     yield "\n"
 
-        self.tpl = kajiki.Template(tpl)
+        self.tpl = kajiki.Template(Tpl)
 
     def test_import(self):
         rsp = self.tpl({"name": "Rick"}).render()
@@ -143,21 +141,21 @@ class TestImport(TestCase):
 
 class TestInclude(TestCase):
     def setUp(self):
-        class hdr_undec:
+        class HdrUndec:
             @kajiki.expose
             def __main__():
                 yield "# header\n"
 
-        hdr = kajiki.Template(hdr_undec)
+        hdr = kajiki.Template(HdrUndec)
 
-        class tpl_undec:
+        class TplUndec:
             @kajiki.expose
             def __main__():
                 yield "a\n"
                 yield hdr().__main__()
                 yield "b\n"
 
-        tpl = kajiki.Template(tpl_undec)
+        tpl = kajiki.Template(TplUndec)
         self.tpl = tpl
 
     def test_include(self):
@@ -167,30 +165,30 @@ class TestInclude(TestCase):
 
 class TestExtends(TestCase):
     def setUp(_self):
-        class parent_tpl_undec:
+        class ParentTplUndec:
             @kajiki.expose
             def __main__():
-                yield header()
-                yield body()
-                yield footer()
+                yield header()  # noqa: F821
+                yield body()  # noqa: F821
+                yield footer()  # noqa: F821
 
             @kajiki.expose
             def header():
                 yield "# Header name="
-                yield name
+                yield name  # noqa: F821
                 yield "\n"
 
             @kajiki.expose
             def body():
                 yield "## Parent Body\n"
                 yield "local.id() = "
-                yield local.id()
+                yield local.id()  # noqa: F821
                 yield "\n"
                 yield "self.id() = "
-                yield self.id()
+                yield self.id()  # noqa: F821
                 yield "\n"
                 yield "child.id() = "
-                yield child.id()
+                yield child.id()  # noqa: F821
                 yield "\n"
 
             @kajiki.expose
@@ -202,34 +200,34 @@ class TestExtends(TestCase):
             def id():
                 yield "parent"
 
-        parent_tpl = kajiki.Template(parent_tpl_undec)
+        parent_tpl = kajiki.Template(ParentTplUndec)
 
-        class mid_tpl_undec:
+        class MidTplUndec:
             @kajiki.expose
             def __main__():
-                yield local.__kj__.extend(parent_tpl).__main__()
+                yield local.__kj__.extend(parent_tpl).__main__()  # noqa: F821
 
             @kajiki.expose
             def id():
                 yield "mid"
 
-        mid_tpl = kajiki.Template(mid_tpl_undec)
+        mid_tpl = kajiki.Template(MidTplUndec)
 
-        class child_tpl_undec:
+        class ChildTplUndec:
             @kajiki.expose
             def __main__():
-                yield local.__kj__.extend(mid_tpl).__main__()
+                yield local.__kj__.extend(mid_tpl).__main__()  # noqa: F821
 
             @kajiki.expose
             def body():
                 yield "## Child Body\n"
-                yield parent.body()
+                yield parent.body()  # noqa: F821
 
             @kajiki.expose
             def id():
                 yield "child"
 
-        child_tpl = kajiki.Template(child_tpl_undec)
+        child_tpl = kajiki.Template(ChildTplUndec)
         _self.parent_tpl = parent_tpl
         _self.child_tpl = child_tpl
 
@@ -248,36 +246,32 @@ class TestExtends(TestCase):
 
 class TestDynamicExtends(TestCase):
     def setUp(_self):
-        class parent_0_undec:
+        class Parent0Undec:
             @kajiki.expose
             def __main__():
                 yield "Parent 0"
 
-        parent_0 = kajiki.Template(parent_0_undec)
+        parent_0 = kajiki.Template(Parent0Undec)
 
-        class parent_1_undec:
+        class Parent1Undec:
             @kajiki.expose
             def __main__():
                 yield "Parent 1"
 
-        parent_1 = kajiki.Template(parent_1_undec)
+        parent_1 = kajiki.Template(Parent1Undec)
 
-        class child_tpl:
+        class ChildTpl:
             @kajiki.expose
             def __main__():
-                if p == 0:
-                    yield local.__kj__.extend(parent_0).__main__()
+                if p == 0:  # noqa: F821
+                    yield local.__kj__.extend(parent_0).__main__()  # noqa: F821
                 else:
-                    yield local.__kj__.extend(parent_1).__main__()
+                    yield local.__kj__.extend(parent_1).__main__()  # noqa: F821
 
-        _self.child_tpl = kajiki.Template(child_tpl)
+        _self.child_tpl = kajiki.Template(ChildTpl)
 
     def test_extends(self):
         rsp = self.child_tpl({"p": 0}).render()
         assert rsp == "Parent 0", rsp
         rsp = self.child_tpl({"p": 1}).render()
         assert rsp == "Parent 1", rsp
-
-
-if __name__ == "__main__":
-    main()
