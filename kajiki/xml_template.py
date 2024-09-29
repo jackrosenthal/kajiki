@@ -72,7 +72,7 @@ def annotate(gen):
     return inner
 
 
-class _Compiler(object):
+class _Compiler:
     """Compiles a DOM tree into IR :class:`kajiki.ir.TemplateNode`.
 
     Intermediate Representation is a tree of nodes that represent
@@ -265,50 +265,48 @@ class _Compiler(object):
             yield ir.TextNode(">", guard)
             yield ir.ExprNode(content)
             yield ir.TextNode("</%s>" % node.tagName, guard)
-        else:
-            if node.childNodes:
-                yield ir.TextNode(">", guard)
-                if self.cdata_scripts and node.tagName in HTML_CDATA_TAGS:
-                    # Special behaviour for <script>, <style> tags:
-                    if self.mode == "xml":  # Start escaping
-                        yield ir.TextNode("/*<![CDATA[*/")
-                    # Need to unescape the contents of these tags
-                    for child in node.childNodes:
-                        # CDATA for scripts and styles are automatically managed.
-                        if getattr(child, "_cdata", False):
-                            continue
-                        assert isinstance(child, dom.Text)
-                        for x in self._compile_text(child):
-                            if (
-                                child.escaped
-                            ):  # If user declared CDATA no escaping happened.
-                                x.text = html.unescape(x.text)
-                            yield x
-                    if self.mode == "xml":  # Finish escaping
-                        yield ir.TextNode("/*]]>*/")
-                else:
-                    for cn in node.childNodes:
-                        # Keep CDATA sections around if declared by user
-                        if getattr(cn, "_cdata", False):
-                            yield ir.TextNode(cn.data)
-                            continue
-                        for x in self._compile_node(cn):
-                            yield x
-                if not (
-                    self.mode.startswith("html")
-                    and node.tagName in HTML_OPTIONAL_END_TAGS
-                ):
-                    yield ir.TextNode("</%s>" % node.tagName, guard)
-            elif node.tagName in HTML_REQUIRED_END_TAGS:
-                yield ir.TextNode("></%s>" % node.tagName, guard)
+        elif node.childNodes:
+            yield ir.TextNode(">", guard)
+            if self.cdata_scripts and node.tagName in HTML_CDATA_TAGS:
+                # Special behaviour for <script>, <style> tags:
+                if self.mode == "xml":  # Start escaping
+                    yield ir.TextNode("/*<![CDATA[*/")
+                # Need to unescape the contents of these tags
+                for child in node.childNodes:
+                    # CDATA for scripts and styles are automatically managed.
+                    if getattr(child, "_cdata", False):
+                        continue
+                    assert isinstance(child, dom.Text)
+                    for x in self._compile_text(child):
+                        if (
+                            child.escaped
+                        ):  # If user declared CDATA no escaping happened.
+                            x.text = html.unescape(x.text)
+                        yield x
+                if self.mode == "xml":  # Finish escaping
+                    yield ir.TextNode("/*]]>*/")
             else:
-                if self.mode.startswith("html"):
-                    if node.tagName in HTML_OPTIONAL_END_TAGS:
-                        yield ir.TextNode(">", guard)
-                    else:
-                        yield ir.TextNode("></%s>" % node.tagName, guard)
-                else:
-                    yield ir.TextNode("/>", guard)
+                for cn in node.childNodes:
+                    # Keep CDATA sections around if declared by user
+                    if getattr(cn, "_cdata", False):
+                        yield ir.TextNode(cn.data)
+                        continue
+                    for x in self._compile_node(cn):
+                        yield x
+            if not (
+                self.mode.startswith("html")
+                and node.tagName in HTML_OPTIONAL_END_TAGS
+            ):
+                yield ir.TextNode("</%s>" % node.tagName, guard)
+        elif node.tagName in HTML_REQUIRED_END_TAGS:
+            yield ir.TextNode("></%s>" % node.tagName, guard)
+        elif self.mode.startswith("html"):
+            if node.tagName in HTML_OPTIONAL_END_TAGS:
+                yield ir.TextNode(">", guard)
+            else:
+                yield ir.TextNode("></%s>" % node.tagName, guard)
+        else:
+            yield ir.TextNode("/>", guard)
 
     @annotate
     def _compile_replace(self, node):
@@ -498,7 +496,7 @@ def make_text_node(text, guard=None):
     return ir.TextNode(text, guard)
 
 
-class _TextCompiler(object):
+class _TextCompiler:
     """Separates expressions such as ${some_var} from the ordinary text
     around them in the template source and generates :class:`.ir.ExprNode`
     instances and :class:`.ir.TextNode` instances accordingly.
@@ -783,7 +781,7 @@ class _Parser(sax.ContentHandler):
         pass
 
 
-class _DomTransformer(object):
+class _DomTransformer:
     """Applies standard Kajiki transformations to a parsed document.
 
     Given a document generated by :class:`.Parser` it applies some

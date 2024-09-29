@@ -120,21 +120,21 @@ class TestSimple(TestCase):
         must be explicitly be made so.
         """
         script = 'if (1 < 2) { doc.write("<p>Offen&nbsp;bach</p>"); }\n'
-        src = "<script><![CDATA[\n{0}]]></script>".format(script)
+        src = f"<script><![CDATA[\n{script}]]></script>"
         perform(
-            src, mode="html", expected_output="<script>\n{0}</script>".format(script)
+            src, mode="html", expected_output=f"<script>\n{script}</script>"
         )
         perform(
-            src, "<script>/*<![CDATA[*/\n{0}/*]]>*/</script>".format(script), mode="xml"
+            src, f"<script>/*<![CDATA[*/\n{script}/*]]>*/</script>", mode="xml"
         )
 
     def test_style_escaping(self):
         style = "html > body { display: none; }\n"
-        src = "<style><![CDATA[\n{0}]]></style>".format(style)
+        src = f"<style><![CDATA[\n{style}]]></style>"
         perform(
-            src, "<style>/*<![CDATA[*/\n{0}/*]]>*/</style>".format(style), mode="xml"
+            src, f"<style>/*<![CDATA[*/\n{style}/*]]>*/</style>", mode="xml"
         )
-        perform(src, "<style>\n{0}</style>".format(style), mode="html")
+        perform(src, f"<style>\n{style}</style>", mode="html")
 
     def test_script_variable(self):
         """Interpolate variables inside <script> tags"""
@@ -171,15 +171,15 @@ class TestSimple(TestCase):
 
     def test_script_commented_CDATA(self):
         script = 'if (1 < 2) { doc.write("<p>Offen&nbsp;bach</p>"); }\n'
-        src = "<script>/*<![CDATA[*/\n{0}/*]]>*/</script>".format(script)
+        src = f"<script>/*<![CDATA[*/\n{script}/*]]>*/</script>"
         perform(
             src,
             mode="html",
-            expected_output="<script>/**/\n{0}/**/</script>".format(script),
+            expected_output=f"<script>/**/\n{script}/**/</script>",
         )
         perform(
             src,
-            "<script>/*<![CDATA[*//**/\n{0}/**//*]]>*/</script>".format(script),
+            f"<script>/*<![CDATA[*//**/\n{script}/**//*]]>*/</script>",
             mode="xml",
         )
 
@@ -580,9 +580,9 @@ class TestImport(TestCase):
         tpl = loader.import_("tpl.html")
         rsp = tpl(dict(name="Rick")).render()
         assert (
-            "<html><body><p>This is the body</p>\n"
+            rsp == "<html><body><p>This is the body</p>\n"
             "<p>The included template must also access Kajiki globals and "
-            "the template context: Rick</p></body></html>" == rsp
+            "the template context: Rick</p></body></html>"
         )
 
     def test_include_html5(self):
@@ -617,9 +617,9 @@ class TestImport(TestCase):
         tpl = loader.import_("tpl.html")
         rsp = tpl(dict(name="Rick")).render()
         assert (
-            "<!DOCTYPE html>\n<html><body><p>This is the body</p>\n"
+            rsp == "<!DOCTYPE html>\n<html><body><p>This is the body</p>\n"
             "<p>The included template must also access Kajiki globals and "
-            "the template context: Rick</p></body></html>" == rsp
+            "the template context: Rick</p></body></html>"
         ), rsp
 
 

@@ -1,7 +1,7 @@
 import re
 
 
-class DocumentTypeDeclaration(object):
+class DocumentTypeDeclaration:
     """Represents a http://en.wikipedia.org/wiki/Document_Type_Declaration
 
     This is used to lookup DTDs details by its string, DTDs can
@@ -84,8 +84,7 @@ class DocumentTypeDeclaration(object):
         for dtd in cls.by_uri.values():
             if dtd.regex.match(dtd_string):
                 return dtd
-        else:
-            return None
+        return None
 
     REGEX = re.compile(r"<!DOCTYPE[^>]+>")  # This matches any DTD.
 

@@ -54,7 +54,7 @@ def TextTemplate(source=None, filename=None, autoescape=False, encoding="utf-8")
         filename = "<string>"
     assert isinstance(
         source, str
-    ), "*source* must be a unicode string, not a {}".format(type(source))
+    ), f"*source* must be a unicode string, not a {type(source)}"
     scanner = _Scanner(filename, source)
     tree = _Parser(scanner, autoescape).parse()
     tree.filename = filename
@@ -68,7 +68,7 @@ def _diff_pos(last_pos, new_pos):
     return new_pos[1]
 
 
-class _Scanner(object):
+class _Scanner:
     def __init__(self, filename, source):
         self.filename = filename
         self.source = source
@@ -179,7 +179,7 @@ class _Scanner(object):
                 return self.expr(text)
 
 
-class _Parser(object):
+class _Parser:
     def __init__(self, tokenizer, autoescape=False):
         self.tokenizer = tokenizer
         self.functions = collections.defaultdict(list)
@@ -327,7 +327,7 @@ class _Parser(object):
             return ir.ExprNode(decl)
 
 
-class _Token(object):
+class _Token:
     def __init__(self, filename, lineno, text):
         self.filename = filename
         self.lineno = lineno

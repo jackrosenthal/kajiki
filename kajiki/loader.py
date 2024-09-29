@@ -1,4 +1,3 @@
-import functools
 import importlib.resources
 import os
 from pathlib import Path

@@ -1,4 +1,4 @@
-import unittest.mock as mock
+from unittest import mock
 
 import pytest
 
@@ -11,7 +11,7 @@ class MainMocks:
         mocked_render = mock.Mock(return_value="render result")
         self.render = mocked_render
 
-        class MockedTemplate(object):
+        class MockedTemplate:
             def render(self, *args, **kwargs):
                 return mocked_render(*args, **kwargs)
 
@@ -20,7 +20,7 @@ class MainMocks:
         mocked_import = mock.Mock(return_value=self.template_type)
         self.import_ = mocked_import
 
-        class MockedLoader(object):
+        class MockedLoader:
             def import_(self, *args, **kwargs):
                 return mocked_import(*args, **kwargs)
 
@@ -108,7 +108,7 @@ def test_output_to_file(tmpdir, main_mocks):
     main_mocks.template_type.assert_called_once_with({})
     main_mocks.render.assert_called_once_with()
 
-    with open(outfile, "r") as f:
+    with open(outfile) as f:
         assert f.read() == "render result"
 
 

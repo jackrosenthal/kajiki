@@ -15,13 +15,13 @@ from .ir import generate_python
 from .util import flattener, literal
 
 
-class _obj(object):
+class _obj:
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
 
 
-class _Template(object):
+class _Template:
     """Base Class for all compiled Kajiki Templates.
 
     All kajiki templates created from a :class:`kajiki.ir.TemplateNode` will
@@ -339,7 +339,7 @@ def from_ir(ir_node, base_globals=None):
     return tpl
 
 
-class TplFunc(object):
+class TplFunc:
     """A template function attached to a _Template.
 
     By default template functions (ie: __main__) depends

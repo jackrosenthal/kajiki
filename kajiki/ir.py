@@ -15,7 +15,7 @@ def generate_python(ir):
             yield line.indent(cur_indent)
 
 
-class Node(object):
+class Node:
     def __init__(self):
         self.filename = "<string>"
         self.lineno = 0
@@ -453,7 +453,7 @@ def optimize(iter_node):
         yield last_node
 
 
-class PyLine(object):
+class PyLine:
     def __init__(self, filename, lineno, text, indent=0):
         self._filename = filename
         self._lineno = lineno

@@ -1,7 +1,7 @@
+import os.path
 from collections import deque
 from random import randint
 from threading import local
-import os.path
 
 
 def expose(func):
@@ -9,7 +9,7 @@ def expose(func):
     return func
 
 
-class flattener(object):
+class flattener:
     def __init__(self, iterator):
         while type(iterator) == flattener:
             iterator = iterator.iterator
@@ -55,7 +55,7 @@ def literal(text):
     return flattener(iter([text]))
 
 
-class NameGen(object):
+class NameGen:
     lcl = local()
 
     def __init__(self):
