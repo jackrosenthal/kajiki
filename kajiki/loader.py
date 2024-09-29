@@ -6,7 +6,8 @@ from kajiki.util import default_alias_for
 
 
 class Loader:
-    def __init__(self):
+    def __init__(self, reload=False):  # noqa: FBT002
+        self._reload = reload
         self.modules = {}
 
     def import_(self, name, **kwargs):
@@ -14,7 +15,7 @@ class Loader:
         else loads the template, caches it and returns it.
         """
         mod = self.modules.get(name)
-        if mod:
+        if not self._reload and mod:
             return mod
         mod = self._load(name, **kwargs)
         mod.loader = self
@@ -41,12 +42,13 @@ class FileLoader(Loader):
     def __init__(
         self,
         path,
+        reload=False,  # noqa: FBT002
         force_mode=None,
         autoescape_text=False,  # noqa: FBT002
         xml_autoblocks=None,
         **template_options,
     ):
-        super().__init__()
+        super().__init__(reload=reload)
         from kajiki import TextTemplate, XMLTemplate
 
         if isinstance(path, str):
@@ -108,8 +110,8 @@ class FileLoader(Loader):
 
 
 class PackageLoader(FileLoader):
-    def __init__(self, force_mode=None):
-        super().__init__(None, force_mode=force_mode)
+    def __init__(self, reload=False, force_mode=None):  # noqa: FBT002
+        super().__init__(None, reload=reload, force_mode=force_mode)
 
     def _find_resource(self, name):
         package, module = name.rsplit(".", 1)
