@@ -9,14 +9,14 @@ class Loader:
     def __init__(self):
         self.modules = {}
 
-    def import_(self, name, *args, **kwargs):
+    def import_(self, name, **kwargs):
         """Returns the template if it is already in the cache,
         else loads the template, caches it and returns it.
         """
         mod = self.modules.get(name)
         if mod:
             return mod
-        mod = self._load(name, *args, **kwargs)
+        mod = self._load(name, **kwargs)
         mod.loader = self
         self.modules[name] = mod
         return mod
@@ -61,12 +61,12 @@ class FileLoader(Loader):
         self._xml_autoblocks = xml_autoblocks
         self._template_options = template_options
         self.extension_map = {
-            "txt": lambda *a, **kw: TextTemplate(
-                autoescape=self._autoescape_text, *a, **kw
+            "txt": lambda **kw: TextTemplate(
+                autoescape=self._autoescape_text, **kw
             ),
             "xml": XMLTemplate,
-            "html": lambda *a, **kw: XMLTemplate(mode="html", *a, **kw),
-            "html5": lambda *a, **kw: XMLTemplate(mode="html5", *a, **kw),
+            "html": lambda **kw: XMLTemplate(mode="html", **kw),
+            "html5": lambda **kw: XMLTemplate(mode="html5", **kw),
         }
 
     def _find_resource(self, name):
@@ -78,7 +78,7 @@ class FileLoader(Loader):
         msg = f"{name} not found in any of {self.path}"
         raise FileNotFoundError(msg)
 
-    def _load(self, name, encoding="utf-8", *args, **kwargs):
+    def _load(self, name, encoding="utf-8", **kwargs):
         """Load a template from file."""
         from kajiki import TextTemplate, XMLTemplate
 
@@ -92,7 +92,6 @@ class FileLoader(Loader):
                 source=source,
                 filename=str(resource),
                 autoescape=self._autoescape_text,
-                *args,
                 **options,
             )
         elif self._force_mode:
@@ -101,13 +100,12 @@ class FileLoader(Loader):
                 filename=str(resource),
                 mode=self._force_mode,
                 autoblocks=self._xml_autoblocks,
-                *args,
                 **options,
             )
         else:
             ext = Path(resource.name).suffix.lstrip(".")
             return self.extension_map[ext](
-                source=source, filename=str(resource), *args, **options
+                source=source, filename=str(resource), **options
             )
 
 

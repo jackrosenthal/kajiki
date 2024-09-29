@@ -68,11 +68,11 @@ class PyramidKajikiLoader(Loader):
         self._timestamps = {}
         super().__init__()
 
-    def _load(self, name, *a, **kw):
+    def _load(self, name, **kw):
         """Called when the template actually needs to be (re)compiled."""
-        return XMLTemplate(source=None, filename=name, mode=self.mode, *a, **kw)
+        return XMLTemplate(source=None, filename=name, mode=self.mode, **kw)
 
-    def import_(self, name, *a, **kw):
+    def import_(self, name, **kw):
         """Overrides Loader.import_().
 
         * Resolves the resource spec into an absolute path for the template.
@@ -83,7 +83,7 @@ class PyramidKajikiLoader(Loader):
             mtime = stat(name).st_mtime
             if mtime > self._timestamps.get(name, 0):
                 del self.modules[name]
-        return super().import_(name, *a, **kw)
+        return super().import_(name, **kw)
 
     def __call__(self, value, system, is_fragment=False):
         """IRenderer implementation.
