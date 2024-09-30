@@ -95,5 +95,10 @@ dependencies = [
 [tool.hatch.envs.speedtest.scripts]
 run = "./speedtest.py"
 
+[tool.hatch.envs.repl]
+extra-dependencies = [
+    "ptpython"
+]
+
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/*" = ["INP001", "SLF001"]
