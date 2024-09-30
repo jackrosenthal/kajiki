@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env -S hatch env run -e speedtest python
 # ruff: noqa: T201
 
 import time
