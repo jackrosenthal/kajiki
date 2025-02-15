@@ -12,7 +12,7 @@ requires-python = ">=3.8"
 authors = [
     { name = "Rick Copeland", email = "rick446@usa.net" },
     { name = "Nando Florestan", email = "nandoflorestan@gmail.com" },
-    { name = "Alessandro Molina", email = "amol@turbogears.org" },
+    { name = "Alessandro Molina", email = "alessandro@molina.fyi" },
     { name = "Jack Rosenthal", email = "jack@rosenth.al" },
 ]
 maintainers = [
@@ -59,6 +59,9 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/jackrosenthal/kajiki"
+
+[project.entry-points."babel.extractors"]
+kajiki = "kajiki.i18n:extract"
 
 [tool.hatch.build.targets.sdist]
 include = [
