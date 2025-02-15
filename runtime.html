@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="CHANGES" href="changes.html" /><link rel="prev" title="Command Line Interface" href="cli.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>Kajiki Runtime - Kajiki 1.0.0.dev1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
     
@@ -299,9 +299,9 @@ create a <a class="reference internal" href="#kajiki.template._Template" title="
 but any object that can have the functions as attributes works.</p>
 <p>To be a valid template the original entity must provide at least a <code class="docutils literal notranslate"><span class="pre">__main__</span></code>
 function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Example</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Example</span><span class="p">:</span>
     <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-    <span class="k">def</span> <span class="nf">__main__</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__main__</span><span class="p">():</span>
         <span class="k">yield</span> <span class="s2">&quot;Hi&quot;</span>
 
 
@@ -540,7 +540,7 @@ and expanding <code class="docutils literal notranslate"><span class="pre">py:</
 </div>
 <p>This converts to the equivalent Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;Hello, World!</span><span class="se">\n</span><span class="s1">&#39;</span>
 </pre></div>
 </div>
@@ -550,7 +550,7 @@ and expanding <code class="docutils literal notranslate"><span class="pre">py:</
 </div>
 <p>This converts to the equivalent Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
      <span class="k">yield</span> <span class="s1">&#39;Hello, &#39;</span>
      <span class="k">yield</span> <span class="n">name</span>
      <span class="k">yield</span> <span class="s1">&#39;!</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -564,7 +564,7 @@ as in “hello_arithmetic.txt”:</p>
 </div>
 <p>This converts to:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;Hello, 2 + 2 is &#39;</span>
     <span class="k">yield</span> <span class="mi">2</span><span class="o">+</span><span class="mi">2</span>
     <span class="k">yield</span> <span class="s1">&#39;!&#39;</span>
@@ -588,7 +588,7 @@ following template “control_flow.txt” illustrates:</p>
 </div>
 <p>This yields the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;A</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="c1"># from the {%for... line</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
         <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        &#39;</span> <span class="c1"># from the newline and initial indent of next line</span>
@@ -651,7 +651,7 @@ with whitespace removed, “control_flow_ws.txt”:</p>
 </div>
 <p>This would generate the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;A&#39;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
@@ -730,7 +730,7 @@ Body
 </pre></div>
 </div>
 <p>all of which will generate the following Python:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;Prefix&#39;</span>
     <span class="k">yield</span> <span class="s1">&#39;Body&#39;</span>
 </pre></div>
@@ -752,13 +752,13 @@ Hello
 </pre></div>
 </div>
 <p>This yields the following Python:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">re</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;Hello&#39;</span>
 </pre></div>
 </div>
@@ -781,14 +781,14 @@ $i is ${evenness(i)}
 </div>
 <p>This compiles to the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">evenness</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">evenness</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">yield</span> <span class="s1">&#39;even&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">yield</span> <span class="s1">&#39;odd&#39;</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">i</span>
         <span class="k">yield</span> <span class="s1">&#39; is &#39;</span>
@@ -806,7 +806,7 @@ $i is ${simple_function.evenness(i)}
 </div>
 <p>This would then compile to the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="n">simple_function</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s2">&quot;simple_function.txt&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">i</span>
@@ -832,7 +832,7 @@ Nevermore $n\
 </div>
 <p>This results in the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">quote</span><span class="p">(</span><span class="n">caller</span><span class="p">,</span> <span class="n">speaker</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">quote</span><span class="p">(</span><span class="n">caller</span><span class="p">,</span> <span class="n">speaker</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
         <span class="k">yield</span> <span class="s1">&#39;Quoth &#39;</span>
         <span class="k">yield</span> <span class="n">speaker</span>
@@ -841,9 +841,9 @@ Nevermore $n\
         <span class="k">yield</span> <span class="s1">&#39;.&quot;&#39;</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-    <span class="k">def</span> <span class="nf">_fpt_lambda</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fpt_lambda</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="k">yield</span> <span class="s1">&#39;Nevermore &#39;</span>
         <span class="k">yield</span> <span class="n">n</span>
     <span class="k">yield</span> <span class="n">quote</span><span class="p">(</span><span class="n">_fpt_lambda</span><span class="p">,</span> <span class="s1">&#39;the raven&#39;</span><span class="p">)</span>
@@ -910,22 +910,22 @@ ${sign(from)}
 </div>
 <p>This would generate the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="k">yield</span> <span class="s1">&#39;Hello, &#39;</span>
     <span class="k">yield</span> <span class="n">name</span>
     <span class="k">yield</span> <span class="s1">&#39;!&#39;</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">sign</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sign</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="k">yield</span> <span class="s1">&#39;Sincerely,</span><span class="se">\n</span><span class="s1">&#39;</span>
     <span class="k">yield</span> <span class="n">name</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">_fpt_block_body</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fpt_block_body</span><span class="p">():</span>
     <span class="k">yield</span> <span class="s1">&#39;It was good seeing you last Friday! Thanks for the gift!</span><span class="se">\n</span><span class="s1">&#39;</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="n">greet</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
     <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
     <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fpt_block_body</span><span class="p">()</span>
@@ -947,19 +947,19 @@ And don&#39;t forget you owe me money!
 </div>
 <p>This would then yield the following Python:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="k">yield</span> <span class="s1">&#39;Dear &#39;</span>
     <span class="k">yield</span> <span class="n">name</span>
     <span class="k">yield</span> <span class="s1">&#39;:&#39;</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="nf">_fpt_block_body</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fpt_block_body</span><span class="p">():</span>
     <span class="k">yield</span> <span class="n">parent</span><span class="o">.</span><span class="n">_fpt_block_body</span><span class="p">()</span>
     <span class="k">yield</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span>
     <span class="k">yield</span> <span class="s1">&#39;And don</span><span class="se">\&#39;</span><span class="s1">t forget you owe me money!</span><span class="se">\n</span><span class="s1">&#39;</span>
 
 <span class="nd">@kajiki</span><span class="o">.</span><span class="n">expose</span>
-<span class="k">def</span> <span class="fm">__call__</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">():</span>
     <span class="k">yield</span> <span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">local</span><span class="o">.</span><span class="n">__kj__</span><span class="o">.</span><span class="n">import_</span><span class="p">(</span><span class="s1">&#39;parent.txt&#39;</span><span class="p">))</span><span class="o">.</span><span class="fm">__call__</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1081,7 +1081,7 @@ Rick
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=c4f33018"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>
     </body>
