@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+1.0.1 (2025-05-04)
+------------------
+
+* The `kajiki` CLI entry point was accidentally removed during the conversion to
+  hatchling.  It was added back.
+
 1.0.0 (2025-05-04)
 ------------------
 

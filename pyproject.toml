@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kajiki"
-version = "1.0.0"
+version = "1.0.1"
 description = "Fast XML-based template engine with Genshi syntax and Jinja blocks"
 readme = "README.rst"
 license = "MIT"
