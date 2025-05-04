@@ -60,6 +60,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/jackrosenthal/kajiki"
 
+[project.scripts]
+kajiki = "kajiki.__main__:main"
+
 [project.entry-points."babel.extractors"]
 kajiki = "kajiki.i18n:extract"
 
