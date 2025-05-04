@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+1.0.0 (2025-05-04)
+------------------
+
+* `py:match` and structural pattern matching added.  Python 3.10+ is required
+  for this feature.  Thanks @CastixGitHub for the contribution.
+* PEP-517 backend switched from setuptools to hatchling.
+* Removed API usages of `pkg_resources`.
+* Added integration tests with TurboGears2 to ensure we don't break users.
+* Python 3.8+ is now required.
+
 0.9.2 (2022-11-24)
 ------------------
 
