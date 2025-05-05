@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+1.0.2 (2025-05-04)
+------------------
+
+* Added new `--json` and `--toml` CLI options to load input variables from JSON
+  and TOML files, respectively.  `--toml` requires Python 3.11 or newer.
+
 1.0.1 (2025-05-04)
 ------------------
 
