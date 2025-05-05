@@ -1,7 +1,9 @@
 """Command-line interface to Kajiki to render a single template."""
 
 import argparse
+import json
 import os
+import pathlib
 import site
 import sys
 
@@ -52,6 +54,13 @@ def main(argv=None):
         help="Template variables, passed as KEY=VALUE pairs.",
     )
     parser.add_argument(
+        "--json",
+        action="append",
+        default=[],
+        type=pathlib.Path,
+        help="Load template variables from a JSON file.",
+    )
+    parser.add_argument(
         "-p",
         "--package",
         dest="loader_type",
@@ -82,9 +91,16 @@ def main(argv=None):
         opts.paths.append(os.path.dirname(opts.file_or_package) or ".")
         loader_kwargs["path"] = opts.paths
 
+    template_variables = {}
+    for json_file in opts.json:
+        with json_file.open("r", encoding="utf-8") as f:
+            template_variables.update(json.load(f))
+
+    template_variables.update(dict(opts.template_variables))
+
     loader = opts.loader_type(force_mode=opts.force_mode, **loader_kwargs)
     template = loader.import_(opts.file_or_package)
-    result = template(dict(opts.template_variables)).render()
+    result = template(template_variables).render()
     opts.output_file.write(result)
 
     # Close the output file to avoid a ResourceWarning during unit
