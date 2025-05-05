@@ -9,6 +9,13 @@ import sys
 
 import kajiki.loader
 
+try:
+    import tomllib
+except ImportError:
+    _TOML_AVAILABLE = False
+else:
+    _TOML_AVAILABLE = True
+
 
 def _kv_pair(pair):
     """Convert a KEY=VALUE string to a 2-tuple of (KEY, VALUE).
@@ -60,6 +67,14 @@ def main(argv=None):
         type=pathlib.Path,
         help="Load template variables from a JSON file.",
     )
+    if _TOML_AVAILABLE:
+        parser.add_argument(
+            "--toml",
+            action="append",
+            default=[],
+            type=pathlib.Path,
+            help="Load template variables from a TOML file.",
+        )
     parser.add_argument(
         "-p",
         "--package",
@@ -95,6 +110,11 @@ def main(argv=None):
     for json_file in opts.json:
         with json_file.open("r", encoding="utf-8") as f:
             template_variables.update(json.load(f))
+
+    if _TOML_AVAILABLE:
+        for toml_file in opts.toml:
+            with toml_file.open("rb") as f:
+                template_variables.update(tomllib.load(f))
 
     template_variables.update(dict(opts.template_variables))
 

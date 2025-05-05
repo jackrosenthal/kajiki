@@ -1,3 +1,4 @@
+import sys
 from unittest import mock
 
 import pytest
@@ -139,6 +140,23 @@ def test_json_template_variables(tmp_path, main_mocks):
     json_file = tmp_path / "json_file.json"
     json_file.write_text('{"foo": "bar", "baz": "bip"}')
     main(["--json", str(json_file), "infile.txt"])
+
+    main_mocks.file_loader_type.assert_called_once_with(path=["."], force_mode=None)
+    main_mocks.import_.assert_called_once_with("infile.txt")
+    main_mocks.template_type.assert_called_once_with(
+        {
+            "foo": "bar",
+            "baz": "bip",
+        }
+    )
+    main_mocks.render.assert_called_once_with()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="tomllib new in python3.11")
+def test_toml_template_variables(tmp_path, main_mocks):
+    toml_file = tmp_path / "toml_file.toml"
+    toml_file.write_text('foo = "bar"\nbaz = "bip"')
+    main(["--toml", str(toml_file), "infile.txt"])
 
     main_mocks.file_loader_type.assert_called_once_with(path=["."], force_mode=None)
     main_mocks.import_.assert_called_once_with("infile.txt")
